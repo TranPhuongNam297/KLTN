@@ -6,10 +6,20 @@ class Login extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Đăng nhập'),
+        home: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+            image: AssetImage('images/background.jpg'), // Thay 'đường dẫn đến hình ảnh' bằng đường dẫn thực tế của bạn
+            fit: BoxFit.cover,
+          ),
         ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent, // Đặt màu nền của Scaffold thành trong suốt
+          appBar: AppBar(
+            title: Text(''),
+            backgroundColor: Colors.transparent, // Đặt màu nền của AppBar thành trong suốt
+            elevation: 0, // Loại bỏ đổ bóng của AppBar
+          ),
         body: SingleChildScrollView( // Add this to avoid overflow
           child: Padding(
             padding: EdgeInsets.all(10),
@@ -23,6 +33,8 @@ class Login extends StatelessWidget {
                 SizedBox(height: 10),
                 TextField(
                   decoration: InputDecoration(
+                    fillColor: Colors.white, // Đặt màu nền của TextField thành trắng
+                    filled: true,
                     border: OutlineInputBorder(),
                     labelText: 'Tài khoản',
                   ),
@@ -31,6 +43,8 @@ class Login extends StatelessWidget {
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
+                    fillColor: Colors.white, // Đặt màu nền của TextField thành trắng
+                    filled: true,
                     border: OutlineInputBorder(),
                     labelText: 'Mật khẩu',
                   ),
@@ -58,12 +72,8 @@ class Login extends StatelessWidget {
                 Container(
                   width: 250,
                   height: 50,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 2.0),
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
                   child: ElevatedButton(
-                    child: Text('Đăng nhập', style: TextStyle(fontSize: 15),),
+                    child: Text('Đăng nhập', style: TextStyle(fontSize: 15, color: Colors.white),),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -71,13 +81,14 @@ class Login extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo, // Tô màu nút thành indigo
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                        borderRadius: BorderRadius.circular(10), // Làm bo tròn góc của nút
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 50),
+                SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center, // Center the row content
                   children: <Widget>[
@@ -97,7 +108,7 @@ class Login extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -122,24 +133,22 @@ class Login extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 25),
+                SizedBox(height: 20),
                 Container(
                   width: 350,
                   height: 50,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 2.0),
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
                   child: ElevatedButton.icon(
                     icon: Image.network(
                       'https://developers.google.com/identity/images/g-logo.png',
-                      height: 18.0,
+                      height: 30,
+                      width: 30,
                     ),
-                    label: Text('Tiếp tục với Google', style: TextStyle(fontSize: 15),),
+                    label: Text('Tiếp tục với Google', style: TextStyle(fontSize: 15, color: Colors.white),),
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo, // Tô màu nút thành indigo
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                        borderRadius: BorderRadius.circular(10), // Làm bo tròn góc của nút
                       ),
                     ),
                   ),
@@ -149,6 +158,7 @@ class Login extends StatelessWidget {
           ),
         ),
       ),
+     ),
     );
   }
 }

@@ -62,6 +62,8 @@ flutter:
   assets:
       - images/logoapp1.jpg
       - images/tetmass.png
+      - images/tetmass2.png
+      - images/background.jpg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

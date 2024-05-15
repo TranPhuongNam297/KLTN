@@ -24,8 +24,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
+      height: double.infinity,
+      width: double.infinity,
       child: Center(
-        child: Image.asset('images/logoapp1.jpg', height: double.infinity, width: double.infinity),
+        child: Image.asset('images/logoapp1.jpg'),
       ),
     );
   }
