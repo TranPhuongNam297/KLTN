@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'doTest.dart';
-import 'home.dart';
+import 'Home.dart';
 
 class mainLayout extends StatefulWidget {
   @override
@@ -71,7 +71,7 @@ class _MainLayoutState extends State<mainLayout> {
           },
           children: <Widget>[
             // Thay thế các Text widget bằng các trang thực tế của bạn
-            home(),
+            Home(),
             doTest(),
             Text('Khóa học'),
             Text('Sách'),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'loadingScreen.dart'; // Đảm bảo rằng bạn đã import lớp Login
+import 'LoadingScreen.dart';
 
 void main() {
   runApp(MyApp());
