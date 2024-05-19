@@ -3,7 +3,11 @@ import 'ActivityItemMain.dart';
 
 class Home extends StatelessWidget {
   final List<Map<String, String>> data = [
-    {'subtitle': 'Rất là dài '},
+    {'subtitle': 'Test 1 '},
+    {'subtitle': 'Test 2 '},
+    {'subtitle': 'Test 3 '},
+    {'subtitle': 'Test 4 '},
+    {'subtitle': 'Test 5 '},
   ];
 
   @override
@@ -15,7 +19,7 @@ class Home extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Text(
               'Những hoạt động gần đây',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'OpenSans'),
             ),
           ),
           Divider(
