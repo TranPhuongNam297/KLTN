@@ -1,8 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-
 import 'package:khoa_luan_tot_nghiep/mainLayout.dart';
+import 'Question.dart';
+import 'AnswerButton.dart';
+import 'ConfirmDialog.dart';
+import 'QuestionManager.dart';
+import 'CountdownTimer.dart';
+import 'StarButton.dart';
 
 class ActivityDoTest extends StatefulWidget {
   @override
@@ -10,66 +14,17 @@ class ActivityDoTest extends StatefulWidget {
 }
 
 class _ActivityDoTestState extends State<ActivityDoTest> {
-  int currentQuestionIndex = 0;
-  List<Map<String, dynamic>> questions = [
-    {
-      'question': 'Ai là người đầu tiên đặt chân lên Mặt Trăng?',
-      'answers': ['Neil Armstrong', 'Buzz Aldrin', 'Yuri Gagarin', 'John Glenn'],
-      'correctAnswer': 'Neil Armstrong',
-    },
-    // Add other questions here...
-  ];
-
-  int remainingTime = 240; // 1 minute in seconds
-  late Timer _timer;
-
-  Future<bool> _onWillPop() async {
-    final result = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Xác nhận thoát', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        content: Text('Bạn có muốn thoát ra ngoài khi chưa làm xong không?', style: TextStyle(fontSize: 20)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).maybePop(false),
-            child: Text('Không', style: TextStyle(fontSize: 20)),
-          ),
-          TextButton(
-            onPressed: () {
-              // Thay vì pop(Home()), sử dụng Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home()))
-              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => mainLayout()));
-            },
-            child: Text('Có', style: TextStyle(fontSize: 20)),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
+  final QuestionManager questionManager = QuestionManager();
+  final CountdownTimer countdownTimer = CountdownTimer();
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    countdownTimer.startTimer();
   }
-
-  void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        if (remainingTime > 0) {
-          remainingTime--;
-        } else {
-          // Handle time's up (e.g., show feedback, move to next question, etc.)
-          print('Time\'s up!');
-          timer.cancel();
-        }
-      });
-    });
-  }
-
 
   void _handleAnswer(String selectedAnswer) {
-    final correctAnswer = questions[currentQuestionIndex]['correctAnswer'];
+    final correctAnswer = questionManager.correctAnswer;
     if (selectedAnswer == correctAnswer) {
       // Handle correct answer (e.g., update score, show feedback, etc.)
       print('Correct!');
@@ -79,90 +34,132 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     }
 
     // Move to the next question
-    setState(() {
-      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-      remainingTime = 240; // Reset timer for the next question
-    });
+    questionManager.nextQuestion();
+    countdownTimer.resetTimer();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    countdownTimer.stopTimer();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.indigo,
-        title: Text(
-          'Làm bài',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            _onWillPop();
-          },
-        ),
-      ),
-      body: Column(
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: AnimatedContainer(
-                duration: Duration(seconds: 1),
-                width: remainingTime * 2,
-                height: 10,
-                color: Colors.green,
-              ),
-            ),
+    return WillPopScope(
+      onWillPop: () async {
+        return await showDialog(
+          context: context,
+          builder: (context) => ConfirmDialog(
+            onConfirmed: () {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => mainLayout()));
+            },
           ),
-          Container(
-            width: 400,
-            height: 250,
-            decoration: BoxDecoration(
-              color: Colors.grey[350],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Center(
-                child: Text(
-                  questions[currentQuestionIndex]['question'],
-                  style: TextStyle(fontSize: 24, fontFamily: 'OpenSans'),
+        ) ?? false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.indigo,
+          title: Text(
+            'Làm bài',
+            style: TextStyle(color: Colors.white),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => ConfirmDialog(
+                  onConfirmed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => mainLayout()));
+                  },
                 ),
-              )
-            ),
+              );
+            },
           ),
-          SizedBox(height: 20),
-          ...questions[currentQuestionIndex]['answers'].map((answer) {
-            return Column(
+        ),
+        body: Stack(
+          children: [
+            Column(
               children: [
-                ElevatedButton(
-                  onPressed: () => _handleAnswer(answer),
-                  child: Text(answer, style: TextStyle(fontSize: 20),),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.indigo,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: AnimatedContainer(
+                      duration: Duration(seconds: 1),
+                      width: countdownTimer.time * 2,
+                      height: 10,
+                      color: Colors.green,
                     ),
-                    minimumSize: Size(300, 65),
                   ),
                 ),
-                SizedBox(height: 10), // Add SizedBox with height 10
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${questionManager.currentQuestionIndex + 1}/${questionManager.questions.length}', style: TextStyle(fontSize: 24)),
+                    StarButton(),
+                  ],
+                ),
+                Question(questionManager.currentQuestion),
+                SizedBox(height: 20),
+                ...questionManager.currentAnswers.map((answer) {
+                  return AnswerButton(
+                    answerText: answer,
+                    onPressed: () => _handleAnswer(answer),
+                  );
+                }).toList(),
               ],
-            );
-          }).toList(),
-        ],
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo, // Set the button color to indigo
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0), // Make the button square
+                        ),
+                        minimumSize: Size(75, 35), // Set the size of the button
+                      ),
+                      icon: Icon(Icons.arrow_back, color: Colors.white), // Set the icon color to white
+                      label: Text('Quay về', style: TextStyle(color: Colors.white)), // Set the text color to white
+                      onPressed: () {
+                        // Handle "Quay về" action here
+                      },
+                    ),
+                    SizedBox(width: 100), // Add a space between the buttons
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo, // Set the button color to indigo
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0), // Make the button square
+                        ),
+                        minimumSize: Size(75, 35), // Set the size of the button
+                      ),
+                      onPressed: () {
+                        // Handle "Tiếp tục" action here
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text('Tiếp tục', style: TextStyle(color: Colors.white)), // Set the text color to white
+                          SizedBox(width: 5), // Add a space between the text and the icon
+                          Icon(Icons.arrow_forward, color: Colors.white), // Set the icon color to white
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
-
-
