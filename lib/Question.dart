@@ -11,8 +11,9 @@ class Question extends StatelessWidget {
       width: 400,
       height: 250,
       decoration: BoxDecoration(
-        color: Colors.grey[350],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),

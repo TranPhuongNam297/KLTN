@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'doTest.dart';
 import 'Home.dart';
+import 'Login.dart';
 
 class mainLayout extends StatefulWidget {
   @override
@@ -48,7 +49,29 @@ class _MainLayoutState extends State<mainLayout> {
                 leading: Icon(Icons.logout, color: Colors.indigo, size: 50),
                 title: Text('Đăng xuất', style: TextStyle(fontSize: 20)),
                 onTap: () {
-                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Thông báo', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                        content: Text('Bạn có chắc chắn muốn đăng xuất?', style: TextStyle(fontSize: 20),),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Hủy', style: TextStyle(fontSize: 20),),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login()));
+                            },
+                            child: Text('Đăng xuất', style: TextStyle(fontSize: 20),),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
               ),
               SizedBox(height: 25),

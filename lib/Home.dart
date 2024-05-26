@@ -9,7 +9,6 @@ class Home extends StatelessWidget {
     {'subtitle': 'Test 4 '},
     {'subtitle': 'Test 5 '},
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

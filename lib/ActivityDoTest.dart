@@ -1,11 +1,12 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:khoa_luan_tot_nghiep/mainLayout.dart';
+import 'Home.dart';
 import 'Question.dart';
 import 'AnswerButton.dart';
 import 'ConfirmDialog.dart';
 import 'QuestionManager.dart';
 import 'CountdownTimer.dart';
+import 'Result.dart';
 import 'StarButton.dart';
 
 class ActivityDoTest extends StatefulWidget {
@@ -16,6 +17,8 @@ class ActivityDoTest extends StatefulWidget {
 class _ActivityDoTestState extends State<ActivityDoTest> {
   final QuestionManager questionManager = QuestionManager();
   final CountdownTimer countdownTimer = CountdownTimer();
+  final Home home = Home();
+  int count = 0;
 
   @override
   void initState() {
@@ -26,16 +29,38 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   void _handleAnswer(String selectedAnswer) {
     final correctAnswer = questionManager.correctAnswer;
     if (selectedAnswer == correctAnswer) {
-      // Handle correct answer (e.g., update score, show feedback, etc.)
-      print('Correct!');
-    } else {
-      // Handle incorrect answer (e.g., show feedback, etc.)
-      print('Incorrect. The correct answer is: $correctAnswer');
+      setState(() {
+        count++;
+        if(questionManager.currentQuestionIndex < questionManager.questions.length - 1){
+          questionManager.currentQuestionIndex ++;
+        }
+        else{
+          navigateToResult();
+        }
+      });
+    } else if (selectedAnswer != correctAnswer) {
+      setState(() {
+        if(questionManager.currentQuestionIndex < questionManager.questions.length - 1){
+          questionManager.currentQuestionIndex ++;
+        }
+        else{
+          navigateToResult();
+        }
+      });
     }
-
-    // Move to the next question
-    questionManager.nextQuestion();
     countdownTimer.resetTimer();
+  }
+
+  void navigateToResult() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => Result(
+          totalQuestions: questionManager.questions.length,
+          correctAnswers: count,
+          subtitle: home.data.length,
+        ),
+      ),
+    );
   }
 
   @override
@@ -120,36 +145,36 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                   children: [
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo, // Set the button color to indigo
+                        backgroundColor: Colors.indigo,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0), // Make the button square
+                          borderRadius: BorderRadius.circular(0),
                         ),
-                        minimumSize: Size(75, 35), // Set the size of the button
+                        minimumSize: Size(75, 35),
                       ),
-                      icon: Icon(Icons.arrow_back, color: Colors.white), // Set the icon color to white
-                      label: Text('Quay về', style: TextStyle(color: Colors.white)), // Set the text color to white
+                      icon: Icon(Icons.arrow_back, color: Colors.white),
+                      label: Text('Quay về', style: TextStyle(color: Colors.white)),
                       onPressed: () {
                         // Handle "Quay về" action here
                       },
                     ),
-                    SizedBox(width: 100), // Add a space between the buttons
+                    SizedBox(width: 100),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo, // Set the button color to indigo
+                        backgroundColor: Colors.indigo,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0), // Make the button square
+                          borderRadius: BorderRadius.circular(0),
                         ),
-                        minimumSize: Size(75, 35), // Set the size of the button
+                        minimumSize: Size(75, 35),
                       ),
                       onPressed: () {
-                        // Handle "Tiếp tục" action here
+
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Text('Tiếp tục', style: TextStyle(color: Colors.white)), // Set the text color to white
-                          SizedBox(width: 5), // Add a space between the text and the icon
-                          Icon(Icons.arrow_forward, color: Colors.white), // Set the icon color to white
+                          Text('Tiếp tục', style: TextStyle(color: Colors.white)),
+                          SizedBox(width: 5),
+                          Icon(Icons.arrow_forward, color: Colors.white),
                         ],
                       ),
                     ),

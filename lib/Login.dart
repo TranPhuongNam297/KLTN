@@ -7,6 +7,8 @@ class Login extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
+    bool isLoading = false; // Set this to true when login button is pressed
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Container(
@@ -32,8 +34,8 @@ class Login extends StatelessWidget {
                 children: <Widget>[
                   Image.asset(
                     'images/tetmass.png',
-                    height: width * 0.5, // chiếm 50% chiều rộng của màn hình
-                    width: width * 0.5, // chiếm 50% chiều rộng của màn hình
+                    height: width * 0.5,
+                    width: width * 0.5,
                   ),
                   SizedBox(height: 10),
                   TextField(
@@ -65,9 +67,9 @@ class Login extends StatelessWidget {
                         child: Text(
                           'Quên mật khẩu?',
                           style: TextStyle(
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
-                              fontSize: 20
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                            fontSize: 20,
                           ),
                         ),
                       ),
@@ -75,15 +77,47 @@ class Login extends StatelessWidget {
                   ),
                   SizedBox(height: 25),
                   Container(
-                    width: width * 0.6, // chiếm 60% chiều rộng của màn hình
-                    height: height * 0.07, // chiếm 7% chiều cao của màn hình
+                    width: width * 0.6,
+                    height: height * 0.07,
                     child: ElevatedButton(
-                      child: Text('Đăng nhập', style: TextStyle(fontSize: 15, color: Colors.white),),
+                      child: isLoading
+                          ? CircularProgressIndicator(
+                        valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white),
+                      )
+                          : Text(
+                        'Đăng nhập',
+                        style: TextStyle(
+                            fontSize: 15, color: Colors.white),
+                      ),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => mainLayout()),
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('Đang xử lý...'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 16),
+                                  Text('Vui lòng chờ trong giây lát.'),
+                                ],
+                              ),
+                            );
+                          },
                         );
+
+                        // Simulate login process
+                        Future.delayed(Duration(seconds: 2), () {
+                          Navigator.pop(context); // Close the dialog
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => mainLayout(),
+                            ),
+                          );
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.indigo,
