@@ -86,7 +86,7 @@ class Result extends StatelessWidget {
                   Text('$correctAnswers / $totalQuestions', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'OpenSans')),
                   SizedBox(height: 20),
                   Text(
-                    correctAnswers >= 2 ? 'Chúc mừng, bạn đã làm rất tốt!' : 'Thật tiếc, hãy thử lại!',
+                    correctAnswers >= 5 ? 'Chúc mừng, bạn đã làm rất tốt!' : 'Thật tiếc, hãy thử lại!',
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'OpenSans'),
                     textAlign: TextAlign.center,
                   ),

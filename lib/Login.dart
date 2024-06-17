@@ -7,7 +7,7 @@ class Login extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    bool isLoading = false; // Set this to true when login button is pressed
+    bool isLoading = false;
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
