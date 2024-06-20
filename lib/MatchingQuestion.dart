@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'QuestionManager.dart';
 
 class MatchingQuestion extends StatefulWidget {
   final Map<String, dynamic> matchingQuestion;
+  final Function(bool) onAllCorrect;
 
-  const MatchingQuestion({Key? key, required this.matchingQuestion}) : super(key: key);
+  const MatchingQuestion({Key? key, required this.matchingQuestion, required this.onAllCorrect}) : super(key: key);
 
   @override
   _MatchingQuestionState createState() => _MatchingQuestionState();
@@ -25,18 +25,19 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
         selectedAnswers[question] = answer;
       }
       correctness[question] = widget.matchingQuestion['subQuestions']
-          .firstWhere((q) => q['question'] == question)['correctAnswer'] ==
-          answer;
+          .firstWhere((q) => q['question'] == question)['correctAnswer'] == answer;
+
+      widget.onAllCorrect(_checkAllCorrect());
     });
   }
 
-  void checkAnswers() {
-    setState(() {
-      for (var subQuestion in widget.matchingQuestion['subQuestions']) {
-        correctness[subQuestion['question']] =
-            selectedAnswers[subQuestion['question']] == subQuestion['correctAnswer'];
+  bool _checkAllCorrect() {
+    for (var subQuestion in widget.matchingQuestion['subQuestions']) {
+      if (correctness[subQuestion['question']] != true) {
+        return false;
       }
-    });
+    }
+    return true;
   }
 
   @override

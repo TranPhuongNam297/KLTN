@@ -22,6 +22,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   Map<int, String?> selectedAnswers = {};
   Map<int, bool> correctAnswers = {};
   bool isMatchingQuestion = false;
+  bool allMatchingCorrect = false;
 
   @override
   void initState() {
@@ -58,6 +59,24 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
         }
       }
       countdownTimer.resetTimer();
+    });
+  }
+
+  void _handleMatchingAnswer(bool isAllCorrect) {
+    final currentIndex = questionManager.currentQuestionIndex;
+    bool wasCorrect = correctAnswers[currentIndex] ?? false;
+
+    setState(() {
+      correctAnswers[currentIndex] = isAllCorrect;
+      if (isAllCorrect) {
+        if (!wasCorrect) {
+          count++;
+        }
+      } else {
+        if (wasCorrect) {
+          count--;
+        }
+      }
     });
   }
 
@@ -202,6 +221,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                 if (isMatchingQuestion)
                   MatchingQuestion(
                     matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                    onAllCorrect: _handleMatchingAnswer,
                   )
                 else
                   MultipleChoiceQuestion(
