@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'Home.dart';
-import 'Question.dart';
-import 'AnswerButton.dart';
-import 'ConfirmDialog.dart';
 import 'QuestionManager.dart';
 import 'CountdownTimer.dart';
 import 'Result.dart';
 import 'StarButton.dart';
 import 'mainLayout.dart';
 import 'MatchingQuestion.dart';
+import 'ConfirmDialog.dart';
+import 'MultipleChoiceQuestion.dart';
 
 class ActivityDoTest extends StatefulWidget {
   @override
@@ -22,7 +21,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   int count = 0;
   Map<int, String?> selectedAnswers = {};
   Map<int, bool> correctAnswers = {};
-  bool isMatchingQuestion = false; // Biến để xác định nếu câu hỏi là loại 'matching' hay không
+  bool isMatchingQuestion = false;
 
   @override
   void initState() {
@@ -32,6 +31,13 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       selectedAnswers[i] = null;
       correctAnswers[i] = false;
     }
+    _checkMatchingQuestion();
+  }
+
+  void _checkMatchingQuestion() {
+    setState(() {
+      isMatchingQuestion = questionManager.currentQuestionType == 'matching';
+    });
   }
 
   void _handleAnswer(String selectedAnswer) {
@@ -65,8 +71,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
         questionManager.currentQuestionIndex++;
-        // Kiểm tra nếu câu hỏi hiện tại là loại 'matching'
-        isMatchingQuestion = questionManager.currentQuestionType == 'matching';
+        _checkMatchingQuestion(); // Check if the next question is matching
       } else {
         _showSubmitDialog();
       }
@@ -77,8 +82,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex > 0) {
         questionManager.currentQuestionIndex--;
-        // Kiểm tra nếu câu hỏi hiện tại là loại 'matching'
-        isMatchingQuestion = questionManager.currentQuestionType == 'matching';
+        _checkMatchingQuestion(); // Check if the previous question is matching
       }
     });
   }
@@ -196,21 +200,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                   ],
                 ),
                 if (isMatchingQuestion)
-                  MatchingQuestion()
+                  MatchingQuestion(
+                    matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                  )
                 else
-                  Column(
-                    children: [
-                      Question(questionManager.currentQuestion),
-                      SizedBox(height: 20),
-                      ...questionManager.currentAnswers.map((answer) {
-                        return AnswerButton(
-                          key: UniqueKey(),
-                          answerText: answer,
-                          onPressed: () => _handleAnswer(answer),
-                          isSelected: selectedAnswers[questionManager.currentQuestionIndex] == answer,
-                        );
-                      }).toList(),
-                    ],
+                  MultipleChoiceQuestion(
+                    questionText: questionManager.currentQuestion,
+                    answers: questionManager.currentAnswers,
+                    onAnswerSelected: _handleAnswer,
+                    selectedAnswer: selectedAnswers[questionManager.currentQuestionIndex],
                   ),
               ],
             ),
