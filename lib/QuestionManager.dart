@@ -4,8 +4,7 @@ class QuestionManager {
     {
       'type': 'multiple_choice',
       'question': 'Ai là người đầu tiên đặt chân lên Mặt Trăng?',
-      'answers': ['Neil Armstrong', 'Buzz Aldrin', 'Yuri Gagarin', 'John Glenn'
-      ],
+      'answers': ['Neil Armstrong', 'Buzz Aldrin', 'Yuri Gagarin', 'John Glenn'],
       'correctAnswer': 'Neil Armstrong',
     },
     {
@@ -30,13 +29,30 @@ class QuestionManager {
         {'question': 'Câu hỏi 4', 'correctAnswer': 'Câu trả lời 4'},
       ],
     },
+    {
+      'type': 'truefalse',
+      'question': 'Mặt Trời là một ngôi sao?',
+      'correctAnswer': true,
+    },
+    {
+      'type': 'truefalse',
+      'question': 'Người ngoài hành tinh có thật?',
+      'correctAnswer': true,
+    },
+    {
+      'type': 'truefalse',
+      'question': 'Euro Đức vô địch đúng không?',
+      'correctAnswer': false,
+    },
   ];
 
   String get currentQuestion => questions[currentQuestionIndex]['question'];
 
-  List<String> get currentAnswers => questions[currentQuestionIndex]['answers'];
+  List<String>? get currentAnswers => questions[currentQuestionIndex]['type'] == 'multiple_choice'
+      ? questions[currentQuestionIndex]['answers'] as List<String>
+      : null;
 
-  String get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
+  dynamic get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
 
   String get currentQuestionType => questions[currentQuestionIndex]['type'];
 }

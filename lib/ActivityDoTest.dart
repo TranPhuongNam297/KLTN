@@ -8,6 +8,7 @@ import 'mainLayout.dart';
 import 'MatchingQuestion.dart';
 import 'ConfirmDialog.dart';
 import 'MultipleChoiceQuestion.dart';
+import 'TrueFalseQuestion.dart';
 
 class ActivityDoTest extends StatefulWidget {
   @override
@@ -22,7 +23,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   Map<int, String?> selectedAnswers = {};
   Map<int, bool> correctAnswers = {};
   bool isMatchingQuestion = false;
-  bool allMatchingCorrect = false;
 
   @override
   void initState() {
@@ -48,6 +48,27 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
     setState(() {
       selectedAnswers[currentIndex] = selectedAnswer;
+      correctAnswers[currentIndex] = selectedAnswer == correctAnswer;
+      if (selectedAnswer == correctAnswer) {
+        if (!wasCorrect) {
+          count++;
+        }
+      } else {
+        if (wasCorrect) {
+          count--;
+        }
+      }
+      countdownTimer.resetTimer();
+    });
+  }
+
+  void _handleTrueFalseAnswer(bool selectedAnswer) {
+    final correctAnswer = questionManager.correctAnswer as bool;
+    final currentIndex = questionManager.currentQuestionIndex;
+    bool wasCorrect = correctAnswers[currentIndex] ?? false;
+
+    setState(() {
+      selectedAnswers[currentIndex] = selectedAnswer.toString();
       correctAnswers[currentIndex] = selectedAnswer == correctAnswer;
       if (selectedAnswer == correctAnswer) {
         if (!wasCorrect) {
@@ -88,7 +109,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
   void _nextQuestion() {
     setState(() {
-      if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
+      if (questionManager.currentQuestionIndex <
+          questionManager.questions.length - 1) {
         questionManager.currentQuestionIndex++;
         _checkMatchingQuestion(); // Check if the next question is matching
       } else {
@@ -158,15 +180,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     return WillPopScope(
       onWillPop: () async {
         return await showDialog(
-          context: context,
-          builder: (context) => ConfirmDialog(
-            onConfirmed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => mainLayout()),
-              );
-            },
-          ),
-        ) ??
+              context: context,
+              builder: (context) => ConfirmDialog(
+                onConfirmed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => mainLayout()),
+                  );
+                },
+              ),
+            ) ??
             false;
       },
       child: Scaffold(
@@ -220,67 +242,77 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                 ),
                 if (isMatchingQuestion)
                   MatchingQuestion(
-                    matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                    matchingQuestion: questionManager
+                        .questions[questionManager.currentQuestionIndex],
                     onAllCorrect: _handleMatchingAnswer,
                   )
-                else
+                else if (questionManager.currentQuestionType ==
+                    'multiple_choice')
                   MultipleChoiceQuestion(
                     questionText: questionManager.currentQuestion,
-                    answers: questionManager.currentAnswers,
+                    answers: questionManager.currentAnswers!,
                     onAnswerSelected: _handleAnswer,
-                    selectedAnswer: selectedAnswers[questionManager.currentQuestionIndex],
+                    selectedAnswer:
+                        selectedAnswers[questionManager.currentQuestionIndex],
+                  )
+                else if (questionManager.currentQuestionType == 'truefalse')
+                  TrueFalseQuestion(
+                    questionManager: questionManager,
+                    onAnswerSelected: _handleTrueFalseAnswer,
+                    selectedAnswer:
+                        selectedAnswers[questionManager.currentQuestionIndex] ==
+                            'true',
                   ),
               ],
             ),
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        minimumSize: Size(75, 35),
-                      ),
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
-                      label: Text(
-                        'Quay về',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: _previousQuestion,
-                    ),
-                    SizedBox(width: 100),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        minimumSize: Size(75, 35),
-                      ),
-                      onPressed: _nextQuestion,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            questionManager.currentQuestionIndex < questionManager.questions.length - 1
-                                ? 'Tiếp tục'
-                                : 'Nộp bài',
-                            style: TextStyle(color: Colors.white),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(0),
                           ),
-                          SizedBox(width: 5),
-                          Icon(Icons.arrow_forward, color: Colors.white),
-                        ],
+                          minimumSize: Size(75, 35),
+                        ),
+                        icon: Icon(Icons.arrow_back, color: Colors.white),
+                        label: Text(
+                          'Quay về',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: _previousQuestion,
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(0),
+                          ),
+                          minimumSize: Size(75, 35),
+                        ),
+                        onPressed: _nextQuestion,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              questionManager.currentQuestionIndex <
+                                      questionManager.questions.length - 1
+                                  ? 'Tiếp tục'
+                                  : 'Nộp bài',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            SizedBox(width: 5),
+                            Icon(Icons.arrow_forward, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )),
             ),
           ],
         ),
