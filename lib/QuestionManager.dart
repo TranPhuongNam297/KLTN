@@ -31,18 +31,17 @@ class QuestionManager {
     },
     {
       'type': 'truefalse',
-      'question': 'Mặt Trời là một ngôi sao?',
-      'correctAnswer': true,
+      'subQuestions1': [
+        {'question': 'Người ngoài hành tinh có thật?', 'correctAnswer': true},
+        {'question': 'Euro Đức vô địch đúng không?', 'correctAnswer': false},
+        {'question': 'Mặt trời là 1 ngôi sao?', 'correctAnswer': true},
+      ],
     },
     {
-      'type': 'truefalse',
-      'question': 'Người ngoài hành tinh có thật?',
-      'correctAnswer': true,
-    },
-    {
-      'type': 'truefalse',
-      'question': 'Euro Đức vô địch đúng không?',
-      'correctAnswer': false,
+      'type': 'multiple_choice',
+      'question': 'Bạn có thường xuyên ăn cứt không?',
+      'answers': ['Có', 'Không', 'A', 'B'],
+      'correctAnswer': 'Có',
     },
   ];
 
