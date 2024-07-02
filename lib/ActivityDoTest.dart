@@ -19,18 +19,20 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   final QuestionManager questionManager = QuestionManager();
   final CountdownTimer countdownTimer = CountdownTimer();
   final Home home = Home();
-  int count = 0;
-  Map<int, dynamic> selectedAnswers = {}; // Store selected answers
-  Map<int, bool> correctAnswers = {}; // Store correctness of answers
+  int correctCount = 0;
+  Map<int, dynamic> selectedAnswers = {};
+  Map<int, bool> answeredCorrectly = {};
   bool isMatchingQuestion = false;
+  List<bool?> questionResults = [];
 
   @override
   void initState() {
     super.initState();
     countdownTimer.startTimer();
+    questionResults = List<bool?>.filled(questionManager.questions.length, null);
     for (int i = 0; i < questionManager.questions.length; i++) {
       selectedAnswers[i] = null;
-      correctAnswers[i] = false;
+      answeredCorrectly[i] = false;
     }
     _checkMatchingQuestion();
   }
@@ -44,18 +46,21 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   void _handleAnswer(String selectedAnswer) {
     final correctAnswer = questionManager.correctAnswer;
     final currentIndex = questionManager.currentQuestionIndex;
-    bool wasCorrect = correctAnswers[currentIndex] ?? false;
+    bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
 
     setState(() {
       selectedAnswers[currentIndex] = selectedAnswer;
-      correctAnswers[currentIndex] = selectedAnswer == correctAnswer;
+      answeredCorrectly[currentIndex] = selectedAnswer == correctAnswer;
+
+      questionResults[currentIndex] = selectedAnswer == correctAnswer;
+
       if (selectedAnswer == correctAnswer) {
         if (!wasCorrect) {
-          count++;
+          correctCount++;
         }
       } else {
         if (wasCorrect) {
-          count--;
+          correctCount--;
         }
       }
       countdownTimer.resetTimer();
@@ -64,17 +69,17 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
   void _handleTrueFalseAnswer(bool allCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
-    bool wasCorrect = correctAnswers[currentIndex] ?? false;
+    bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
 
     setState(() {
-      correctAnswers[currentIndex] = allCorrect;
+      questionResults[currentIndex] = allCorrect;
       if (allCorrect) {
         if (!wasCorrect) {
-          count++;
+          correctCount++;
         }
       } else {
         if (wasCorrect) {
-          count--;
+          correctCount--;
         }
       }
       countdownTimer.resetTimer();
@@ -83,17 +88,17 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
   void _handleMatchingAnswer(bool isAllCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
-    bool wasCorrect = correctAnswers[currentIndex] ?? false;
+    bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
 
     setState(() {
-      correctAnswers[currentIndex] = isAllCorrect;
+      questionResults[currentIndex] = isAllCorrect;
       if (isAllCorrect) {
         if (!wasCorrect) {
-          count++;
+          correctCount++;
         }
       } else {
         if (wasCorrect) {
-          count--;
+          correctCount--;
         }
       }
     });
@@ -109,7 +114,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
         questionManager.currentQuestionIndex++;
-        _checkMatchingQuestion(); // Check if the next question is matching
+        _checkMatchingQuestion();
       } else {
         _showSubmitDialog();
       }
@@ -120,7 +125,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex > 0) {
         questionManager.currentQuestionIndex--;
-        _checkMatchingQuestion(); // Check if the previous question is matching
+        _checkMatchingQuestion();
       }
     });
   }
@@ -155,8 +160,9 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                   MaterialPageRoute(
                     builder: (context) => Result(
                       totalQuestions: questionManager.questions.length,
-                      correctAnswers: count,
+                      correctAnswers: correctCount,
                       subtitle: home.data.length,
+                      questionResults: questionResults,
                     ),
                   ),
                 );

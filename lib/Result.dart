@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'AnswerDetail.dart';
 import 'mainLayout.dart';
 
 class Result extends StatelessWidget {
-
   final int totalQuestions;
   final int correctAnswers;
   final int subtitle;
-
+  final List<bool?> questionResults;
 
   String formattedDateTime = DateFormat('dd/MM/yyyy h:mm a').format(DateTime.now());
 
-  Result({Key? key, required this.totalQuestions, required this.correctAnswers, required this.subtitle}) : super(key: key);
+  Result({Key? key, required this.totalQuestions, required this.correctAnswers, required this.subtitle, required this.questionResults}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,7 +21,7 @@ class Result extends StatelessWidget {
           'Chi tiết điểm số',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.indigo, // Set toolbar color to indigo
+        backgroundColor: Colors.indigo,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
@@ -82,7 +83,7 @@ class Result extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30, fontFamily: 'OpenSans'),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20,),
+                  SizedBox(height: 20),
                   Text('$correctAnswers / $totalQuestions', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'OpenSans')),
                   SizedBox(height: 20),
                   Text(
@@ -95,19 +96,29 @@ class Result extends StatelessWidget {
             ),
             SizedBox(height: 40),
             Center(
-              child: Container(
-                width: 350,
-                height: 55,
-                decoration: BoxDecoration(
-                  color: Colors.indigo[400],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.black, width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    'Xem chi tiết đáp án',
-                    style: TextStyle(color: Colors.white, fontSize: 25),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo[400],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(color: Colors.black, width: 2),
                   ),
+                  minimumSize: Size(350, 55),
+                ),
+                onPressed: () {
+                  // Navigate to a new screen to show detailed answers
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => AnswerDetail(
+                        totalQuestions: totalQuestions,
+                        questionResults: questionResults,
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Xem chi tiết đáp án',
+                  style: TextStyle(color: Colors.white, fontSize: 25),
                 ),
               ),
             )
