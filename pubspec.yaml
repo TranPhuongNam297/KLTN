@@ -33,7 +33,9 @@ dependencies:
   intl: ^0.17.0
   draggable_widget: ^2.0.0
   cupertino_icons: ^1.0.6
-  cloud_firestore: ^3.1.5
+  firebase_core: ^2.28.0
+  firebase_auth: ^4.19.0
+  cloud_firestore: ^4.16.0
 
 dev_dependencies:
   flutter_test:
