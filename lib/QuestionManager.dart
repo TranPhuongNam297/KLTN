@@ -43,6 +43,13 @@ class QuestionManager {
       'answers': ['Có', 'Không', 'A', 'B'],
       'correctAnswer': 'Có',
     },
+    {
+      'type': 'multiple_answer',
+      'question': 'Bạn đi bằng mấy chân? (Có thể chọn nhiều hơn 1 đáp án)',
+      'answers': ['2 chân', '2 chi sau', 'Đầu', 'Tay'],
+      'correctAnswer': ['2 chân', '2 chi sau'],
+    },
+
   ];
 
   String get currentQuestion => questions[currentQuestionIndex]['question'];

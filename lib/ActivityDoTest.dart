@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'Home.dart';
 import 'QuestionManager.dart';
 import 'CountdownTimer.dart';
 import 'Result.dart';
@@ -9,6 +8,8 @@ import 'MatchingQuestion.dart';
 import 'ConfirmDialog.dart';
 import 'MultipleChoiceQuestion.dart';
 import 'TrueFalseQuestion.dart';
+import 'MultipleAnswerQuestion.dart';
+import 'Home.dart';
 
 class ActivityDoTest extends StatefulWidget {
   @override
@@ -180,6 +181,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> answers = questionManager.currentAnswers ?? [];
     return WillPopScope(
       onWillPop: () async {
         return await showDialog(
@@ -263,7 +265,19 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                           _handleTrueFalseAnswer(allCorrect);
                         });
                       },
-                    ),
+                    )
+                  else if (questionManager.currentQuestionType == 'multiple_answer')
+                      MultipleAnswerQuestion(
+                        questionText: questionManager.currentQuestion,
+                        answers: answers,
+                        correctAnswers: questionManager.correctAnswer as List<String>,
+                        selectedAnswers: selectedAnswers[questionManager.currentQuestionIndex] ?? [],
+                        onAnswersSelected: (newSelectedAnswers) {
+                          setState(() {
+                            selectedAnswers[questionManager.currentQuestionIndex] = newSelectedAnswers;
+                          });
+                        },
+                      ),
               ],
             ),
             Align(

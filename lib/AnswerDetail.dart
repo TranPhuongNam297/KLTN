@@ -15,6 +15,7 @@ class AnswerDetail extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.indigo,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(
         itemCount: totalQuestions,
