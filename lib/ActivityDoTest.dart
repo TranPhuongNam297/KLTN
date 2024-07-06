@@ -105,6 +105,46 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     });
   }
 
+  void _handleMultipleAnswer(List<String> selectedAnswers) {
+    final correctAnswers = List<String>.from(questionManager.correctAnswer);
+    final currentIndex = questionManager.currentQuestionIndex;
+
+    setState(() {
+      // Lưu trữ các đáp án được chọn
+      this.selectedAnswers[currentIndex] = selectedAnswers;
+
+      // Kiểm tra xem các đáp án được chọn có đúng hay không
+      List<String> selected = this.selectedAnswers[currentIndex] ?? [];
+      bool allCorrect = true;
+
+      // Kiểm tra từng đáp án được chọn xem có trong danh sách đáp án đúng không
+      for (var answer in selected) {
+        if (!correctAnswers.contains(answer)) {
+          allCorrect = false;
+          break;
+        }
+      }
+
+      // Cập nhật kết quả cho câu hỏi hiện tại
+      questionResults[currentIndex] = allCorrect;
+
+      // Tính toán số câu trả lời đúng
+      bool wasCorrect = questionResults[currentIndex] ?? false; // Kiểm tra câu hỏi trước đó đã đúng hay chưa
+      if (allCorrect && selected.length == correctAnswers.length) {
+        if (!wasCorrect) {
+          correctCount--;
+        }
+      } else {
+        if (wasCorrect) {
+          correctCount++;
+        }
+      }
+      countdownTimer.resetTimer();
+    });
+  }
+
+
+
   @override
   void dispose() {
     countdownTimer.stopTimer();
@@ -181,7 +221,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> answers = questionManager.currentAnswers ?? [];
     return WillPopScope(
       onWillPop: () async {
         return await showDialog(
@@ -269,15 +308,10 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                   else if (questionManager.currentQuestionType == 'multiple_answer')
                       MultipleAnswerQuestion(
                         questionText: questionManager.currentQuestion,
-                        answers: answers,
-                        correctAnswers: questionManager.correctAnswer as List<String>,
-                        selectedAnswers: selectedAnswers[questionManager.currentQuestionIndex] ?? [],
-                        onAnswersSelected: (newSelectedAnswers) {
-                          setState(() {
-                            selectedAnswers[questionManager.currentQuestionIndex] = newSelectedAnswers;
-                          });
-                        },
-                      ),
+                        answers: questionManager.currentAnswers!,
+                        onAnswersSelected: _handleMultipleAnswer,
+                        selectedAnswers: selectedAnswers[questionManager.currentQuestionIndex],
+                      )
               ],
             ),
             Align(

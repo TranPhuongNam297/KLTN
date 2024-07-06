@@ -9,24 +9,24 @@ class QuestionManager {
     },
     {
       'type': 'multiple_choice',
-      'question': 'Ai là võ sư mạnh nhất lịch sử?',
-      'answers': ['Đạt G', 'Decao', 'Bruce Lee', 'Mike Tyson'],
-      'correctAnswer': 'Đạt G',
+      'question': 'Đâu là một thương hiệu siêu xe?',
+      'answers': ['Gucci','Nike','Lamborghini','Channel'],
+      'correctAnswer': 'Lamborghini',
     },
     {
       'type': 'multiple_choice',
-      'question': 'Ai chơi vợ bạn?',
-      'answers': ['Thắng ngọt', 'Jack', 'K-ICM', 'Tăng Duy Tân'],
-      'correctAnswer': 'Thắng ngọt',
+      'question': 'Ai là tổng thống Mỹ đương nhiệm',
+      'answers': ['Obama', 'Trump', 'Benjamin', 'Biden'],
+      'correctAnswer': 'Biden',
     },
     {
       'type': 'matching',
       'question': 'Ghép các câu sau đây:',
       'subQuestions': [
-        {'question': 'Câu hỏi 1', 'correctAnswer': 'Câu trả lời 1'},
-        {'question': 'Câu hỏi 2', 'correctAnswer': 'Câu trả lời 2'},
-        {'question': 'Câu hỏi 3', 'correctAnswer': 'Câu trả lời 3'},
-        {'question': 'Câu hỏi 4', 'correctAnswer': 'Câu trả lời 4'},
+        {'question': 'Một bộ phận cơ thể', 'correctAnswer': 'Cánh tay'},
+        {'question': 'Một phụ kiện của máy tính', 'correctAnswer': 'Bàn phím'},
+        {'question': 'Con nào có cánh nhưng không bay', 'correctAnswer': 'Con gà'},
+        {'question': 'Một bộ phận của con mèo', 'correctAnswer': 'Ria mép'},
       ],
     },
     {
@@ -39,24 +39,29 @@ class QuestionManager {
     },
     {
       'type': 'multiple_choice',
-      'question': 'Bạn có thường xuyên ăn cứt không?',
-      'answers': ['Có', 'Không', 'A', 'B'],
+      'question': 'Đội nào vô địch UEFA Champions League nhiều nhất?',
+      'answers': ['Real Madrid', 'Manchester City', 'Manchester United', 'AC Milan'],
       'correctAnswer': 'Có',
     },
     {
       'type': 'multiple_answer',
-      'question': 'Bạn đi bằng mấy chân? (Có thể chọn nhiều hơn 1 đáp án)',
-      'answers': ['2 chân', '2 chi sau', 'Đầu', 'Tay'],
-      'correctAnswer': ['2 chân', '2 chi sau'],
+      'question': 'Đâu là phụ kiện của máy tính? (Có thể chọn nhiều hơn 1 đáp án)',
+      'answers': ['Chuột', 'Bàn phím', 'Máy lạnh', 'Tủ lạnh'],
+      'correctAnswer': ['Chuột', 'Bàn phím'],
     },
 
   ];
 
   String get currentQuestion => questions[currentQuestionIndex]['question'];
 
-  List<String>? get currentAnswers => questions[currentQuestionIndex]['type'] == 'multiple_choice'
-      ? questions[currentQuestionIndex]['answers'] as List<String>
-      : null;
+  List<String>? get currentAnswers {
+    if (questions[currentQuestionIndex]['type'] == 'multiple_choice' ||
+        questions[currentQuestionIndex]['type'] == 'multiple_answer') {
+      return questions[currentQuestionIndex]['answers'] as List<String>;
+    } else {
+      return null;
+    }
+  }
 
   dynamic get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
 
