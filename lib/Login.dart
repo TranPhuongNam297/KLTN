@@ -102,6 +102,26 @@ class _LoginState extends State<Login> {
     );
   }
 
+  void _showLoadingPopup() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Đang xử lý...'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Vui lòng chờ trong giây lát.'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -203,11 +223,15 @@ class _LoginState extends State<Login> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ActivityRegister()),
-                          );
+                          _showLoadingPopup();
+                          Future.delayed(Duration(seconds: 2), () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ActivityRegister()),
+                            );
+                          });
                         },
                         child: Text(
                           'Đăng kí ngay',

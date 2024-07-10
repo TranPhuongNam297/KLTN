@@ -41,7 +41,7 @@ class QuestionManager {
       'type': 'multiple_choice',
       'question': 'Đội nào vô địch UEFA Champions League nhiều nhất?',
       'answers': ['Real Madrid', 'Manchester City', 'Manchester United', 'AC Milan'],
-      'correctAnswer': 'Có',
+      'correctAnswer': 'Real Madrid',
     },
     {
       'type': 'multiple_answer',

@@ -64,7 +64,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           correctCount--;
         }
       }
-      countdownTimer.resetTimer();
     });
   }
 
@@ -83,7 +82,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           correctCount--;
         }
       }
-      countdownTimer.resetTimer();
     });
   }
 
@@ -139,11 +137,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           correctCount++;
         }
       }
-      countdownTimer.resetTimer();
     });
   }
-
-
 
   @override
   void dispose() {
@@ -266,11 +261,18 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                   alignment: Alignment.topRight,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: AnimatedContainer(
-                      duration: Duration(seconds: 1),
-                      width: countdownTimer.time * 2,
-                      height: 10,
-                      color: Colors.green,
+                    child: AnimatedBuilder(
+                      animation: countdownTimer,
+                      builder: (context, child) {
+                        return Text(
+                          countdownTimer.formattedTime,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -319,23 +321,24 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
+                    if (questionManager.currentQuestionIndex > 0)
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(0),
+                          ),
+                          minimumSize: Size(75, 35),
                         ),
-                        minimumSize: Size(75, 35),
+                        icon: Icon(Icons.arrow_back, color: Colors.white),
+                        label: Text(
+                          'Quay về',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: _previousQuestion,
                       ),
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
-                      label: Text(
-                        'Quay về',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: _previousQuestion,
-                    ),
+                    Spacer(),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.indigo,
