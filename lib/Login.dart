@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'ActivityRegister.dart';
 import 'mainLayout.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -11,6 +14,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   bool isLoading = false;
 
   void _loginUser() async {
@@ -283,7 +287,10 @@ class _LoginState extends State<Login> {
                         'Tiếp tục với Google',
                         style: TextStyle(fontSize: 15, color: Colors.white),
                       ),
-                      onPressed: () {},
+                      onPressed: (
+                          ) {
+                        _signinwithgoogle();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.indigo,
                         shape: RoundedRectangleBorder(
@@ -299,5 +306,34 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }
+
+  _signinwithgoogle() async {
+    final GoogleSignIn _ggSignin = GoogleSignIn();
+    try {
+      final GoogleSignInAccount? googleSignInAccount = await _ggSignin.signIn();
+      if(googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount
+            .authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleSignInAuthentication.idToken,
+          accessToken: googleSignInAuthentication.accessToken,
+        );
+        await _firebaseAuth.signInWithCredential(credential);
+        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>mainLayout()));
+      }
+    }
+    catch (e) {
+      Fluttertoast.showToast(
+          msg: "Lỗi: ${e.toString()}",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+    }
   }
 }

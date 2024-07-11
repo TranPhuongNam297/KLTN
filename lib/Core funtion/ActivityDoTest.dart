@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'QuestionManager.dart';
-import 'CountdownTimer.dart';
+import '../CountdownTimer.dart';
 import 'Result.dart';
-import 'StarButton.dart';
-import 'mainLayout.dart';
+import '../StarButton.dart';
+import '../mainLayout.dart';
 import 'MatchingQuestion.dart';
-import 'ConfirmDialog.dart';
+import '../ConfirmDialog.dart';
 import 'MultipleChoiceQuestion.dart';
 import 'TrueFalseQuestion.dart';
 import 'MultipleAnswerQuestion.dart';
-import 'Home.dart';
+import '../Home.dart';
 
 class ActivityDoTest extends StatefulWidget {
   @override
