@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:khoa_luan_tot_nghiep/listContinue.dart';
-import 'listContinue.dart';
+import 'listTask.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class doTest extends StatelessWidget {
   @override
@@ -14,7 +17,12 @@ class doTest extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  // Handle "Làm bài mới" button press
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => listTask(),
+                    ),
+                  );
                 },
                 icon: Icon(
                   Icons.edit_note_outlined,

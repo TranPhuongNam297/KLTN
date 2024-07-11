@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'ActivityRegister.dart';
 import 'mainLayout.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -34,13 +35,18 @@ class _LoginState extends State<Login> {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('User_info')
-          .where('UserName', isEqualTo: userName)
-          .where('PassWord', isEqualTo: password)
+          .where('userName', isEqualTo: userName)
+          .where('password', isEqualTo: password)
           .get();
 
-      Navigator.pop(context); // Close the loading dialog
-
+      Navigator.pop(context);
       if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        String idUser = userDoc['idUser']; // Adjust to match your document structure
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('idUser', idUser); // Save to SharedPreferences
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => mainLayout()),
@@ -49,7 +55,7 @@ class _LoginState extends State<Login> {
         _showErrorDialog('Sai tài khoản hoặc mật khẩu');
       }
     } catch (error) {
-      Navigator.pop(context); // Close the loading dialog
+      Navigator.pop(context);
       _showErrorDialog('Đã xảy ra lỗi: $error');
     }
 
