@@ -1,10 +1,19 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Model/bo_de.dart';
+import 'Model/question_mutiple.dart';
 import 'TaskItem.dart';
+import 'SharedPreferences/SharedPreferences.dart';
+import 'TestRulesScreen.dart'; // Import the UserPreferences class
+import 'Model/question_mutiple.dart'; // Import the question models
+import 'Model/list_truefalse.dart';
+import 'Model/list_matching.dart';
+import 'Model/chi_tiet_bo_de.dart';
 
 class listTask extends StatefulWidget {
   @override
@@ -35,13 +44,14 @@ class _ListTaskState extends State<listTask> {
         .get();
 
     setState(() {
-      boDeList = querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      boDeList = querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     });
   }
 
   Future<void> _createNewBoDe() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('idUser');
+    String? userId = await UserPreferences.getUserId();
 
     if (userId == null) {
       print("Could not fetch user ID from SharedPreferences");
@@ -58,7 +68,13 @@ class _ListTaskState extends State<listTask> {
       Tinh_trang: false,
     );
 
-    await FirebaseFirestore.instance.collection('Bo_de').doc(newId).set(newBoDe.toMap());
+    await FirebaseFirestore.instance
+        .collection('Bo_de')
+        .doc(newId)
+        .set(newBoDe.toMap());
+
+    // Save the new bo_de Id to SharedPreferences using UserPreferences
+    await UserPreferences.saveBoDeId(newId);
 
     setState(() {
       boDeList.add(newBoDe.toMap());
@@ -92,6 +108,80 @@ class _ListTaskState extends State<listTask> {
     );
   }
 
+  Future<void> _startTest(BuildContext context, String boDeId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('latestBoDeId', boDeId);
+
+    // Fetch questions and other data here
+    QuerySnapshot questionSnapshot = await FirebaseFirestore.instance.collection('list_question').get();
+    QuerySnapshot trueFalseSnapshot = await FirebaseFirestore.instance.collection('list_truefalse').get();
+    QuerySnapshot matchingSnapshot = await FirebaseFirestore.instance.collection('list_matching').get();
+
+    List<list_question> questions = questionSnapshot.docs.map((doc) {
+      return list_question.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    }).toList();
+
+    List<list_truefalse> trueFalseQuestions = trueFalseSnapshot.docs.map((doc) {
+      return list_truefalse.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    }).toList();
+
+    List<list_matching> matchingQuestions = matchingSnapshot.docs.map((doc) {
+      return list_matching.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    }).toList();
+
+    // Shuffle and select up to 10 questions
+    Random random = Random();
+    List<Map<String, String>> selectedQuestions = [];
+
+    void addRandomQuestions<T>(List<T> questionList) {
+      questionList.shuffle(random);
+      int count = min(10 - selectedQuestions.length, questionList.length);
+      selectedQuestions.addAll(questionList.take(count).map((q) {
+        if (q is list_question) {
+          return {
+            'id': q.Id_Question,
+            'type': q.Type, // Use the Type value from the model
+          };
+        } else if (q is list_truefalse) {
+          return {
+            'id': q.Id_Question,
+            'type': q.Type, // Use the Type value from the model
+          };
+        } else if (q is list_matching) {
+          return {
+            'id': q.Id_Question,
+            'type': q.Type, // Use the Type value from the model
+          };
+        } else {
+          throw Exception('Unknown question type');
+        }
+      }));
+    }
+
+    addRandomQuestions(questions);
+    addRandomQuestions(trueFalseQuestions);
+    addRandomQuestions(matchingQuestions);
+
+    // Save selected questions to chi_tiet_bo_de
+    CollectionReference chiTietBoDeCollection = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+
+    for (var question in selectedQuestions) {
+      chi_tiet_bo_de chiTiet = chi_tiet_bo_de(
+        Id: chiTietBoDeCollection.doc().id, // Auto-generate ID
+        Id_bo_de: boDeId,
+        Id_cau_hoi: question['id']!,
+        Type_cau_hoi: question['type']!,
+      );
+
+      await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TestRulesScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,7 +201,8 @@ class _ListTaskState extends State<listTask> {
                   title: 'Bộ đề ${index + 1}',
                   imageUrl: 'images/tetmass3.png',
                   onTap: () {
-                    // Xử lý khi người dùng nhấn vào từng mục "bộ đề"
+                    String boDeId = boDeList[index]['Id'];
+                    _startTest(context, boDeId);
                   },
                 );
               },
@@ -124,7 +215,10 @@ class _ListTaskState extends State<listTask> {
           color: Colors.indigo, // Replace with your desired color
           child: InkWell(
             splashColor: Colors.white, // Splash color when tapped
-            child: SizedBox(width: 56, height: 56, child: Icon(Icons.add, color: Colors.white)),
+            child: SizedBox(
+                width: 56,
+                height: 56,
+                child: Icon(Icons.add, color: Colors.white)),
             onTap: _showCreateNewBoDeDialog,
           ),
         ),

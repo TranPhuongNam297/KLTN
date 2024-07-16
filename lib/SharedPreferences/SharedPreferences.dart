@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferences {
@@ -22,9 +21,21 @@ class UserPreferences {
     return prefs.getString('idUser');
   }
 
+  static Future<void> saveBoDeId(String boDeId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('boDeId', boDeId);
+  }
+
+  static Future<String?> getBoDeId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('boDeId');
+  }
+
   static Future<void> clearUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('phoneNumber');
     await prefs.remove('idUser');
+    await prefs.remove('boDeId');
   }
 }
+
