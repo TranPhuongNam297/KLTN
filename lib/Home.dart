@@ -1,43 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ActivityItemMain.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Home extends StatelessWidget {
-  final List<Map<String, String>> data = [
-    {'subtitle': 'Test 1 '},
-    {'subtitle': 'Test 2 '},
-    {'subtitle': 'Test 3 '},
-    {'subtitle': 'Test 4 '},
-    {'subtitle': 'Test 5 '},
-  ];
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  List<Map<String, dynamic>> activityList = [];
+  bool _isLoading = false; // Track loading state for popup
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchActivityList();
+  }
+
+  Future<void> _fetchActivityList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('idUser');
+
+    if (userId == null) {
+      print("User ID not found in SharedPreferences");
+      return;
+    }
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Bo_de')
+        .where('Id_user_tao', isEqualTo: userId)
+        .get();
+
+    setState(() {
+      activityList = querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Những hoạt động gần đây',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'OpenSans'),
+          Column(
+            children: [
+              SizedBox(height: 40),
+              Text(
+                'Những hoạt động gần đây',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'OpenSans',
+                ),
+              ),
+              Divider(
+                color: Colors.black.withOpacity(0.5),
+                thickness: 2,
+                indent: 20,
+                endIndent: 20,
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: activityList.length,
+                  itemBuilder: (context, index) {
+                    return ActivityItemMain(
+                      title: 'Bộ đề ${index + 1}',
+                      boDeId: activityList[index]['Id'], // Truyền boDeId vào ActivityItemMain
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          if (_isLoading) // Show loading popup
+            Center(
+              child: AlertDialog(
+                title: Text('Đang tải...'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Vui lòng chờ trong giây lát.'),
+                  ],
+                ),
+                backgroundColor: Colors.white,
+                elevation: 24.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
             ),
-          ),
-          Divider(
-            color: Colors.black.withOpacity(0.5),
-            thickness: 2,
-            indent: 20,
-            endIndent: 20,
-          ),
-          SizedBox(height: 30,),
-          Expanded(
-            child: ListView.builder(
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                return ActivityItemMain(
-                  subtitle: data[index]['subtitle']!,
-                );
-              },
-            ),
-          ),
         ],
       ),
     );

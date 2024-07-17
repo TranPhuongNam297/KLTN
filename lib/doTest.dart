@@ -48,12 +48,12 @@ class doTest extends StatelessWidget {
               SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => listContinue(),
-                    ),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => listContinue(),
+                  //   ),
+                  // );
                 },
                 icon: Icon(
                   Icons.menu_book_sharp,
@@ -62,32 +62,6 @@ class doTest extends StatelessWidget {
                 ),
                 label: Text(
                   'Tiếp tục làm',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  fixedSize: Size(350, 75),
-                  backgroundColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Handle "Đã hoàn thành" button press
-                },
-                icon: Icon(
-                  Icons.save,
-                  color: Colors.white,
-                  size: 32,
-                ),
-                label: Text(
-                  'Đã hoàn thành',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,

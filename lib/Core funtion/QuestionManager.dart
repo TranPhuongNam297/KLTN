@@ -13,8 +13,7 @@ class QuestionManager {
 
   Future<void> testFirestoreFunction() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idBoDe =
-    prefs.getString('boDeId'); // Lấy id_bo_de từ SharedPreferences
+    String? idBoDe = prefs.getString('boDeId'); // Lấy id_bo_de từ SharedPreferences
     if (idBoDe != null) {
       chiTietList = await chi_tiet_bo_de.getChiTietBoDeByBoDeId(idBoDe);
 
@@ -23,8 +22,6 @@ class QuestionManager {
       print('id_bo_de is null or empty');
     }
   }
-
-
 
   Future<list_matching> getListMatchingData(String idCauHoi) async {
     try {
@@ -56,10 +53,8 @@ class QuestionManager {
 
   Future<List<list_answer>> getListMutipleAnswer(String idCauHoi) async {
     try {
-      list_question question =
-      await list_question.getListQuestionById(idCauHoi);
-      List<list_answer> answers =
-      await list_answer.getListAnswerById(question.Id_Question);
+      list_question question = await list_question.getListQuestionById(idCauHoi);
+      List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
       return answers;
     } catch (e) {
       print('Error getting list_answer data: $e');
@@ -68,44 +63,56 @@ class QuestionManager {
   }
 
   Future<void> transferData() async {
+    Map<String, dynamic> matchingQuestionTemplate = {
+      'type': 'matching',
+      'question': 'Ghép các câu sau đây:',
+      'subQuestions': [],
+    };
+
+    Map<String, dynamic> trueFalseQuestionTemplate = {
+      'type': 'truefalse',
+      'subQuestions1': [],
+    };
+
     for (var chiTiet in chiTietList) {
       if (chiTiet.Type_cau_hoi == 'matching') {
-              String idCauHoi = chiTiet.Id_cau_hoi;
-              list_matching matchingData = await getListMatchingData(idCauHoi);
-              Map<String, dynamic> listquestions = {
-                'type': 'matching',
-                'question': 'Ghép các câu sau đây:',
-                'subQuestions': [],
-              };
-              listquestions['subQuestions'].add({
-                'question': matchingData.Question,
-                'correctAnswer': matchingData.CorrectAnswer
-              });
-              questions.add(listquestions);
-      }
-       else if (chiTiet.Type_cau_hoi == 'truefalse') {
+        String idCauHoi = chiTiet.Id_cau_hoi;
+        list_matching matchingData = await getListMatchingData(idCauHoi);
+        if (matchingQuestionTemplate['subQuestions'].length < 4) {
+          matchingQuestionTemplate['subQuestions'].add({
+            'question': matchingData.Question,
+            'correctAnswer': matchingData.CorrectAnswer,
+          });
+        } else {
+          questions.add(Map<String, dynamic>.from(matchingQuestionTemplate));
+          matchingQuestionTemplate['subQuestions'].clear();
+          matchingQuestionTemplate['subQuestions'].add({
+            'question': matchingData.Question,
+            'correctAnswer': matchingData.CorrectAnswer,
+          });
+        }
+      } else if (chiTiet.Type_cau_hoi == 'truefalse') {
         String idCauHoi = chiTiet.Id_cau_hoi;
         list_truefalse truefalseData = await getListTrueFalseData(idCauHoi);
-
-        Map<String, dynamic> listquestions = {
-          'type': 'truefalse',
-          'subQuestions1': [],
-        };
-
-        listquestions['subQuestions1'].add({
-          'question': truefalseData.Question,
-          'correctAnswer': truefalseData.CorrectAnswer,
-        });
-
-        questions.add(listquestions);
+        if (trueFalseQuestionTemplate['subQuestions1'].length < 4) {
+          trueFalseQuestionTemplate['subQuestions1'].add({
+            'question': truefalseData.Question,
+            'correctAnswer': truefalseData.CorrectAnswer,
+          });
+        } else {
+          questions.add(Map<String, dynamic>.from(trueFalseQuestionTemplate));
+          trueFalseQuestionTemplate['subQuestions1'].clear();
+          trueFalseQuestionTemplate['subQuestions1'].add({
+            'question': truefalseData.Question,
+            'correctAnswer': truefalseData.CorrectAnswer,
+          });
+        }
       } else if (chiTiet.Type_cau_hoi == 'multiple_answer') {
         String idCauHoi = chiTiet.Id_cau_hoi;
 
         try {
-          list_question question =
-          await list_question.getListQuestionById(idCauHoi);
-          List<list_answer> answers =
-          await list_answer.getListAnswerById(question.Id_Question);
+          list_question question = await list_question.getListQuestionById(idCauHoi);
+          List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
 
           List<String> answerTexts = [];
           List<String> correctAnswers = [];
@@ -128,7 +135,42 @@ class QuestionManager {
         } catch (e) {
           print('Error processing multiple_answer question: $e');
         }
+      } else if (chiTiet.Type_cau_hoi == 'multiple_choice') {
+        String idCauHoi = chiTiet.Id_cau_hoi;
+
+        try {
+          list_question question = await list_question.getListQuestionById(idCauHoi);
+          List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
+
+          List<String> answerTexts = [];
+          String? correctAnswer;
+
+          answers.forEach((answer) {
+            answerTexts.add(answer.Dap_An);
+            if (answer.Is_Correct) {
+              correctAnswer = answer.Dap_An;
+            }
+          });
+
+          Map<String, dynamic> listquestions = {
+            'type': 'multiple_choice',
+            'question': question.Question,
+            'answers': answerTexts,
+            'correctAnswer': correctAnswer,
+          };
+
+          questions.add(listquestions);
+        } catch (e) {
+          print('Error processing multiple_choice question: $e');
+        }
       }
+    }
+
+    if (matchingQuestionTemplate['subQuestions'].isNotEmpty) {
+      questions.add(matchingQuestionTemplate);
+    }
+    if (trueFalseQuestionTemplate['subQuestions1'].isNotEmpty) {
+      questions.add(trueFalseQuestionTemplate);
     }
   }
 

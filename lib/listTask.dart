@@ -1,19 +1,17 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Model/bo_de.dart';
+import 'Model/list_matching.dart';
+import 'Model/list_truefalse.dart';
 import 'Model/question_mutiple.dart';
 import 'TaskItem.dart';
 import 'SharedPreferences/SharedPreferences.dart';
-import 'TestRulesScreen.dart'; // Import the UserPreferences class
-import 'Model/question_mutiple.dart'; // Import the question models
-import 'Model/list_truefalse.dart';
-import 'Model/list_matching.dart';
 import 'Model/chi_tiet_bo_de.dart';
+import 'TestRulesScreen.dart'; // Import the UserPreferences class
 
 class listTask extends StatefulWidget {
   @override
@@ -22,6 +20,7 @@ class listTask extends StatefulWidget {
 
 class _ListTaskState extends State<listTask> {
   List<Map<String, dynamic>> boDeList = [];
+  bool _isLoading = false; // Track loading state for popup
 
   @override
   void initState() {
@@ -87,43 +86,56 @@ class _ListTaskState extends State<listTask> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Xác nhận'),
-          content: Text('Bạn có muốn tạo bộ đề mới không?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Hủy'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+        return Center(
+          child: AlertDialog(
+            title: Text('Xác nhận'),
+            content: Text('Bạn có muốn tạo bộ đề mới không?'),
+            backgroundColor: Colors.white, // Set background color to white
+            elevation: 24.0, // Add elevation for shadow
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
             ),
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _createNewBoDe(); // Create new test set
-              },
-            ),
-          ],
+            actions: <Widget>[
+              TextButton(
+                child: Text('Hủy'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('OK'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _createNewBoDe(); // Create new test set
+                },
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
   Future<void> _startTest(BuildContext context, String boDeId) async {
+    setState(() {
+      _isLoading = true; // Show loading popup
+    });
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('latestBoDeId', boDeId);
 
     // Check if the Bo_de has been generated
-    DocumentSnapshot boDeSnapshot = await FirebaseFirestore.instance
-        .collection('Bo_de')
-        .doc(boDeId)
-        .get();
+    DocumentSnapshot boDeSnapshot =
+    await FirebaseFirestore.instance.collection('Bo_de').doc(boDeId).get();
 
-    bo_de boDe = bo_de.fromMap(boDeSnapshot.data() as Map<String, dynamic>, boDeId);
+    bo_de boDe =
+    bo_de.fromMap(boDeSnapshot.data() as Map<String, dynamic>, boDeId);
 
     if (boDe.Generate) {
       // If already generated, just navigate to the test screen
+      setState(() {
+        _isLoading = false; // Hide loading popup
+      });
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -133,13 +145,13 @@ class _ListTaskState extends State<listTask> {
       return;
     }
 
-    // Show loading dialog
-    _showLoadingPopup(context);
-
     // Fetch questions and other data here
-    QuerySnapshot questionSnapshot = await FirebaseFirestore.instance.collection('list_question').get();
-    QuerySnapshot trueFalseSnapshot = await FirebaseFirestore.instance.collection('list_truefalse').get();
-    QuerySnapshot matchingSnapshot = await FirebaseFirestore.instance.collection('list_matching').get();
+    QuerySnapshot questionSnapshot =
+    await FirebaseFirestore.instance.collection('list_question').get();
+    QuerySnapshot trueFalseSnapshot =
+    await FirebaseFirestore.instance.collection('list_truefalse').get();
+    QuerySnapshot matchingSnapshot =
+    await FirebaseFirestore.instance.collection('list_matching').get();
 
     List<list_question> questions = questionSnapshot.docs.map((doc) {
       return list_question.fromMap(doc.data() as Map<String, dynamic>, doc.id);
@@ -157,10 +169,10 @@ class _ListTaskState extends State<listTask> {
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
 
-    void addRandomQuestions<T>(List<T> questionList) {
+    void addRandomQuestions<T>(List<T> questionList, int count) {
       questionList.shuffle(random);
-      int count = min(10 - selectedQuestions.length, questionList.length);
-      selectedQuestions.addAll(questionList.take(count).map((q) {
+      int takeCount = min(count, questionList.length);
+      selectedQuestions.addAll(questionList.take(takeCount).map((q) {
         if (q is list_question) {
           return {
             'id': q.Id_Question,
@@ -182,16 +194,17 @@ class _ListTaskState extends State<listTask> {
       }));
     }
 
-    addRandomQuestions(questions);
-    addRandomQuestions(trueFalseQuestions);
-    addRandomQuestions(matchingQuestions);
+    addRandomQuestions(questions, 20);
+    addRandomQuestions(trueFalseQuestions, 10);
+    addRandomQuestions(matchingQuestions, 10);
 
-    // Save selected questions to chi_tiet_bo_de
-    CollectionReference chiTietBoDeCollection = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+    CollectionReference chiTietBoDeCollection =
+    FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
     for (var question in selectedQuestions) {
       chi_tiet_bo_de chiTiet = chi_tiet_bo_de(
-        Id: chiTietBoDeCollection.doc().id, // Auto-generate ID
+        Id: chiTietBoDeCollection.doc().id,
+        // Auto-generate ID
         Id_bo_de: boDeId,
         Id_cau_hoi: question['id']!,
         Type_cau_hoi: question['type']!,
@@ -202,36 +215,20 @@ class _ListTaskState extends State<listTask> {
     }
 
     // Update the Bo_de to mark it as generated
-    await FirebaseFirestore.instance.collection('Bo_de').doc(boDeId).update({'Generate': true});
+    await FirebaseFirestore.instance
+        .collection('Bo_de')
+        .doc(boDeId)
+        .update({'Generate': true});
 
-    Future.delayed(Duration(seconds: 5), () {
-      Navigator.pop(context); // Close the loading dialog
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TestRulesScreen(),
-        ),
-      );
+    setState(() {
+      _isLoading = false; // Hide loading popup
     });
-  }
 
-  void _showLoadingPopup(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Đang tải...'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Vui lòng chờ trong giây lát.'),
-            ],
-          ),
-        );
-      },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TestRulesScreen(),
+      ),
     );
   }
 
@@ -243,24 +240,47 @@ class _ListTaskState extends State<listTask> {
         iconTheme: IconThemeData(color: Colors.white),
         title: Text('Danh sách bộ đề', style: TextStyle(color: Colors.white)),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          SizedBox(height: 20),
-          Expanded(
-            child: ListView.builder(
-              itemCount: boDeList.length,
-              itemBuilder: (context, index) {
-                return TaskItem(
-                  title: 'Bộ đề ${index + 1}',
-                  imageUrl: 'images/tetmass3.png',
-                  onTap: () {
-                    String boDeId = boDeList[index]['Id'];
-                    _startTest(context, boDeId);
+          Column(
+            children: [
+              SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: boDeList.length,
+                  itemBuilder: (context, index) {
+                    return TaskItem(
+                      title: 'Bộ đề ${index + 1}',
+                      imageUrl: 'images/tetmass3.png',
+                      onTap: () {
+                        String boDeId = boDeList[index]['Id'];
+                        _startTest(context, boDeId);
+                      },
+                    );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
+          if (_isLoading) // Show loading popup
+            Center(
+              child: AlertDialog(
+                title: Text('Đang tải...'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Vui lòng chờ trong giây lát.'),
+                  ],
+                ),
+                backgroundColor: Colors.white,
+                elevation: 24.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
         ],
       ),
       floatingActionButton: ClipOval(

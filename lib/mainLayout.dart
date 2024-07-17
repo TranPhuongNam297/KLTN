@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'CompletedTests.dart';
+import 'UserAccountManagement.dart';
 import 'doTest.dart';
 import 'Home.dart';
 import 'Login.dart';
@@ -37,14 +39,14 @@ class _MainLayoutState extends State<mainLayout> {
                   color: Colors.indigo,
                 ),
               ),
+              SizedBox(height: 25),
               ListTile(
-                leading: Icon(Icons.account_box_rounded, color: Colors.indigo, size: 50),
-                title: Text('Tài khoản của tôi', style: TextStyle(fontSize: 20)),
+                leading: Icon(Icons.vpn_key, color: Colors.indigo, size: 50),
+                title: Text('Mã kích hoạt', style: TextStyle(fontSize: 20)),
                 onTap: () {
-                  // Thêm hành động khi nhấn vào mục này
                 },
               ),
-              SizedBox(height: 25),
+              SizedBox(height: 30),
               ListTile(
                 leading: Icon(Icons.logout, color: Colors.indigo, size: 50),
                 title: Text('Đăng xuất', style: TextStyle(fontSize: 20)),
@@ -74,14 +76,6 @@ class _MainLayoutState extends State<mainLayout> {
                   );
                 },
               ),
-              SizedBox(height: 25),
-              ListTile(
-                leading: Icon(Icons.vpn_key, color: Colors.indigo, size: 50),
-                title: Text('Mã kích hoạt', style: TextStyle(fontSize: 20)),
-                onTap: () {
-
-                },
-              ),
             ],
           ),
         ),
@@ -96,8 +90,8 @@ class _MainLayoutState extends State<mainLayout> {
             // Thay thế các Text widget bằng các trang thực tế của bạn
             Home(),
             doTest(),
-            Text('Khóa học'),
-            Text('Sách'),
+            CompletedTests(),
+            UserAccountManagement(),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar (
@@ -111,12 +105,12 @@ class _MainLayoutState extends State<mainLayout> {
               label: 'Làm bài',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.book,  size: 35,),
-              label: 'Khóa học',
+              icon: Icon(Icons.save,  size: 35,),
+              label: 'Hoàn thành',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.library_books,  size: 35,),
-              label: 'Sách',
+              icon: Icon(Icons.account_box,  size: 35,),
+              label: 'Tài khoản',
             ),
           ],
           currentIndex: _selectedIndex,

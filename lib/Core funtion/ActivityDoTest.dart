@@ -196,17 +196,17 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Result(
-                      totalQuestions: questionManager.questions.length,
-                      correctAnswers: correctCount,
-                      subtitle: home.data.length,
-                      questionResults: questionResults,
-                    ),
-                  ),
-                );
+                // Navigator.pushReplacement(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => Result(
+                //       totalQuestions: questionManager.questions.length,
+                //       correctAnswers: correctCount,
+                //       subtitle: home.data.length,
+                //       questionResults: questionResults,
+                //     ),
+                //   ),
+                // );
               },
               child: Text(
                 'Đồng ý',

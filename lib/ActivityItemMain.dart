@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
-import 'Core funtion/ActivityDoTest.dart';
-
+import 'TestRulesScreen.dart';
 
 class ActivityItemMain extends StatelessWidget {
-  final String subtitle;
+  final String title;
+  final String boDeId; // Thêm trường boDeId để xác định bài kiểm tra
 
-  ActivityItemMain({required this.subtitle});
-
-  static const color = Color(0xff75e850);
+  ActivityItemMain({required this.title, required this.boDeId});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => ActivityTestManager()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TestRulesScreen()), // Truyền boDeId đến TestRulesScreen
+        );
       },
       child: Container(
         width: 350,
@@ -30,16 +28,27 @@ class ActivityItemMain extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.all(10),
-              child: Image.asset('images/tetmass3.png', width: 100, height: 100),
+              child: Image.asset(
+                'images/tetmass3.png',
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
             ),
             Expanded(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('Tiếp tục', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30, color: Colors.white, fontFamily: 'OpenSans' )),
-                  SizedBox(height: 10),
-                  Text(subtitle, style: TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'OpenSans')),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 30,
+                      color: Colors.white,
+                      fontFamily: 'OpenSans',
+                    ),
+                  ),
                 ],
               ),
             ),

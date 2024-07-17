@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class CompletedTests extends StatelessWidget {
+class UserAccountManagement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
-      );
+    );
   }
 }
