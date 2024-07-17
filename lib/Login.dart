@@ -239,7 +239,7 @@ class _LoginState extends State<Login> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ActivityRegister()),
+                                  builder: (context) => ActivityRegister(uid:"")),
                             );
                           });
                         },
@@ -315,6 +315,7 @@ class _LoginState extends State<Login> {
   }
 
   _signinwithgoogle() async {
+    String uid = "";
     final GoogleSignIn _ggSignin = GoogleSignIn();
     try {
       final GoogleSignInAccount? googleSignInAccount = await _ggSignin.signIn();
@@ -326,8 +327,18 @@ class _LoginState extends State<Login> {
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken,
         );
-        await _firebaseAuth.signInWithCredential(credential);
-        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>mainLayout()));
+        UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+        User? user = userCredential.user;
+        if(user != null){
+          uid = user.uid;
+          print("User UID: $uid");
+          if(userCredential.additionalUserInfo?.isNewUser ?? false){
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) =>ActivityRegister(uid:uid)));
+          }
+          else{
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>mainLayout()));
+          }
+        }
       }
     }
     catch (e) {
