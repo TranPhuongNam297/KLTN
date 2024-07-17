@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class list_answer {
   String Dap_An;
   String Id_DapAn;
@@ -28,4 +30,18 @@ class list_answer {
       Is_Correct: map['Is_Correct'],
     );
   }
+
+  static Future<List<list_answer>> getListAnswerById(String idAnswer) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('list_answer').where('Id_Question', isEqualTo: idAnswer).get();
+      List<list_answer> answers = [];
+      snapshot.docs.forEach((doc) {
+        answers.add(list_answer.fromMap(doc.data() as Map<String, dynamic>, doc.id));
+      });
+      return answers;
+    } catch (e) {
+      throw Exception('Error getting list_answer data: $e');
+    }
+  }
+
 }

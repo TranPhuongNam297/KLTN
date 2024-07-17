@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'Core funtion/ActivityDoTest.dart';
 
 class TestRulesScreen extends StatelessWidget {
   @override
@@ -28,6 +28,10 @@ class TestRulesScreen extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ActivityDoTest()),
+                  );
                 },
                 child: Text('Bắt đầu thi'),
               ),
@@ -38,4 +42,3 @@ class TestRulesScreen extends StatelessWidget {
     );
   }
 }
-

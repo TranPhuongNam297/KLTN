@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class list_truefalse {
   bool CorrectAnswer;
   String Id_Question;
@@ -27,5 +29,36 @@ class list_truefalse {
       'Question': Question,
       'Type': Type,
     };
+  }
+
+  static Future<list_truefalse> getListTrueFalseById(String idQuestion) async {
+    try {
+      // Truy vấn Firestore để lấy dữ liệu
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('list_truefalse')
+          .doc(idQuestion)
+          .get();
+
+      // Kiểm tra nếu document tồn tại thì trả về đối tượng list_truefalse
+      if (doc.exists) {
+        return list_truefalse.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      } else {
+        print('Document does not exist');
+        return list_truefalse(
+          CorrectAnswer: false,
+          Id_Question: '',
+          Question: '',
+          Type: '',
+        );
+      }
+    } catch (e) {
+      print('Error getting document: $e');
+      return list_truefalse(
+        CorrectAnswer: false,
+        Id_Question: '',
+        Question: '',
+        Type: '',
+      );
+    }
   }
 }

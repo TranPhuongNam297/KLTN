@@ -17,7 +17,6 @@ class _LoginState extends State<Login> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   bool isLoading = false;
-
   void _loginUser() async {
     String userName = _userNameController.text;
     String password = _passwordController.text;
@@ -30,7 +29,7 @@ class _LoginState extends State<Login> {
       isLoading = true;
     });
 
-    _showLoadingDialog();
+    _showLoadingPopup();
 
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -92,25 +91,6 @@ class _LoginState extends State<Login> {
     );
   }
 
-  void _showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Đang xử lý...'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Vui lòng chờ trong giây lát.'),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   void _showLoadingPopup() {
     showDialog(

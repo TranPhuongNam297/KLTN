@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class list_matching {
   String CorrectAnswer;
   String Id_Question;
@@ -27,5 +29,33 @@ class list_matching {
       'Question': Question,
       'Type': Type,
     };
+  }
+  static Future<list_matching> getListMatchingById(String idCauHoi) async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('list_matching')
+          .doc(idCauHoi)
+          .get();
+
+      if (doc.exists) {
+        return list_matching.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      } else {
+        print('Document does not exist');
+        return list_matching(
+          CorrectAnswer: '',
+          Id_Question: '',
+          Question: '',
+          Type: '',
+        );
+      }
+    } catch (e) {
+      print('Error getting document: $e');
+      return list_matching(
+        CorrectAnswer: '',
+        Id_Question: '',
+        Question: '',
+        Type: '',
+      );
+    }
   }
 }

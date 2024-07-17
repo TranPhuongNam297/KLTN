@@ -42,6 +42,9 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
 
   @override
   Widget build(BuildContext context) {
+    // Chắc chắn rằng subQuestions là một danh sách
+    final List subQuestions = widget.matchingQuestion['subQuestions'] as List;
+
     return Container(
       height: 600, // Set a specific height
       child: Scaffold(
@@ -54,9 +57,9 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
             SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: widget.matchingQuestion['subQuestions'].length,
+                itemCount: subQuestions.length,
                 itemBuilder: (context, index) {
-                  final subQuestion = widget.matchingQuestion['subQuestions'][index];
+                  final subQuestion = subQuestions[index];
                   return Row(
                     children: [
                       Expanded(
@@ -118,7 +121,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
               child: Wrap(
                 spacing: 10,
                 children: [
-                  for (final subQuestion in widget.matchingQuestion['subQuestions'])
+                  for (final subQuestion in subQuestions)
                     if (!selectedAnswers.containsValue(subQuestion['correctAnswer']))
                       Draggable<String>(
                         data: subQuestion['correctAnswer'],

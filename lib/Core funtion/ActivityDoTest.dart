@@ -25,17 +25,22 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   Map<int, bool> answeredCorrectly = {};
   bool isMatchingQuestion = false;
   List<bool?> questionResults = [];
+  Future<void>? _initialization;
 
   @override
   void initState() {
     super.initState();
     countdownTimer.startTimer();
-    questionResults = List<bool?>.filled(questionManager.questions.length, null);
-    for (int i = 0; i < questionManager.questions.length; i++) {
-      selectedAnswers[i] = null;
-      answeredCorrectly[i] = false;
-    }
-    _checkMatchingQuestion();
+    _initialization = questionManager.testFirestoreFunction().then((_) {
+      setState(() {
+        questionResults = List<bool?>.filled(questionManager.questions.length, null);
+        for (int i = 0; i < questionManager.questions.length; i++) {
+          selectedAnswers[i] = null;
+          answeredCorrectly[i] = false;
+        }
+        _checkMatchingQuestion();
+      });
+    });
   }
 
   void _checkMatchingQuestion() {
@@ -253,120 +258,131 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
             },
           ),
         ),
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: AnimatedBuilder(
-                      animation: countdownTimer,
-                      builder: (context, child) {
-                        return Text(
-                          countdownTimer.formattedTime,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+        body: FutureBuilder(
+          future: _initialization,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+              return Stack(
+                children: [
+                  Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: AnimatedBuilder(
+                            animation: countdownTimer,
+                            builder: (context, child) {
+                              return Text(
+                                countdownTimer.formattedTime,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${questionManager.currentQuestionIndex + 1}/${questionManager.questions.length}',
-                      style: TextStyle(fontSize: 24),
-                    ),
-                    StarButton(),
-                  ],
-                ),
-                if (isMatchingQuestion)
-                  MatchingQuestion(
-                    matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
-                    onAllCorrect: _handleMatchingAnswer,
-                  )
-                else if (questionManager.currentQuestionType == 'multiple_choice')
-                  MultipleChoiceQuestion(
-                    questionText: questionManager.currentQuestion,
-                    answers: questionManager.currentAnswers!,
-                    onAnswerSelected: _handleAnswer,
-                    selectedAnswer: selectedAnswers[questionManager.currentQuestionIndex],
-                  )
-                else if (questionManager.currentQuestionType == 'truefalse')
-                    TrueFalseQuestion(
-                      questionManager: questionManager,
-                      onAnswerSelected: (allCorrect) {
-                        setState(() {
-                          _handleTrueFalseAnswer(allCorrect);
-                        });
-                      },
-                    )
-                  else if (questionManager.currentQuestionType == 'multiple_answer')
-                      MultipleAnswerQuestion(
-                        questionText: questionManager.currentQuestion,
-                        answers: questionManager.currentAnswers!,
-                        onAnswersSelected: _handleMultipleAnswer,
-                        selectedAnswers: selectedAnswers[questionManager.currentQuestionIndex],
-                      )
-              ],
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    if (questionManager.currentQuestionIndex > 0)
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(0),
-                          ),
-                          minimumSize: Size(75, 35),
                         ),
-                        icon: Icon(Icons.arrow_back, color: Colors.white),
-                        label: Text(
-                          'Quay về',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: _previousQuestion,
                       ),
-                    Spacer(),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        minimumSize: Size(75, 35),
-                      ),
-                      onPressed: _nextQuestion,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
                           Text(
-                            questionManager.currentQuestionIndex < questionManager.questions.length - 1
-                                ? 'Tiếp tục'
-                                : 'Nộp bài',
-                            style: TextStyle(color: Colors.white),
+                            '${questionManager.currentQuestionIndex + 1}/${questionManager.questions.length}',
+                            style: TextStyle(fontSize: 24),
                           ),
-                          SizedBox(width: 5),
-                          Icon(Icons.arrow_forward, color: Colors.white),
+                          StarButton(),
+                        ],
+                      ),
+                      if (questionManager.currentQuestionType == 'matching')
+                        MatchingQuestion(
+                          matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                          onAllCorrect: _handleMatchingAnswer,
+                        )
+                      else if (questionManager.currentQuestionType == 'multiple_choice')
+                        MultipleChoiceQuestion(
+                          questionText: questionManager.currentQuestion,
+                          answers: questionManager.currentAnswers!,
+                          onAnswerSelected: _handleAnswer,
+                          selectedAnswer: selectedAnswers[questionManager.currentQuestionIndex],
+                        )
+                      else if (questionManager.currentQuestionType == 'truefalse')
+                          TrueFalseQuestion(
+                            questionManager: questionManager,
+                            onAnswerSelected: (allCorrect) {
+                              setState(() {
+                                _handleTrueFalseAnswer(allCorrect);
+                              });
+                            },
+                          )
+                        else if (questionManager.currentQuestionType == 'multiple_answer')
+                            MultipleAnswerQuestion(
+                              questionText: questionManager.currentQuestion,
+                              answers: questionManager.currentAnswers!,
+                              onAnswersSelected: _handleMultipleAnswer,
+                              selectedAnswers: selectedAnswers[questionManager.currentQuestionIndex],
+                            )
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          if (questionManager.currentQuestionIndex > 0)
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(0),
+                                ),
+                                minimumSize: Size(75, 35),
+                              ),
+                              icon: Icon(Icons.arrow_back, color: Colors.white),
+                              label: Text(
+                                'Quay về',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onPressed: _previousQuestion,
+                            ),
+                          Spacer(),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              minimumSize: Size(75, 35),
+                            ),
+                            onPressed: _nextQuestion,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text(
+                                  questionManager.currentQuestionIndex < questionManager.questions.length - 1
+                                      ? 'Tiếp tục'
+                                      : 'Nộp bài',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                SizedBox(width: 5),
+                                Icon(Icons.arrow_forward, color: Colors.white),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+                  ),
+                ],
+              );
+            }
+          },
         ),
       ),
     );

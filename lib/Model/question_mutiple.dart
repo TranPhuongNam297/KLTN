@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class list_question {
   String Id_Question;
   String Question;
@@ -24,4 +26,21 @@ class list_question {
       Type: map['Type'] ?? '',
     );
   }
+
+  static Future<list_question> getListQuestionById(String idQuestion) async {
+    try {
+      // Truy vấn Firestore để lấy dữ liệu
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('list_question').doc(idQuestion).get();
+
+      // Kiểm tra nếu document tồn tại thì trả về đối tượng list_question
+      if (snapshot.exists) {
+        return list_question.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
+      } else {
+        throw Exception('Document does not exist');
+      }
+    } catch (e) {
+      throw Exception('Error getting list_question data: $e');
+    }
+  }
+
 }

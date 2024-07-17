@@ -66,6 +66,8 @@ class _ListTaskState extends State<listTask> {
       Id_user_tao: userId,
       Ngay_tao: ngayTao,
       Tinh_trang: false,
+      Generate: false,
+      DiemSo: 0,
     );
 
     await FirebaseFirestore.instance
@@ -111,6 +113,28 @@ class _ListTaskState extends State<listTask> {
   Future<void> _startTest(BuildContext context, String boDeId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('latestBoDeId', boDeId);
+
+    // Check if the Bo_de has been generated
+    DocumentSnapshot boDeSnapshot = await FirebaseFirestore.instance
+        .collection('Bo_de')
+        .doc(boDeId)
+        .get();
+
+    bo_de boDe = bo_de.fromMap(boDeSnapshot.data() as Map<String, dynamic>, boDeId);
+
+    if (boDe.Generate) {
+      // If already generated, just navigate to the test screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TestRulesScreen(),
+        ),
+      );
+      return;
+    }
+
+    // Show loading dialog
+    _showLoadingPopup(context);
 
     // Fetch questions and other data here
     QuerySnapshot questionSnapshot = await FirebaseFirestore.instance.collection('list_question').get();
@@ -171,14 +195,43 @@ class _ListTaskState extends State<listTask> {
         Id_bo_de: boDeId,
         Id_cau_hoi: question['id']!,
         Type_cau_hoi: question['type']!,
+        IsCorrect: false,
       );
 
       await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TestRulesScreen()),
+    // Update the Bo_de to mark it as generated
+    await FirebaseFirestore.instance.collection('Bo_de').doc(boDeId).update({'Generate': true});
+
+    Future.delayed(Duration(seconds: 5), () {
+      Navigator.pop(context); // Close the loading dialog
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TestRulesScreen(),
+        ),
+      );
+    });
+  }
+
+  void _showLoadingPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Đang tải...'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Vui lòng chờ trong giây lát.'),
+            ],
+          ),
+        );
+      },
     );
   }
 
