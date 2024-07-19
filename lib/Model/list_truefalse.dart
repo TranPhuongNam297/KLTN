@@ -28,4 +28,12 @@ class list_truefalse {
       'Type': Type,
     };
   }
+  tojSon(){
+    return{
+      'CorrectAnswer': CorrectAnswer,
+      'Id_Question': Id_Question,
+      'Question': Question,
+      'Type': Type,
+    };
+  }
 }

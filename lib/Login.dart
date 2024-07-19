@@ -42,7 +42,8 @@ class _LoginState extends State<Login> {
       Navigator.pop(context);
       if (querySnapshot.docs.isNotEmpty) {
         DocumentSnapshot userDoc = querySnapshot.docs.first;
-        String idUser = userDoc['idUser']; // Adjust to match your document structure
+        String idUser =
+            userDoc['idUser']; // Adjust to match your document structure
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('idUser', idUser); // Save to SharedPreferences
@@ -239,7 +240,8 @@ class _LoginState extends State<Login> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ActivityRegister(uid:"")),
+                                  builder: (context) =>
+                                      ActivityRegister(uid: "")),
                             );
                           });
                         },
@@ -293,8 +295,7 @@ class _LoginState extends State<Login> {
                         'Tiếp tục với Google',
                         style: TextStyle(fontSize: 15, color: Colors.white),
                       ),
-                      onPressed: (
-                          ) {
+                      onPressed: () {
                         _signinwithgoogle();
                       },
                       style: ElevatedButton.styleFrom(
@@ -319,29 +320,29 @@ class _LoginState extends State<Login> {
     final GoogleSignIn _ggSignin = GoogleSignIn();
     try {
       final GoogleSignInAccount? googleSignInAccount = await _ggSignin.signIn();
-      if(googleSignInAccount != null) {
-        final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount
-            .authentication;
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
 
         final AuthCredential credential = GoogleAuthProvider.credential(
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken,
         );
-        UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+        UserCredential userCredential =
+            await _firebaseAuth.signInWithCredential(credential);
         User? user = userCredential.user;
-        if(user != null){
+        if (user != null) {
           uid = user.uid;
           print("User UID: $uid");
-          if(userCredential.additionalUserInfo?.isNewUser ?? false){
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) =>ActivityRegister(uid:uid)));
-          }
-          else{
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>mainLayout()));
+          if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ActivityRegister(uid: uid)));
+          } else {
+            _CheckUserUIDFirebase(uid);
           }
         }
       }
-    }
-    catch (e) {
+    } catch (e) {
       Fluttertoast.showToast(
           msg: "Lỗi: ${e.toString()}",
           toastLength: Toast.LENGTH_SHORT,
@@ -349,8 +350,20 @@ class _LoginState extends State<Login> {
           timeInSecForIosWeb: 1,
           backgroundColor: Colors.red,
           textColor: Colors.white,
-          fontSize: 16.0
-      );
+          fontSize: 16.0);
+    }
+  }
+
+  void _CheckUserUIDFirebase(String uid) async {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    DocumentSnapshot userDoc =
+        await _firestore.collection('User_info').doc(uid).get();
+    if (userDoc.exists) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => mainLayout()));
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => ActivityRegister(uid: uid)));
     }
   }
 }
