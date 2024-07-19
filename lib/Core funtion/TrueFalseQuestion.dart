@@ -31,6 +31,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
   @override
   Widget build(BuildContext context) {
     final subQuestions = widget.questionManager.questions[widget.questionManager.currentQuestionIndex]['subQuestions1'];
+    double screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -49,35 +50,57 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text('Đúng / Sai', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                'Đúng / Sai',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           for (int i = 0; i < subQuestions.length; i++)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(subQuestions[i]['question'], style: TextStyle(fontSize: 18)),
+                SizedBox(height: 10),
                 Row(
                   children: [
-                    Radio<bool?>(
-                      value: true,
-                      groupValue: _selectedAnswers[i],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedAnswers[i] = value;
-                        });
-                        widget.onAnswerSelected(_selectedAnswers.every((answer) => answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
-                      },
+                    Container(
+                      width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
+                      child: Text(
+                        subQuestions[i]['question'],
+                        style: TextStyle(fontSize: 18),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        maxLines: null,
+                      ),
                     ),
-                    Radio<bool?>(
-                      value: false,
-                      groupValue: _selectedAnswers[i],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedAnswers[i] = value;
-                        });
-                        widget.onAnswerSelected(_selectedAnswers.every((answer) => answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
-                      },
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Radio<bool?>(
+                            value: true,
+                            groupValue: _selectedAnswers[i],
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedAnswers[i] = value;
+                              });
+                              widget.onAnswerSelected(_selectedAnswers.every((answer) =>
+                              answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
+                            },
+                          ),
+                          Radio<bool?>(
+                            value: false,
+                            groupValue: _selectedAnswers[i],
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedAnswers[i] = value;
+                              });
+                              widget.onAnswerSelected(_selectedAnswers.every((answer) =>
+                              answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

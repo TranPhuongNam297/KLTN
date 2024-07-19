@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class CountdownTimer with ChangeNotifier {
-  static const int _initialTime = 240;
+  static const int _initialTime = 3600;
   int remainingTime = _initialTime;
   Timer? _timer;
 
@@ -19,7 +19,7 @@ class CountdownTimer with ChangeNotifier {
         remainingTime--;
       } else {
         timer.cancel();
-        remainingTime = 0; // Ensure remainingTime is set to 0 when the timer stops
+        remainingTime = 0;
       }
       notifyListeners();
     });
@@ -30,6 +30,10 @@ class CountdownTimer with ChangeNotifier {
     int minutes = (remainingTime % 3600) ~/ 60;
     int seconds = remainingTime % 60;
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Duration get remainingDuration {
+    return Duration(seconds: remainingTime);
   }
 
   void resetTimer() {

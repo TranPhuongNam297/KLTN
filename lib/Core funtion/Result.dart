@@ -6,15 +6,17 @@ import '../mainLayout.dart';
 class Result extends StatelessWidget {
   final int totalQuestions;
   final int correctAnswers;
-  final int subtitle;
   final List<bool?> questionResults;
+  final Duration timeSpent;
 
   String formattedDateTime = DateFormat('dd/MM/yyyy h:mm a').format(DateTime.now());
 
-  Result({Key? key, required this.totalQuestions, required this.correctAnswers, required this.subtitle, required this.questionResults}) : super(key: key);
+  Result({Key? key, required this.totalQuestions, required this.correctAnswers, required this.questionResults, required this.timeSpent}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    String formattedDuration = "${timeSpent.inHours.toString().padLeft(2, '0')}:${(timeSpent.inMinutes % 60).toString().padLeft(2, '0')}:${(timeSpent.inSeconds % 60).toString().padLeft(2, '0')}";
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -38,13 +40,12 @@ class Result extends StatelessWidget {
               'Tên đề thi:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            Text('$subtitle', style: TextStyle(fontSize: 20)),
             SizedBox(height: 16),
             Text(
               'Thời gian hoàn thành:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            Text('00:50:15 / 01:00:00', style: TextStyle(fontSize: 20)),
+            Text('$formattedDuration / 01:00:00', style: TextStyle(fontSize: 20)),
             SizedBox(height: 16),
             Text(
               'Chức độ:',

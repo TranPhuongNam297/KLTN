@@ -17,6 +17,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   bool isLoading = false;
+
   void _loginUser() async {
     String userName = _userNameController.text;
     String password = _passwordController.text;
@@ -29,7 +30,7 @@ class _LoginState extends State<Login> {
       isLoading = true;
     });
 
-    _showLoadingPopup();
+    _showLoadingDialog();
 
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -41,7 +42,8 @@ class _LoginState extends State<Login> {
       Navigator.pop(context);
       if (querySnapshot.docs.isNotEmpty) {
         DocumentSnapshot userDoc = querySnapshot.docs.first;
-        String idUser = userDoc['idUser']; // Adjust to match your document structure
+        String idUser =
+            userDoc['idUser']; // Adjust to match your document structure
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('idUser', idUser); // Save to SharedPreferences
@@ -91,6 +93,25 @@ class _LoginState extends State<Login> {
     );
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Đang xử lý...'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Vui lòng chờ trong giây lát.'),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void _showLoadingPopup() {
     showDialog(
@@ -219,7 +240,8 @@ class _LoginState extends State<Login> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ActivityRegister()),
+                                  builder: (context) =>
+                                      ActivityRegister(uid: "")),
                             );
                           });
                         },
@@ -273,8 +295,7 @@ class _LoginState extends State<Login> {
                         'Tiếp tục với Google',
                         style: TextStyle(fontSize: 15, color: Colors.white),
                       ),
-                      onPressed: (
-                          ) {
+                      onPressed: () {
                         _signinwithgoogle();
                       },
                       style: ElevatedButton.styleFrom(
@@ -295,22 +316,33 @@ class _LoginState extends State<Login> {
   }
 
   _signinwithgoogle() async {
+    String uid = "";
     final GoogleSignIn _ggSignin = GoogleSignIn();
     try {
       final GoogleSignInAccount? googleSignInAccount = await _ggSignin.signIn();
-      if(googleSignInAccount != null) {
-        final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount
-            .authentication;
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
 
         final AuthCredential credential = GoogleAuthProvider.credential(
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken,
         );
-        await _firebaseAuth.signInWithCredential(credential);
-        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>mainLayout()));
+        UserCredential userCredential =
+            await _firebaseAuth.signInWithCredential(credential);
+        User? user = userCredential.user;
+        if (user != null) {
+          uid = user.uid;
+          print("User UID: $uid");
+          if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ActivityRegister(uid: uid)));
+          } else {
+            _CheckUserUIDFirebase(uid);
+          }
+        }
       }
-    }
-    catch (e) {
+    } catch (e) {
       Fluttertoast.showToast(
           msg: "Lỗi: ${e.toString()}",
           toastLength: Toast.LENGTH_SHORT,
@@ -318,8 +350,20 @@ class _LoginState extends State<Login> {
           timeInSecForIosWeb: 1,
           backgroundColor: Colors.red,
           textColor: Colors.white,
-          fontSize: 16.0
-      );
+          fontSize: 16.0);
+    }
+  }
+
+  void _CheckUserUIDFirebase(String uid) async {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    DocumentSnapshot userDoc =
+        await _firestore.collection('User_info').doc(uid).get();
+    if (userDoc.exists) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => mainLayout()));
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => ActivityRegister(uid: uid)));
     }
   }
 }

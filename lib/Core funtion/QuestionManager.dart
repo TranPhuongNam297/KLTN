@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:khoa_luan_tot_nghiep/Model/chi_tiet_bo_de.dart';
-
 import '../Model/answer_mutiple.dart';
 import '../Model/list_matching.dart';
 import '../Model/list_truefalse.dart';
@@ -74,6 +74,10 @@ class QuestionManager {
       'subQuestions1': [],
     };
 
+
+    bool hasTrueFalseQuestion = false;
+    bool hasMatchingQuestion = false;
+
     for (var chiTiet in chiTietList) {
       if (chiTiet.Type_cau_hoi == 'matching') {
         String idCauHoi = chiTiet.Id_cau_hoi;
@@ -83,13 +87,14 @@ class QuestionManager {
             'question': matchingData.Question,
             'correctAnswer': matchingData.CorrectAnswer,
           });
-        } else {
+        } else if (!hasMatchingQuestion){
           questions.add(Map<String, dynamic>.from(matchingQuestionTemplate));
           matchingQuestionTemplate['subQuestions'].clear();
           matchingQuestionTemplate['subQuestions'].add({
             'question': matchingData.Question,
             'correctAnswer': matchingData.CorrectAnswer,
           });
+          hasMatchingQuestion = true;
         }
       } else if (chiTiet.Type_cau_hoi == 'truefalse') {
         String idCauHoi = chiTiet.Id_cau_hoi;
@@ -99,13 +104,14 @@ class QuestionManager {
             'question': truefalseData.Question,
             'correctAnswer': truefalseData.CorrectAnswer,
           });
-        } else {
+        } else if (!hasTrueFalseQuestion) {
           questions.add(Map<String, dynamic>.from(trueFalseQuestionTemplate));
           trueFalseQuestionTemplate['subQuestions1'].clear();
           trueFalseQuestionTemplate['subQuestions1'].add({
             'question': truefalseData.Question,
             'correctAnswer': truefalseData.CorrectAnswer,
           });
+          hasTrueFalseQuestion = true;
         }
       } else if (chiTiet.Type_cau_hoi == 'multiple_answer') {
         String idCauHoi = chiTiet.Id_cau_hoi;
@@ -166,10 +172,10 @@ class QuestionManager {
       }
     }
 
-    if (matchingQuestionTemplate['subQuestions'].isNotEmpty) {
+    if (!hasMatchingQuestion && matchingQuestionTemplate['subQuestions'].isNotEmpty) {
       questions.add(matchingQuestionTemplate);
     }
-    if (trueFalseQuestionTemplate['subQuestions1'].isNotEmpty) {
+    if (!hasTrueFalseQuestion && trueFalseQuestionTemplate['subQuestions1'].isNotEmpty) {
       questions.add(trueFalseQuestionTemplate);
     }
   }
@@ -188,4 +194,32 @@ class QuestionManager {
   dynamic get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
 
   String get currentQuestionType => questions[currentQuestionIndex]['type'];
+
+  // New methods to update BoDe and ChiTietBoDe
+  Future<void> updateBoDeDiemSo(String boDeId, int correctCount) async {
+    try {
+      final boDeRef = FirebaseFirestore.instance.collection('Bo_de').doc(boDeId);
+      await boDeRef.update({'DiemSo': correctCount});
+    } catch (e) {
+      print('Error updating Bo_de: $e');
+    }
+  }
+
+  Future<void> updateChiTietBoDe({
+    required String boDeId,
+    required int questionIndex,
+    required bool isCorrect,
+  }) async {
+    try {
+      final chiTietBoDeRef = FirebaseFirestore.instance
+          .collection('Bo_de')
+          .doc(boDeId)
+          .collection('chi_tiet_bo_de')
+          .doc(questionIndex.toString());
+
+      await chiTietBoDeRef.update({'IsCorrect': isCorrect});
+    } catch (e) {
+      print('Error updating chi_tiet_bo_de: $e');
+    }
+  }
 }

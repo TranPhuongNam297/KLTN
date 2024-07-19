@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:khoa_luan_tot_nghiep/Model/answer_mutiple.dart';
 import 'package:khoa_luan_tot_nghiep/Model/chi_tiet_bo_de.dart';
 import 'package:khoa_luan_tot_nghiep/Model/list_matching.dart';
 import 'package:khoa_luan_tot_nghiep/Model/question_mutiple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'Model/list_truefalse.dart';
 
 class TestPage extends StatefulWidget {
@@ -22,140 +22,42 @@ class _TestPageState extends State<TestPage> {
   }
 
   Future<void> testFirestoreFunction() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idBoDe = 'JI2ryEqO9R4DnGBEWxKF'; // Lấy id_bo_de từ SharedPreferences
-
-    if (idBoDe != null) {
-      chiTietList = await chi_tiet_bo_de.getChiTietBoDeByBoDeId(idBoDe);
-
-      // Hiển thị kết quả trong console để kiểm tra
-      chiTietList.forEach((chiTiet) {
-        // print('Id: ${chiTiet.Id}, Id_bo_de: ${chiTiet.Id_bo_de}, Id_cau_hoi: ${chiTiet.Id_cau_hoi}, Type_cau_hoi: ${chiTiet.Type_cau_hoi}, IsCorrect: ${chiTiet.IsCorrect}');
-      });
-
-      transferData();
-    } else {
-      print('id_bo_de is null or empty');
-    }
+    await addQuestionAndAnswers(
+      'Trên thiết bị Windows, người ta có thể truy cập thông tin hiển thị từ khu vực nào của Settings?',
+      ['Devices', 'Personalization', 'Privacy', 'System'],
+      0,  // Chọn đáp án đúng, ví dụ là 'Đáp án 3'
+    );
   }
 
-  Future<list_matching> getListMatchingData(String idCauHoi) async {
-    try {
-      return await list_matching.getListMatchingById(idCauHoi);
-    } catch (e) {
-      print('Error getting list_matching data: $e');
-      return list_matching(
-        CorrectAnswer: '',
-        Id_Question: '',
-        Question: '',
-        Type: '',
-      );
-    }
-  }
+  Future<void> addQuestionAndAnswers(String questionText, List<String> answerTexts, int correctAnswerIndex) async {
+    final firestore = FirebaseFirestore.instance;
 
-  Future<list_truefalse> getListTrueFalseData(String idCauHoi) async {
-    try {
-      return await list_truefalse.getListTrueFalseById(idCauHoi);
-    } catch (e) {
-      print('Error getting list_matching data: $e');
-      return list_truefalse(
-        CorrectAnswer: false,
-        Id_Question: '',
-        Question: '',
-        Type: '',
-      );
-    }
-  }
-  Future<List<list_answer>> getListMutipleAnswer(String idCauHoi) async {
-    try {
-      list_question question = await list_question.getListQuestionById(idCauHoi);
-      List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
-      return answers;
-    } catch (e) {
-      print('Error getting list_answer data: $e');
-      throw Exception('Error getting multiple answers');
-    }
-  }
-  Future<void> transferData() async {
-    List<Map<String, dynamic>> questions = [];
+    // Tạo một document mới cho list_question và lấy ID
+    DocumentReference questionRef = firestore.collection('list_question').doc();
+    String questionId = questionRef.id;
 
-    for (var chiTiet in chiTietList) {
-      if (chiTiet.Type_cau_hoi == 'matching') {
-        String idCauHoi = chiTiet.Id_cau_hoi;
-        list_matching matchingData = await getListMatchingData(idCauHoi);
-
-        Map<String, dynamic> listquestions = {
-          'type': 'matching',
-          'question': 'Ghép các câu sau đây:',
-          'subQuestions': [],
-        };
-        listquestions['subQuestions'] = matchingData.toMap();
-        questions.add(listquestions);
-
-      } else if (chiTiet.Type_cau_hoi == 'truefalse') {
-        String idCauHoi = chiTiet.Id_cau_hoi;
-        list_truefalse truefalseData = await getListTrueFalseData(idCauHoi);
-
-        // Đảm bảo chỉ thêm một lần mỗi câu hỏi
-        Map<String, dynamic> listquestions = {
-          'type': 'truefalse',
-          'subQuestions1': [],
-        };
-
-        // Thêm câu hỏi và câu trả lời đúng
-        listquestions['subQuestions1'].add({
-          'question': truefalseData.Question,
-          'correctAnswer': truefalseData.CorrectAnswer,
-        });
-
-        questions.add(listquestions);
-
-      } else if (chiTiet.Type_cau_hoi == 'multiple_answer') {
-        String idCauHoi = chiTiet.Id_cau_hoi;
-
-        try {
-          list_question question = await list_question.getListQuestionById(idCauHoi);
-          List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
-
-          List<String> answerTexts = [];
-          List<String> correctAnswers = [];
-
-          answers.forEach((answer) {
-            answerTexts.add(answer.Dap_An);
-            if (answer.Is_Correct) {
-              correctAnswers.add(answer.Dap_An);
-            }
-          });
-
-          Map<String, dynamic> listquestions = {
-            'type': 'multiple_answer',
-            'question': question.Question,
-            'answers': answerTexts,
-            'correctAnswer': correctAnswers,
-          };
-
-          questions.add(listquestions);
-
-        } catch (e) {
-          print('Error processing multiple_answer question: $e');
-        }
-      }
-    }
-
-    // In danh sách questions ra console để kiểm tra
-    questions.forEach((question) {
-      print('Question: ${question['question']}');
-      if (question['type'] == 'matching') {
-        print('SubQuestions: ${question['subQuestions']}');
-      } else if (question['type'] == 'truefalse') {
-        print('SubQuestions1: ${question['subQuestions1']}');
-      } else if (question['type'] == 'multiple_answer') {
-        print('Answers: ${question['answers']}');
-        print('Correct Answers: ${question['correctAnswer']}');
-      }
+    // Thêm câu hỏi mới vào list_question
+    await questionRef.set({
+      'Id_Question': questionId,
+      'Question': questionText,
+      'Type': 'multiple_choice',
     });
-  }
 
+    // Thêm các đáp án vào list_answer
+    for (int i = 0; i < answerTexts.length; i++) {
+      DocumentReference answerRef = firestore.collection('list_answer').doc();
+      String answerId = answerRef.id;
+
+      await answerRef.set({
+        'Dap_An': answerTexts[i],
+        'Id_DapAn': answerId,
+        'Id_Question': questionId,
+        'Is_Correct': i == correctAnswerIndex,  // Set true for the selected correct answer
+      });
+    }
+
+    print('Data added successfully');
+  }
 
   @override
   Widget build(BuildContext context) {

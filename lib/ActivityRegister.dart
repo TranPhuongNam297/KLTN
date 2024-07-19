@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:khoa_luan_tot_nghiep/Model/User_info.dart';
 
 import 'Login.dart';
 
 class ActivityRegister extends StatefulWidget {
+  String uid;
+  ActivityRegister({required this.uid});
   @override
   _ActivityRegister createState() => _ActivityRegister();
 }
@@ -17,6 +19,13 @@ class _ActivityRegister extends State<ActivityRegister> {
   final TextEditingController _userNameController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      shopDiablog(context, "Thông báo", "Mời bạn nhập thông tin để hoàn tất tạo tài khoản");
+    });
+  }
+  @override
   void dispose() {
     _fullNameController.dispose();
     _passwordController.dispose();
@@ -28,8 +37,10 @@ class _ActivityRegister extends State<ActivityRegister> {
   void _registerUser() {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus(); // Hide keyboard
-      String userId = FirebaseFirestore.instance.collection('users').doc().id;
-
+      String userId = widget.uid;
+      if(userId == ""){
+        userId = FirebaseFirestore.instance.collection('users').doc().id;
+      }
       User_info newUser = User_info(
         FullName: _fullNameController.text,
         Id_User: userId,
@@ -75,7 +86,7 @@ class _ActivityRegister extends State<ActivityRegister> {
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
-
+   // shopDiablog(context,"Thông báo","Mời bạn nhập thông tin để hoàn tất tạo tài khoản");
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Container(
@@ -206,6 +217,25 @@ class _ActivityRegister extends State<ActivityRegister> {
           ),
         ),
       ),
+    );
+  }
+  void shopDiablog(BuildContext context,String title,String message){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

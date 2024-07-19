@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'QuestionManager.dart';
 import '../CountdownTimer.dart';
 import 'Result.dart';
@@ -113,14 +114,11 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     final currentIndex = questionManager.currentQuestionIndex;
 
     setState(() {
-      // Lưu trữ các đáp án được chọn
       this.selectedAnswers[currentIndex] = selectedAnswers;
 
-      // Kiểm tra xem các đáp án được chọn có đúng hay không
       List<String> selected = this.selectedAnswers[currentIndex] ?? [];
       bool allCorrect = true;
 
-      // Kiểm tra từng đáp án được chọn xem có trong danh sách đáp án đúng không
       for (var answer in selected) {
         if (!correctAnswers.contains(answer)) {
           allCorrect = false;
@@ -128,11 +126,9 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
         }
       }
 
-      // Cập nhật kết quả cho câu hỏi hiện tại
       questionResults[currentIndex] = allCorrect;
 
-      // Tính toán số câu trả lời đúng
-      bool wasCorrect = questionResults[currentIndex] ?? false; // Kiểm tra câu hỏi trước đó đã đúng hay chưa
+      bool wasCorrect = questionResults[currentIndex] ?? false;
       if (allCorrect && selected.length == correctAnswers.length) {
         if (!wasCorrect) {
           correctCount--;
@@ -195,18 +191,22 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
               ),
             ),
             TextButton(
-              onPressed: () {
-                // Navigator.pushReplacement(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => Result(
-                //       totalQuestions: questionManager.questions.length,
-                //       correctAnswers: correctCount,
-                //       subtitle: home.data.length,
-                //       questionResults: questionResults,
-                //     ),
-                //   ),
-                // );
+              onPressed: () async {
+                await _submitTest();
+                final totalDuration = Duration(hours: 1);
+                final timeSpent = totalDuration - countdownTimer.remainingDuration;
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Result(
+                      totalQuestions: questionManager.questions.length,
+                      correctAnswers: correctCount,
+                      questionResults: questionResults,
+                      timeSpent: timeSpent,
+                    ),
+                  ),
+                );
               },
               child: Text(
                 'Đồng ý',
@@ -218,6 +218,25 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       },
     );
   }
+
+  Future<void> _submitTest() async {
+    final prefs = await SharedPreferences.getInstance();
+    final boDeId = prefs.getString('id_bo_de');
+
+    if (boDeId != null) {
+      for (int i = 0; i < questionResults.length; i++) {
+        await questionManager.updateChiTietBoDe(
+          boDeId: boDeId,
+          questionIndex: i,
+          isCorrect: questionResults[i] == true,
+        );
+      }
+
+      await questionManager.updateBoDeDiemSo(boDeId, correctCount);
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
