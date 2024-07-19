@@ -37,9 +37,11 @@ class _ListTaskState extends State<listTask> {
       return;
     }
 
+    // Fetch only those Bo_de where Tinh_trang is false
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('Bo_de')
         .where('Id_user_tao', isEqualTo: userId)
+        .where('Tinh_trang', isEqualTo: false) // Add this line to filter by Tinh_trang
         .get();
 
     setState(() {
@@ -48,6 +50,7 @@ class _ListTaskState extends State<listTask> {
           .toList();
     });
   }
+
 
   Future<void> _createNewBoDe() async {
     String? userId = await UserPreferences.getUserId();

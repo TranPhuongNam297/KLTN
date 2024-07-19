@@ -86,6 +86,7 @@ class QuestionManager {
           matchingQuestionTemplate['subQuestions'].add({
             'question': matchingData.Question,
             'correctAnswer': matchingData.CorrectAnswer,
+            'Id': idCauHoi,
           });
         } else if (!hasMatchingQuestion){
           questions.add(Map<String, dynamic>.from(matchingQuestionTemplate));
@@ -93,6 +94,7 @@ class QuestionManager {
           matchingQuestionTemplate['subQuestions'].add({
             'question': matchingData.Question,
             'correctAnswer': matchingData.CorrectAnswer,
+            'Id': idCauHoi,
           });
           hasMatchingQuestion = true;
         }
@@ -103,6 +105,7 @@ class QuestionManager {
           trueFalseQuestionTemplate['subQuestions1'].add({
             'question': truefalseData.Question,
             'correctAnswer': truefalseData.CorrectAnswer,
+            'Id': idCauHoi,
           });
         } else if (!hasTrueFalseQuestion) {
           questions.add(Map<String, dynamic>.from(trueFalseQuestionTemplate));
@@ -110,6 +113,7 @@ class QuestionManager {
           trueFalseQuestionTemplate['subQuestions1'].add({
             'question': truefalseData.Question,
             'correctAnswer': truefalseData.CorrectAnswer,
+            'Id': idCauHoi,
           });
           hasTrueFalseQuestion = true;
         }
@@ -135,6 +139,7 @@ class QuestionManager {
             'question': question.Question,
             'answers': answerTexts,
             'correctAnswer': correctAnswers,
+            'Id': idCauHoi,
           };
 
           questions.add(listquestions);
@@ -163,6 +168,7 @@ class QuestionManager {
             'question': question.Question,
             'answers': answerTexts,
             'correctAnswer': correctAnswer,
+            'Id': idCauHoi,
           };
 
           questions.add(listquestions);
@@ -192,34 +198,33 @@ class QuestionManager {
   }
 
   dynamic get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
-
+  String get currentQuestionId =>questions[currentQuestionIndex]['Id'];
   String get currentQuestionType => questions[currentQuestionIndex]['type'];
 
-  // New methods to update BoDe and ChiTietBoDe
-  Future<void> updateBoDeDiemSo(String boDeId, int correctCount) async {
+
+  Future<void> updateChiTietBoDe(bool isCorrect, String id, String idBoDe) async {
     try {
-      final boDeRef = FirebaseFirestore.instance.collection('Bo_de').doc(boDeId);
-      await boDeRef.update({'DiemSo': correctCount});
+      // Truy cập vào bảng chi_tiet_bo_de
+      CollectionReference chiTietBoDeRef =  FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+      // Tìm tài liệu cụ thể dựa trên Id và Id_bo_de
+      QuerySnapshot snapshot = await chiTietBoDeRef
+          .where('Id_cau_hoi', isEqualTo: id)
+          .where('Id_bo_de', isEqualTo: idBoDe)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // Lấy tài liệu đầu tiên (giả sử Id và Id_bo_de là duy nhất)
+        DocumentSnapshot document = snapshot.docs.first;
+
+        // Cập nhật giá trị IsCorrect
+        await document.reference.update({'IsCorrect': isCorrect});
+        print('Cập nhật thành công!');
+      } else {
+        print('Không tìm thấy tài liệu phù hợp.');
+      }
     } catch (e) {
-      print('Error updating Bo_de: $e');
+      print('Có lỗi xảy ra: $e');
     }
   }
 
-  Future<void> updateChiTietBoDe({
-    required String boDeId,
-    required int questionIndex,
-    required bool isCorrect,
-  }) async {
-    try {
-      final chiTietBoDeRef = FirebaseFirestore.instance
-          .collection('Bo_de')
-          .doc(boDeId)
-          .collection('chi_tiet_bo_de')
-          .doc(questionIndex.toString());
-
-      await chiTietBoDeRef.update({'IsCorrect': isCorrect});
-    } catch (e) {
-      print('Error updating chi_tiet_bo_de: $e');
-    }
-  }
 }

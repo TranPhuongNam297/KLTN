@@ -27,15 +27,21 @@ class _HomeState extends State<Home> {
       return;
     }
 
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('Bo_de')
         .where('Id_user_tao', isEqualTo: userId)
+        .where('Tinh_trang', isEqualTo: false)
         .get();
 
     setState(() {
       activityList = querySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
+      _isLoading = false; // Hide loading indicator
     });
   }
 
@@ -75,24 +81,9 @@ class _HomeState extends State<Home> {
               ),
             ],
           ),
-          if (_isLoading) // Show loading popup
+          if (_isLoading) // Show loading indicator
             Center(
-              child: AlertDialog(
-                title: Text('Đang tải...'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Vui lòng chờ trong giây lát.'),
-                  ],
-                ),
-                backgroundColor: Colors.white,
-                elevation: 24.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
+              child: CircularProgressIndicator(),
             ),
         ],
       ),

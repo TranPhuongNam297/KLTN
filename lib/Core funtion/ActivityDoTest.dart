@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'QuestionManager.dart';
@@ -18,6 +19,7 @@ class ActivityDoTest extends StatefulWidget {
 }
 
 class _ActivityDoTestState extends State<ActivityDoTest> {
+
   final QuestionManager questionManager = QuestionManager();
   final CountdownTimer countdownTimer = CountdownTimer();
   final Home home = Home();
@@ -27,7 +29,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   bool isMatchingQuestion = false;
   List<bool?> questionResults = [];
   Future<void>? _initialization;
-
+  String? idBoDe;
   @override
   void initState() {
     super.initState();
@@ -42,14 +44,18 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
         _checkMatchingQuestion();
       });
     });
+    _loadIdBoDe();
   }
-
+  Future<void> _loadIdBoDe() async {
+    final prefs = await SharedPreferences.getInstance();
+    idBoDe = prefs.getString('boDeId')!;
+  }
   void _checkMatchingQuestion() {
     setState(() {
       isMatchingQuestion = questionManager.currentQuestionType == 'matching';
     });
   }
-
+//1 dap an dung
   void _handleAnswer(String selectedAnswer) {
     final correctAnswer = questionManager.correctAnswer;
     final currentIndex = questionManager.currentQuestionIndex;
@@ -63,11 +69,11 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
       if (selectedAnswer == correctAnswer) {
         if (!wasCorrect) {
-          correctCount++;
+            questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
         }
       } else {
         if (wasCorrect) {
-          correctCount--;
+          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
         }
       }
     });
@@ -81,11 +87,13 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = allCorrect;
       if (allCorrect) {
         if (!wasCorrect) {
-          correctCount++;
+        //  correctCount++;
+          questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
         }
       } else {
         if (wasCorrect) {
-          correctCount--;
+          // correctCount--;
+          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
         }
       }
     });
@@ -99,20 +107,21 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = isAllCorrect;
       if (isAllCorrect) {
         if (!wasCorrect) {
-          correctCount++;
+          // correctCount++;
+          questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
         }
       } else {
         if (wasCorrect) {
-          correctCount--;
+          // correctCount--;
+          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
         }
       }
     });
   }
-
+//nhieu dap an
   void _handleMultipleAnswer(List<String> selectedAnswers) {
     final correctAnswers = List<String>.from(questionManager.correctAnswer);
     final currentIndex = questionManager.currentQuestionIndex;
-
     setState(() {
       this.selectedAnswers[currentIndex] = selectedAnswers;
 
@@ -131,11 +140,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       bool wasCorrect = questionResults[currentIndex] ?? false;
       if (allCorrect && selected.length == correctAnswers.length) {
         if (!wasCorrect) {
-          correctCount--;
+          // correctCount--;
+          print(idBoDe!+"    questionManager.currentQuestionId   "+questionManager.currentQuestionId);
+          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
         }
       } else {
         if (wasCorrect) {
-          correctCount++;
+          // correctCount++;
+          print(idBoDe!+"    questionManager.currentQuestionId   "+questionManager.currentQuestionId);
+          questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
         }
       }
     });
@@ -162,6 +175,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex > 0) {
         questionManager.currentQuestionIndex--;
+        questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
         _checkMatchingQuestion();
       }
     });
@@ -220,19 +234,34 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   }
 
   Future<void> _submitTest() async {
-    final prefs = await SharedPreferences.getInstance();
-    final boDeId = prefs.getString('id_bo_de');
+    final firestore = FirebaseFirestore.instance;
+    try {
+      final querySnapshot = await firestore
+          .collection('chi_tiet_bo_de')
+          .where('Id_bo_de', isEqualTo: idBoDe)
+          .get();
+       correctCount = querySnapshot.docs.where((doc) {
+        return doc.data().containsKey('IsCorrect') && doc['IsCorrect'] == true;
+      }).length;
+      updateBoDe(idBoDe!,correctCount,(Duration(hours: 1) - countdownTimer.remainingDuration).toString());
+    } catch (e) {
+      // Xử lý lỗi
+      print('Error: $e');
+    }
+  }
+  Future<void> updateBoDe(String idBoDe, int diemSo,String time) async {
+    // Lấy đối tượng Firestore
+    final firestore = FirebaseFirestore.instance;
 
-    if (boDeId != null) {
-      for (int i = 0; i < questionResults.length; i++) {
-        await questionManager.updateChiTietBoDe(
-          boDeId: boDeId,
-          questionIndex: i,
-          isCorrect: questionResults[i] == true,
-        );
-      }
-
-      await questionManager.updateBoDeDiemSo(boDeId, correctCount);
+    try {
+      await firestore.collection('Bo_de').doc(idBoDe).update({
+        'Tinh_trang': true,
+        'DiemSo': diemSo,
+        'Time_finish' : time,
+      });
+    } catch (e) {
+      // Xử lý lỗi
+      print('Error: $e');
     }
   }
 
