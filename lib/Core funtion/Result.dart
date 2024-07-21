@@ -8,15 +8,11 @@ class Result extends StatelessWidget {
   final int correctAnswers;
   final List<bool?> questionResults;
   final Duration timeSpent;
-
   String formattedDateTime = DateFormat('dd/MM/yyyy h:mm a').format(DateTime.now());
-
   Result({Key? key, required this.totalQuestions, required this.correctAnswers, required this.questionResults, required this.timeSpent}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     String formattedDuration = "${timeSpent.inHours.toString().padLeft(2, '0')}:${(timeSpent.inMinutes % 60).toString().padLeft(2, '0')}:${(timeSpent.inSeconds % 60).toString().padLeft(2, '0')}";
-
     return Scaffold(
       appBar: AppBar(
         title: Text(

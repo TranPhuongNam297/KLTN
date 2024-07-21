@@ -168,7 +168,6 @@ class _ListTaskState extends State<listTask> {
       return list_matching.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
 
-    // Shuffle and select up to 10 questions
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
 
@@ -198,8 +197,8 @@ class _ListTaskState extends State<listTask> {
     }
 
     addRandomQuestions(questions, 20);
-    addRandomQuestions(trueFalseQuestions, 10);
-    addRandomQuestions(matchingQuestions, 10);
+    addRandomQuestions(trueFalseQuestions, 40);
+    addRandomQuestions(matchingQuestions, 40);
 
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');

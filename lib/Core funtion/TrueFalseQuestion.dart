@@ -9,7 +9,6 @@ class TrueFalseQuestion extends StatefulWidget {
     required this.questionManager,
     required this.onAnswerSelected,
   });
-
   @override
   _TrueFalseQuestionState createState() => _TrueFalseQuestionState();
 }

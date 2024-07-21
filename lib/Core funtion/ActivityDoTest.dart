@@ -164,6 +164,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
         questionManager.currentQuestionIndex++;
+        print((questionManager.currentQuestionIndex).toString());
         _checkMatchingQuestion();
       } else {
         _showSubmitDialog();
@@ -175,9 +176,11 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex > 0) {
         questionManager.currentQuestionIndex--;
+        print((questionManager.currentQuestionIndex).toString());
         questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
         _checkMatchingQuestion();
       }
+
     });
   }
 

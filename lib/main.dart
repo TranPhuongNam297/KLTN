@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:khoa_luan_tot_nghiep/LayoutDetailHistory/MatchingDetail.dart';
+import 'package:khoa_luan_tot_nghiep/LayoutDetailHistory/TrueFalseDetail.dart';
 import 'package:khoa_luan_tot_nghiep/test.dart';
+import 'LayoutDetailHistory/MultipleChoiceDetail.dart';
 import 'LoadingScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

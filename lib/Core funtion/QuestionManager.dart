@@ -63,59 +63,42 @@ class QuestionManager {
   }
 
   Future<void> transferData() async {
-    Map<String, dynamic> matchingQuestionTemplate = {
+    List<Map<String, dynamic>> matchingQuestionTemplate = List.generate(10, (_) => {
       'type': 'matching',
       'question': 'Ghép các câu sau đây:',
       'subQuestions': [],
-    };
+    });
 
-    Map<String, dynamic> trueFalseQuestionTemplate = {
+    List<Map<String, dynamic>> trueFalseQuestionTemplate = List.generate(10, (_) => {
       'type': 'truefalse',
       'subQuestions1': [],
-    };
+    });
 
-
-    bool hasTrueFalseQuestion = false;
-    bool hasMatchingQuestion = false;
+    int matchingQuestionIndex = 0;
+    int trueFalseQuestionIndex = 0;
 
     for (var chiTiet in chiTietList) {
       if (chiTiet.Type_cau_hoi == 'matching') {
         String idCauHoi = chiTiet.Id_cau_hoi;
         list_matching matchingData = await getListMatchingData(idCauHoi);
-        if (matchingQuestionTemplate['subQuestions'].length < 4) {
-          matchingQuestionTemplate['subQuestions'].add({
-            'question': matchingData.Question,
-            'correctAnswer': matchingData.CorrectAnswer,
-            'Id': idCauHoi,
-          });
-        } else if (!hasMatchingQuestion){
-          questions.add(Map<String, dynamic>.from(matchingQuestionTemplate));
-          matchingQuestionTemplate['subQuestions'].clear();
-          matchingQuestionTemplate['subQuestions'].add({
-            'question': matchingData.Question,
-            'correctAnswer': matchingData.CorrectAnswer,
-            'Id': idCauHoi,
-          });
-          hasMatchingQuestion = true;
+        matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].add({
+          'question': matchingData.Question,
+          'correctAnswer': matchingData.CorrectAnswer,
+          'Id': idCauHoi,
+        });
+        if (matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].length == 4) {
+          matchingQuestionIndex++;
         }
       } else if (chiTiet.Type_cau_hoi == 'truefalse') {
         String idCauHoi = chiTiet.Id_cau_hoi;
         list_truefalse truefalseData = await getListTrueFalseData(idCauHoi);
-        if (trueFalseQuestionTemplate['subQuestions1'].length < 4) {
-          trueFalseQuestionTemplate['subQuestions1'].add({
-            'question': truefalseData.Question,
-            'correctAnswer': truefalseData.CorrectAnswer,
-            'Id': idCauHoi,
-          });
-        } else if (!hasTrueFalseQuestion) {
-          questions.add(Map<String, dynamic>.from(trueFalseQuestionTemplate));
-          trueFalseQuestionTemplate['subQuestions1'].clear();
-          trueFalseQuestionTemplate['subQuestions1'].add({
-            'question': truefalseData.Question,
-            'correctAnswer': truefalseData.CorrectAnswer,
-            'Id': idCauHoi,
-          });
-          hasTrueFalseQuestion = true;
+        trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].add({
+          'question': truefalseData.Question,
+          'correctAnswer': truefalseData.CorrectAnswer,
+          'Id': idCauHoi,
+        });
+        if (trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].length == 4) {
+          trueFalseQuestionIndex++;
         }
       } else if (chiTiet.Type_cau_hoi == 'multiple_answer') {
         String idCauHoi = chiTiet.Id_cau_hoi;
@@ -178,12 +161,17 @@ class QuestionManager {
       }
     }
 
-    if (!hasMatchingQuestion && matchingQuestionTemplate['subQuestions'].isNotEmpty) {
-      questions.add(matchingQuestionTemplate);
-    }
-    if (!hasTrueFalseQuestion && trueFalseQuestionTemplate['subQuestions1'].isNotEmpty) {
-      questions.add(trueFalseQuestionTemplate);
-    }
+    matchingQuestionTemplate.forEach((question) {
+      if (question['subQuestions'].isNotEmpty) {
+        questions.add(question);
+      }
+    });
+
+    trueFalseQuestionTemplate.forEach((question) {
+      if (question['subQuestions1'].isNotEmpty) {
+        questions.add(question);
+      }
+    });
   }
 
   String get currentQuestion => questions[currentQuestionIndex]['question'];
@@ -198,14 +186,21 @@ class QuestionManager {
   }
 
   dynamic get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
-  String get currentQuestionId =>questions[currentQuestionIndex]['Id'];
+  String get currentQuestionId {
+    if (questions.isNotEmpty && currentQuestionIndex < questions.length) {
+      return questions[currentQuestionIndex]['Id'] ?? '';
+    } else {
+      // Có thể cung cấp giá trị mặc định hoặc xử lý khi không có câu hỏi
+      return '';
+    }
+  }
   String get currentQuestionType => questions[currentQuestionIndex]['type'];
 
 
   Future<void> updateChiTietBoDe(bool isCorrect, String id, String idBoDe) async {
     try {
       // Truy cập vào bảng chi_tiet_bo_de
-      CollectionReference chiTietBoDeRef =  FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
       // Tìm tài liệu cụ thể dựa trên Id và Id_bo_de
       QuerySnapshot snapshot = await chiTietBoDeRef
           .where('Id_cau_hoi', isEqualTo: id)
@@ -226,5 +221,4 @@ class QuestionManager {
       print('Có lỗi xảy ra: $e');
     }
   }
-
 }
