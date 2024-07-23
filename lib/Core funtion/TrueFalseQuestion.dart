@@ -4,11 +4,14 @@ import 'QuestionManager.dart';
 class TrueFalseQuestion extends StatefulWidget {
   final QuestionManager questionManager;
   final void Function(bool) onAnswerSelected;
+  final String mode; // Add a mode parameter
 
   TrueFalseQuestion({
     required this.questionManager,
     required this.onAnswerSelected,
+    required this.mode, // Initialize the mode parameter
   });
+
   @override
   _TrueFalseQuestionState createState() => _TrueFalseQuestionState();
 }
@@ -25,6 +28,13 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
   void _initializeSelectedAnswers() {
     final subQuestions = widget.questionManager.questions[widget.questionManager.currentQuestionIndex]['subQuestions1'];
     _selectedAnswers = List<bool?>.filled(subQuestions.length, null);
+
+    // If mode is "xem đáp án", prefill _selectedAnswers with correct answers
+    if (widget.mode == 'xemdapan') {
+      for (int i = 0; i < subQuestions.length; i++) {
+        _selectedAnswers[i] = subQuestions[i]['correctAnswer'];
+      }
+    }
   }
 
   @override
@@ -79,24 +89,24 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                           Radio<bool?>(
                             value: true,
                             groupValue: _selectedAnswers[i],
-                            onChanged: (value) {
+                            onChanged: widget.mode == 'lambai' ? (value) {
                               setState(() {
                                 _selectedAnswers[i] = value;
                               });
                               widget.onAnswerSelected(_selectedAnswers.every((answer) =>
                               answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
-                            },
+                            } : null, // Disable in "xem đáp án" mode
                           ),
                           Radio<bool?>(
                             value: false,
                             groupValue: _selectedAnswers[i],
-                            onChanged: (value) {
+                            onChanged: widget.mode == 'lambai' ? (value) {
                               setState(() {
                                 _selectedAnswers[i] = value;
                               });
                               widget.onAnswerSelected(_selectedAnswers.every((answer) =>
                               answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
-                            },
+                            } : null, // Disable in "xem đáp án" mode
                           ),
                         ],
                       ),

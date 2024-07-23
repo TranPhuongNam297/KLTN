@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Core funtion/ActivityDoTest.dart';
 
 class TestRulesScreen extends StatefulWidget {
@@ -13,7 +14,8 @@ class _TestRulesScreenState extends State<TestRulesScreen> {
     setState(() {
       isLoading = true;
     });
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('mode', 'lambai');
     await Future.delayed(Duration(seconds: 2)); // Simulate a delay for 2 seconds
 
     setState(() {

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:khoa_luan_tot_nghiep/LoadingScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'QuestionManager.dart';
 import '../CountdownTimer.dart';
@@ -19,7 +20,6 @@ class ActivityDoTest extends StatefulWidget {
 }
 
 class _ActivityDoTestState extends State<ActivityDoTest> {
-
   final QuestionManager questionManager = QuestionManager();
   final CountdownTimer countdownTimer = CountdownTimer();
   final Home home = Home();
@@ -30,6 +30,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   List<bool?> questionResults = [];
   Future<void>? _initialization;
   String? idBoDe;
+  String? mode;
   @override
   void initState() {
     super.initState();
@@ -49,6 +50,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   Future<void> _loadIdBoDe() async {
     final prefs = await SharedPreferences.getInstance();
     idBoDe = prefs.getString('boDeId')!;
+    mode = prefs.getString("mode")!;
+    print(mode);
   }
   void _checkMatchingQuestion() {
     setState(() {
@@ -119,40 +122,38 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     });
   }
 //nhieu dap an
-  void _handleMultipleAnswer(List<String> selectedAnswers) {
-    final correctAnswers = List<String>.from(questionManager.correctAnswer);
-    final currentIndex = questionManager.currentQuestionIndex;
-    setState(() {
-      this.selectedAnswers[currentIndex] = selectedAnswers;
+    void _handleMultipleAnswer(List<String> selectedAnswers) {
+      final correctAnswers = List<String>.from(questionManager.correctAnswer);
+      final currentIndex = questionManager.currentQuestionIndex;
+      setState(() {
+        this.selectedAnswers[currentIndex] = selectedAnswers;
 
-      List<String> selected = this.selectedAnswers[currentIndex] ?? [];
-      bool allCorrect = true;
+        List<String> selected = this.selectedAnswers[currentIndex] ?? [];
+        bool allCorrect = true;
 
-      for (var answer in selected) {
-        if (!correctAnswers.contains(answer)) {
-          allCorrect = false;
-          break;
+        for (var answer in selected) {
+          if (!correctAnswers.contains(answer)) {
+            allCorrect = false;
+            break;
+          }
         }
-      }
-
-      questionResults[currentIndex] = allCorrect;
-
-      bool wasCorrect = questionResults[currentIndex] ?? false;
-      if (allCorrect && selected.length == correctAnswers.length) {
-        if (!wasCorrect) {
-          // correctCount--;
-          print(idBoDe!+"    questionManager.currentQuestionId   "+questionManager.currentQuestionId);
-          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+        questionResults[currentIndex] = allCorrect;
+        bool wasCorrect = questionResults[currentIndex] ?? false;
+        if (allCorrect && selected.length == correctAnswers.length) {
+          if (!wasCorrect) {
+            // correctCount--;
+            print(idBoDe!+"    questionManager.currentQuestionId   "+questionManager.currentQuestionId);
+            questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+          }
+        } else {
+          if (wasCorrect) {
+            // correctCount++;
+            print(idBoDe!+"    questionManager.currentQuestionId   "+questionManager.currentQuestionId);
+            questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
+          }
         }
-      } else {
-        if (wasCorrect) {
-          // correctCount++;
-          print(idBoDe!+"    questionManager.currentQuestionId   "+questionManager.currentQuestionId);
-          questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
-        }
-      }
-    });
-  }
+      });
+    }
 
   @override
   void dispose() {
@@ -164,10 +165,14 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
         questionManager.currentQuestionIndex++;
-        print((questionManager.currentQuestionIndex).toString());
         _checkMatchingQuestion();
       } else {
-        _showSubmitDialog();
+        if(mode == 'lambai'){
+          _showSubmitDialog();
+        }
+        else{
+          _BackHome();
+        }
       }
     });
   }
@@ -176,14 +181,24 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex > 0) {
         questionManager.currentQuestionIndex--;
-        print((questionManager.currentQuestionIndex).toString());
-        questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+        if(mode == 'lambai'){
+          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+        }
         _checkMatchingQuestion();
       }
 
     });
   }
 
+  void _BackHome(){
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => mainLayout(
+        ),
+      ),
+    );
+  }
   void _showSubmitDialog() {
     showDialog(
       context: context,
@@ -212,7 +227,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                 await _submitTest();
                 final totalDuration = Duration(hours: 1);
                 final timeSpent = totalDuration - countdownTimer.remainingDuration;
-
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -253,9 +267,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     }
   }
   Future<void> updateBoDe(String idBoDe, int diemSo,String time) async {
-    // Lấy đối tượng Firestore
     final firestore = FirebaseFirestore.instance;
-
     try {
       await firestore.collection('Bo_de').doc(idBoDe).update({
         'Tinh_trang': true,
@@ -354,13 +366,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                         MatchingQuestion(
                           matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
                           onAllCorrect: _handleMatchingAnswer,
+                          mode: mode ?? 'lambai',
                         )
                       else if (questionManager.currentQuestionType == 'multiple_choice')
                         MultipleChoiceQuestion(
                           questionText: questionManager.currentQuestion,
                           answers: questionManager.currentAnswers!,
                           onAnswerSelected: _handleAnswer,
-                          selectedAnswer: selectedAnswers[questionManager.currentQuestionIndex],
+                          selectedAnswer: mode == 'xemdapan' ? questionManager.correctAnswer : selectedAnswers[questionManager.currentQuestionIndex],
+                          mode: mode ?? 'lambai',
                         )
                       else if (questionManager.currentQuestionType == 'truefalse')
                           TrueFalseQuestion(
@@ -370,13 +384,17 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                                 _handleTrueFalseAnswer(allCorrect);
                               });
                             },
+                            mode: mode ?? 'lambai',
                           )
                         else if (questionManager.currentQuestionType == 'multiple_answer')
                             MultipleAnswerQuestion(
                               questionText: questionManager.currentQuestion,
-                              answers: questionManager.currentAnswers!,
+                              answers: questionManager.currentAnswers ?? [],
                               onAnswersSelected: _handleMultipleAnswer,
-                              selectedAnswers: selectedAnswers[questionManager.currentQuestionIndex],
+                              selectedAnswers:mode == 'xemdapan' ?
+                              questionManager.correctAnswer ??[] :
+                              selectedAnswers[questionManager.currentQuestionIndex] ??[],
+                              mode: mode ?? 'lambai',
                             )
                     ],
                   ),

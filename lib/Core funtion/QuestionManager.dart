@@ -112,7 +112,7 @@ class QuestionManager {
 
           answers.forEach((answer) {
             answerTexts.add(answer.Dap_An);
-            if (answer.Is_Correct) {
+            if (answer.Is_Correct == true) {
               correctAnswers.add(answer.Dap_An);
             }
           });
@@ -190,7 +190,6 @@ class QuestionManager {
     if (questions.isNotEmpty && currentQuestionIndex < questions.length) {
       return questions[currentQuestionIndex]['Id'] ?? '';
     } else {
-      // Có thể cung cấp giá trị mặc định hoặc xử lý khi không có câu hỏi
       return '';
     }
   }

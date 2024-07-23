@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:khoa_luan_tot_nghiep/Core%20funtion/ActivityDoTest.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'AnswerDetail.dart';
 import '../mainLayout.dart';
 
@@ -84,7 +86,7 @@ class Result extends StatelessWidget {
                   Text('$correctAnswers / $totalQuestions', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'OpenSans')),
                   SizedBox(height: 20),
                   Text(
-                    correctAnswers >= 5 ? 'Chúc mừng, bạn đã làm rất tốt!' : 'Thật tiếc, hãy thử lại!',
+                    correctAnswers >= 25 ? 'Chúc mừng, bạn đã làm rất tốt!' : 'Thật tiếc, hãy thử lại!',
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, fontFamily: 'OpenSans'),
                     textAlign: TextAlign.center,
                   ),
@@ -102,13 +104,14 @@ class Result extends StatelessWidget {
                   ),
                   minimumSize: Size(350, 55),
                 ),
-                onPressed: () {
+                onPressed: () async{
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('mode', 'xemdapan');
+                  print(prefs.getString("mode cua che do result"));
                   // Navigate to a new screen to show detailed answers
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => AnswerDetail(
-                        totalQuestions: totalQuestions,
-                        questionResults: questionResults,
+                      builder: (context) => ActivityDoTest(
                       ),
                     ),
                   );

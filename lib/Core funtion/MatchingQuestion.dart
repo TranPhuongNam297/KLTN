@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 class MatchingQuestion extends StatefulWidget {
   final Map<String, dynamic> matchingQuestion;
   final Function(bool) onAllCorrect;
+  final String mode;
 
-  const MatchingQuestion({Key? key, required this.matchingQuestion, required this.onAllCorrect}) : super(key: key);
+  const MatchingQuestion({
+    Key? key,
+    required this.matchingQuestion,
+    required this.onAllCorrect,
+    required this.mode,
+  }) : super(key: key);
 
   @override
   _MatchingQuestionState createState() => _MatchingQuestionState();
@@ -42,7 +48,6 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
 
   @override
   Widget build(BuildContext context) {
-    // Chắc chắn rằng subQuestions là một danh sách
     final List subQuestions = widget.matchingQuestion['subQuestions'] as List;
 
     return Container(
@@ -68,25 +73,17 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                           style: TextStyle(fontSize: 18),
                         ),
                       ),
-                      DragTarget<String>(
-                        builder: (context, candidateData, rejectedData) {
-                          return Container(
-                            width: 150,
-                            height: 50,
-                            color: Colors.grey[200],
-                            alignment: Alignment.center,
-                            child: selectedAnswers[subQuestion['question']] != null
-                                ? Draggable<String>(
-                              data: selectedAnswers[subQuestion['question']],
-                              child: Card(
-                                margin: EdgeInsets.all(5),
-                                child: Padding(
-                                  padding: EdgeInsets.all(10),
-                                  child: Text(selectedAnswers[subQuestion['question']]!),
-                                ),
-                              ),
-                              feedback: Material(
-                                color: Colors.transparent,
+                      if (widget.mode == 'lambai')
+                        DragTarget<String>(
+                          builder: (context, candidateData, rejectedData) {
+                            return Container(
+                              width: 150,
+                              height: 50,
+                              color: Colors.grey[200],
+                              alignment: Alignment.center,
+                              child: selectedAnswers[subQuestion['question']] != null
+                                  ? Draggable<String>(
+                                data: selectedAnswers[subQuestion['question']],
                                 child: Card(
                                   margin: EdgeInsets.all(5),
                                   child: Padding(
@@ -94,46 +91,58 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                                     child: Text(selectedAnswers[subQuestion['question']]!),
                                   ),
                                 ),
-                              ),
-                              childWhenDragging: Container(
-                                width: 150,
-                                height: 50,
-                                color: Colors.grey[200],
-                                alignment: Alignment.center,
-                                child: Text('Kéo vào đây', style: TextStyle(fontSize: 16)),
-                              ),
-                              onDragCompleted: () => setState(() {
-                                selectedAnswers.remove(subQuestion['question']);
-                              }),
-                            )
-                                : Text('Kéo vào đây', style: TextStyle(fontSize: 16)),
-                          );
-                        },
-                        onAccept: (data) => onAnswerDropped(subQuestion['question'], data),
-                      ),
+                                feedback: Material(
+                                  color: Colors.transparent,
+                                  child: Card(
+                                    margin: EdgeInsets.all(5),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: Text(selectedAnswers[subQuestion['question']]!),
+                                    ),
+                                  ),
+                                ),
+                                childWhenDragging: Container(
+                                  width: 150,
+                                  height: 50,
+                                  color: Colors.grey[200],
+                                  alignment: Alignment.center,
+                                  child: Text('Kéo vào đây', style: TextStyle(fontSize: 16)),
+                                ),
+                                onDragCompleted: () => setState(() {
+                                  selectedAnswers.remove(subQuestion['question']);
+                                }),
+                              )
+                                  : Text('Kéo vào đây', style: TextStyle(fontSize: 16)),
+                            );
+                          },
+                          onAccept: (data) => onAnswerDropped(subQuestion['question'], data),
+                        )
+                      else
+                        Container(
+                          width: 150,
+                          height: 50,
+                          color: Colors.grey[200],
+                          alignment: Alignment.center,
+                          child: Text(
+                            subQuestion['correctAnswer'],
+                            style: TextStyle(fontSize: 18, color: Colors.green),
+                          ),
+                        ),
                     ],
                   );
                 },
               ),
             ),
-            SizedBox(height: 20),
-            Expanded(
-              child: Wrap(
-                spacing: 10,
-                children: [
-                  for (final subQuestion in subQuestions)
-                    if (!selectedAnswers.containsValue(subQuestion['correctAnswer']))
-                      Draggable<String>(
-                        data: subQuestion['correctAnswer'],
-                        child: Card(
-                          margin: EdgeInsets.all(5),
-                          child: Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text(subQuestion['correctAnswer']),
-                          ),
-                        ),
-                        feedback: Material(
-                          color: Colors.transparent,
+            if (widget.mode == 'lambai') ...[
+              SizedBox(height: 20),
+              Expanded(
+                child: Wrap(
+                  spacing: 10,
+                  children: [
+                    for (final subQuestion in subQuestions)
+                      if (!selectedAnswers.containsValue(subQuestion['correctAnswer']))
+                        Draggable<String>(
+                          data: subQuestion['correctAnswer'],
                           child: Card(
                             margin: EdgeInsets.all(5),
                             child: Padding(
@@ -141,21 +150,31 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                               child: Text(subQuestion['correctAnswer']),
                             ),
                           ),
-                        ),
-                        childWhenDragging: Card(
-                          margin: EdgeInsets.all(5),
-                          child: Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text(
-                              subQuestion['correctAnswer'],
-                              style: TextStyle(color: Colors.grey),
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: Card(
+                              margin: EdgeInsets.all(5),
+                              child: Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text(subQuestion['correctAnswer']),
+                              ),
+                            ),
+                          ),
+                          childWhenDragging: Card(
+                            margin: EdgeInsets.all(5),
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Text(
+                                subQuestion['correctAnswer'],
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

@@ -1,35 +1,31 @@
 import 'package:flutter/material.dart';
 
-class MultipleAnswerQuestion extends StatefulWidget {
+class MultipleAnswerQuestion extends StatelessWidget {
   final String questionText;
   final List<String> answers;
   final Function(List<String>) onAnswersSelected;
-  final List<String>? selectedAnswers;
+  final List<String> selectedAnswers;
+  final String mode;
 
   MultipleAnswerQuestion({
     required this.questionText,
     required this.answers,
     required this.onAnswersSelected,
-    this.selectedAnswers,
+    required this.selectedAnswers,
+    required this.mode,
   });
 
   @override
-  _MultipleAnswerQuestionState createState() => _MultipleAnswerQuestionState();
-}
-
-class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
-  List<String> selectedAnswers = [];
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.selectedAnswers != null) {
-      selectedAnswers.addAll(widget.selectedAnswers!);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Kiểm tra và đảm bảo rằng các giá trị không bị null
+    assert(questionText.isNotEmpty, 'Question text cannot be empty');
+    assert(answers.isNotEmpty, 'Answers cannot be empty');
+    assert(selectedAnswers != null, 'Selected answers cannot be null');
+    assert(mode.isNotEmpty, 'Mode cannot be empty');
+
+    // In danh sách đáp án
+    printAnswers();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -41,62 +37,66 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.black),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Center(
-            child: Text(
-              widget.questionText,
-              style: TextStyle(fontSize: 24, fontFamily: 'OpenSans'),
-              textAlign: TextAlign.center,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: Center(
+              child: Text(
+                questionText,
+                style: TextStyle(fontSize: 24, fontFamily: 'OpenSans'),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ),
         SizedBox(height: 20),
-        Center(
-          child: Column(
-            children: widget.answers.map((answer) {
-              bool isSelected = selectedAnswers.contains(answer);
+        ...answers.map((answer) {
+          bool isSelected = selectedAnswers.contains(answer);
+          bool isCorrect = mode == 'xemdapan' && isSelected;
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      if (isSelected) {
-                        selectedAnswers.remove(answer);
-                      } else {
-                        if (selectedAnswers.length < 3) {
-                          selectedAnswers.add(answer);
-                        }
-                      }
-                      widget.onAnswersSelected(selectedAnswers);
-                    });
-                  },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-                      return isSelected ? Colors.blue[200]! : Colors.grey[350]!;
-                    }),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+          return Column(
+            children: [
+              InkWell(
+                onTap: mode == 'lambai'
+                    ? () {
+                  List<String> updatedSelections = List.from(selectedAnswers);
+                  if (updatedSelections.contains(answer)) {
+                    updatedSelections.remove(answer);
+                  } else {
+                    updatedSelections.add(answer);
+                  }
+                  onAnswersSelected(updatedSelections);
+                }
+                    : null, // Vô hiệu hóa trong chế độ "xemdapan"
+                child: Container(
+                  width: 300,
+                  height: 65,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.blue[200] // Màu cho đáp án đã chọn
+                        : (mode == 'xemdapan' && isCorrect ? Colors.green[200] : Colors.grey[350]), // Màu cho đáp án đúng trong chế độ "xemdapan"
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? Colors.blue[300]! // Border màu cho đáp án đã chọn
+                          : (mode == 'xemdapan' && isCorrect ? Colors.green[300]! : Colors.grey[600]!), // Border màu cho đáp án đúng
                     ),
                   ),
-                  child: Container(
-                    width: 300,
-                    height: 55, // Đã thay đổi kích thước nút
-                    alignment: Alignment.center,
-                    child: Text(
-                      answer,
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                    ),
-                  ),
+                  alignment: Alignment.center,
+                  child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
                 ),
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 20),
+              ),
+              SizedBox(height: 10),
+            ],
+          );
+        }).toList(),
       ],
     );
+  }
+
+  void printAnswers() {
+    print('Danh sách đáp án:');
+    for (var answer in answers) {
+      print(answer);
+    }
   }
 }

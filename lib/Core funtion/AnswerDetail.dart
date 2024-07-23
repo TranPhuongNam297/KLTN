@@ -21,51 +21,10 @@ class _AnswerDetailState extends State<AnswerDetail> {
   @override
   void initState() {
     super.initState();
-    _completedBoDeList = _fetchCompletedBoDeList();
   }
 
-  Future<List<Map<String, dynamic>>> _fetchCompletedBoDeList() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idBoDe = prefs.getString('boDeId');
-    if (idBoDe == null) {
-      return [];
-    }
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('chi_tiet_bo_de')
-        .where('Id_bo_de', isEqualTo: idBoDe)
-        .get();
+  void _navigateToDetail() {
 
-    List<Map<String, dynamic>> completedBoDeList = querySnapshot.docs.map((doc) {
-      return doc.data() as Map<String, dynamic>;
-    }).toList();
-    return completedBoDeList;
-  }
-
-  void _navigateToDetail(BuildContext context, String questionType, String id) {
-    print(id+"trc luc bam");
-    switch (questionType) {
-      case 'matching':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MatchingDetail(id: id),
-        ));
-        break;
-      case 'truefalse':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => TrueFalseDetail(id: id)),
-        );
-        break;
-      case 'multiple_choice':
-      case 'multiple_answer':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MultipleChoiceDetail(id: id)),
-        );
-        break;
-      default:
-        break;
-    }
   }
 
   @override
@@ -114,7 +73,7 @@ class _AnswerDetailState extends State<AnswerDetail> {
                       ),
                     ],
                   ),
-                  onTap: () => _navigateToDetail(context, questionType, questionId),
+                  onTap: () => _navigateToDetail(),
                 );
               },
             );
