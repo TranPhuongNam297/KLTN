@@ -5,6 +5,7 @@ class bo_de {
   bool Tinh_trang;
   bool Generate;
   int DiemSo;
+  bool Mode;
 
   bo_de({
     required this.Id,
@@ -13,6 +14,7 @@ class bo_de {
     required this.Tinh_trang,
     required this.Generate,
     required this.DiemSo,
+    required this.Mode
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +25,7 @@ class bo_de {
       'Tinh_trang': Tinh_trang,
       'Generate': Generate,
       'DiemSo': DiemSo,
+      'Mode': Mode,
     };
   }
 
@@ -34,6 +37,7 @@ class bo_de {
         Tinh_trang: map['Tinh_trang'],
         Generate: map['Generate'],
         DiemSo: map['DiemSo'],
+        Mode: map['Mode']
     );
   }
 }

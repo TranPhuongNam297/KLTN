@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:khoa_luan_tot_nghiep/listContinue.dart';
+import 'package:khoa_luan_tot_nghiep/listPrac.dart';
 import 'listTask.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,7 +31,7 @@ class doTest extends StatelessWidget {
                   size: 32,
                 ),
                 label: Text(
-                  'Làm bài mới',
+                  'Kiểm tra',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -48,12 +49,12 @@ class doTest extends StatelessWidget {
               SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => listContinue(),
-                  //   ),
-                  // );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => listPrac(),
+                    ),
+                  );
                 },
                 icon: Icon(
                   Icons.menu_book_sharp,
@@ -61,7 +62,7 @@ class doTest extends StatelessWidget {
                   size: 32,
                 ),
                 label: Text(
-                  'Tiếp tục làm',
+                  'Luyện tập',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
