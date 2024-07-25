@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class TrueFalseQuestionPrac extends StatefulWidget {
   final Map<String, dynamic> trueFalseQuestion;
-  final void Function(bool) onAnswerSelected;
   final bool isChecked;
+  final void Function(bool? selectedAnswer) onAnswerSelected;
 
   TrueFalseQuestionPrac({
     required this.trueFalseQuestion,
-    required this.onAnswerSelected,
     required this.isChecked,
+    required this.onAnswerSelected,
   });
 
   @override
@@ -18,6 +18,7 @@ class TrueFalseQuestionPrac extends StatefulWidget {
 class _TrueFalseQuestionPracState extends State<TrueFalseQuestionPrac> {
   List<bool?> _selectedAnswers = [];
   late bool _isChecked;
+  List<bool?> _correctAnswers = [];
 
   @override
   void initState() {
@@ -37,18 +38,27 @@ class _TrueFalseQuestionPracState extends State<TrueFalseQuestionPrac> {
   void _initializeSelectedAnswers() {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     _selectedAnswers = List<bool?>.filled(subQuestions.length, null);
+    _correctAnswers = List<bool?>.generate(
+      subQuestions.length,
+          (index) => subQuestions[index]['correctAnswer'],
+    );
   }
 
   void _checkAnswers() {
-    setState(() {
-      _isChecked = true;
-      final subQuestions = widget.trueFalseQuestion['subQuestions1'];
-      widget.onAnswerSelected(
-        _selectedAnswers.every((answer) =>
-        answer != null &&
-            answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']),
-      );
-    });
+    bool anyAnswerSelected = _selectedAnswers.any((answer) => answer != null);
+    if (!anyAnswerSelected) {
+      widget.onAnswerSelected(null);
+      return;
+    }
+
+    bool allCorrect = true;
+    for (int i = 0; i < _selectedAnswers.length; i++) {
+      if (_selectedAnswers[i] != _correctAnswers[i]) {
+        allCorrect = false;
+        break;
+      }
+    }
+    widget.onAnswerSelected(allCorrect ? true : false);
   }
 
   @override
@@ -90,52 +100,48 @@ class _TrueFalseQuestionPracState extends State<TrueFalseQuestionPrac> {
                       width: screenWidth * 0.5,
                       child: Text(
                         subQuestions[i]['question'],
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: _selectedAnswers[i] != null
+                              ? (_selectedAnswers[i] == _correctAnswers[i]
+                              ? Colors.green
+                              : Colors.red)
+                              : Colors.black,
+                        ),
                         softWrap: true,
                         overflow: TextOverflow.visible,
-                        maxLines: null,
+                        maxLines: 3,
                       ),
                     ),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Radio<bool?>(
-                            value: true,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: _isChecked ? null : (value) {
-                              setState(() {
-                                _selectedAnswers[i] = value;
-                              });
-                            },
-                            activeColor: _isChecked && _selectedAnswers[i] == true
-                                ? Colors.green
-                                : Colors.black,
-                          ),
-                          Radio<bool?>(
-                            value: false,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: _isChecked ? null : (value) {
-                              setState(() {
-                                _selectedAnswers[i] = value;
-                              });
-                            },
-                            activeColor: _isChecked && _selectedAnswers[i] == false
-                                ? Colors.red
-                                : Colors.black,
-                          ),
-                        ],
-                      ),
+                    Spacer(),
+                    Radio<bool?>(
+                      value: true,
+                      groupValue: _selectedAnswers[i],
+                      onChanged: _isChecked
+                          ? null
+                          : (value) {
+                        setState(() {
+                          _selectedAnswers[i] = value;
+                          _checkAnswers();
+                        });
+                      },
+                    ),
+                    Radio<bool?>(
+                      value: false,
+                      groupValue: _selectedAnswers[i],
+                      onChanged: _isChecked
+                          ? null
+                          : (value) {
+                        setState(() {
+                          _selectedAnswers[i] = value;
+                          _checkAnswers();
+                        });
+                      },
                     ),
                   ],
                 ),
               ],
             ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _checkAnswers,
-            child: Text('Kiểm tra'),
-          ),
         ],
       ),
     );

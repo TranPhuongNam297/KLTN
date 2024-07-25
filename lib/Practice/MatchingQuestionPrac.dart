@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class MatchingQuestionPrac extends StatefulWidget {
   final Map<String, dynamic> matchingQuestion;
-  final Function(bool) onAllCorrect;
+  final bool isChecked;
 
   const MatchingQuestionPrac({
     Key? key,
     required this.matchingQuestion,
-    required this.onAllCorrect, required bool isChecked,
+    required this.isChecked, required void Function(bool isAllCorrect) onAllCorrect,
   }) : super(key: key);
 
   @override
@@ -17,7 +17,6 @@ class MatchingQuestionPrac extends StatefulWidget {
 class _MatchingQuestionPracState extends State<MatchingQuestionPrac> {
   Map<String, String?> selectedAnswers = {};
   Map<String, bool> correctness = {};
-  bool isChecked = false; // Flag to indicate if the answers have been checked
 
   void onAnswerDropped(String question, String? answer) {
     setState(() {
@@ -34,19 +33,21 @@ class _MatchingQuestionPracState extends State<MatchingQuestionPrac> {
 
   void _checkAnswers() {
     setState(() {
-      isChecked = true;
       correctness.clear();
       for (var subQuestion in widget.matchingQuestion['subQuestions']) {
         final question = subQuestion['question'];
         final correctAnswer = subQuestion['correctAnswer'];
         correctness[question] = selectedAnswers[question] == correctAnswer;
       }
-      widget.onAllCorrect(_checkAllCorrect());
     });
   }
 
-  bool _checkAllCorrect() {
-    return correctness.values.every((isCorrect) => isCorrect);
+  @override
+  void didUpdateWidget(MatchingQuestionPrac oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isChecked && !oldWidget.isChecked) {
+      _checkAnswers();
+    }
   }
 
   @override
@@ -84,7 +85,7 @@ class _MatchingQuestionPracState extends State<MatchingQuestionPrac> {
                           return Container(
                             width: 150,
                             height: 50,
-                            color: isChecked
+                            color: widget.isChecked
                                 ? (correctness[question] == true
                                 ? Colors.green[200]
                                 : Colors.red[200])
@@ -171,11 +172,6 @@ class _MatchingQuestionPracState extends State<MatchingQuestionPrac> {
                       ),
                 ],
               ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _checkAnswers,
-              child: Text('Kiểm tra'),
             ),
           ],
         ),

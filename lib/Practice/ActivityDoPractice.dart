@@ -4,14 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Core funtion/QuestionManager.dart';
 import '../Core funtion/Result.dart';
 import '../CountdownTimer.dart';
-import '../StarButton.dart';
 import '../mainLayout.dart';
 import 'MatchingQuestionPrac.dart';
 import 'MultipleChoiceQuestionPrac.dart';
 import 'TrueFalseQuestionPrac.dart';
 import 'MultipleAnswerQuestionPrac.dart';
 import '../ConfirmDialog.dart';
-import '../Home.dart';
 
 class ActivityDoPractice extends StatefulWidget {
   @override
@@ -28,7 +26,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
   List<bool?> questionResults = [];
   Future<void>? _initialization;
   String? idBoDe;
-  bool isChecked = false; // Thêm thuộc tính để theo dõi khi nào kiểm tra
+  bool isChecked = false;
 
   @override
   void initState() {
@@ -57,43 +55,21 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
       isMatchingQuestion = questionManager.currentQuestionType == 'matching';
     });
   }
-
-  void _handleAnswer(String selectedAnswer) {
-    final correctAnswer = questionManager.correctAnswer;
+  void _handleTrueFalseAnswer(bool? selectedAnswer) {
     final currentIndex = questionManager.currentQuestionIndex;
-
     setState(() {
-      selectedAnswers[currentIndex] = selectedAnswer;
+      selectedAnswers[currentIndex] = selectedAnswer; // Cập nhật giá trị đã chọn
+      final correctAnswer = questionManager.correctAnswer as bool?;
       bool isCorrect = selectedAnswer == correctAnswer;
       answeredCorrectly[currentIndex] = isCorrect;
       questionResults[currentIndex] = isCorrect;
-
-      if (isCorrect) {
-        questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
-      } else {
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
-      }
-    });
-  }
-
-  void _handleTrueFalseAnswer(bool allCorrect) {
-    final currentIndex = questionManager.currentQuestionIndex;
-
-    setState(() {
-      questionResults[currentIndex] = allCorrect;
-      if (allCorrect) {
-        questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
-      } else {
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
-      }
+      questionManager.updateChiTietBoDe(isCorrect, questionManager.currentQuestionId, idBoDe!);
     });
   }
 
   void _handleMatchingAnswer(bool isAllCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
-
     setState(() {
-      selectedAnswers[questionManager.currentQuestionIndex] = selectedAnswers;
       questionResults[currentIndex] = isAllCorrect;
       if (isAllCorrect) {
         questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
@@ -102,65 +78,54 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
       }
     });
   }
-
-  void _handleMultipleAnswer(List<String> selectedAnswers) {
-    final correctAnswers = List<String>.from(questionManager.correctAnswer);
-    final currentIndex = questionManager.currentQuestionIndex;
-
-    setState(() {
-      this.selectedAnswers[currentIndex] = selectedAnswers;
-      List<String> selected = this.selectedAnswers[currentIndex] ?? [];
-      bool allCorrect = selected.length == correctAnswers.length && !selected.any((answer) => !correctAnswers.contains(answer));
-
-      questionResults[currentIndex] = allCorrect;
-
-      if (allCorrect) {
-        questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
-      } else {
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
-      }
-    });
-  }
-
   void _nextQuestion() {
     setState(() {
       final currentIndex = questionManager.currentQuestionIndex;
-
       if (!isChecked) {
         isChecked = true;
-
         switch (questionManager.currentQuestionType) {
           case 'multiple_choice':
             final selectedAnswer = selectedAnswers[currentIndex];
             final correctAnswer = questionManager.correctAnswer;
-
-            if (selectedAnswer != null) {
+            if (selectedAnswer == null) {
+              _showEmptyAnswerDialog();
+              isChecked = false;
+            } else {
               bool isCorrect = selectedAnswer == correctAnswer;
               answeredCorrectly[currentIndex] = isCorrect;
               questionResults[currentIndex] = isCorrect;
-
               questionManager.updateChiTietBoDe(isCorrect, questionManager.currentQuestionId, idBoDe!);
-            } else {
-              answeredCorrectly[currentIndex] = false;
             }
             break;
 
           case 'multiple_answer':
-            final selectedAnswersList = selectedAnswers[currentIndex] as List<String>;
+            final selectedAnswersList = selectedAnswers[currentIndex] as List<String>?;
             final correctAnswers = List<String>.from(questionManager.correctAnswer ?? []);
-
-            bool allCorrect = selectedAnswersList.length == correctAnswers.length &&
-                !selectedAnswersList.any((answer) => !correctAnswers.contains(answer));
-
-            questionResults[currentIndex] = allCorrect;
-
-            questionManager.updateChiTietBoDe(allCorrect, questionManager.currentQuestionId, idBoDe!);
+            if (selectedAnswersList == null || selectedAnswersList.isEmpty) {
+              _showEmptyAnswerDialog();
+              isChecked = false;
+            } else {
+              bool allCorrect = selectedAnswersList.length == correctAnswers.length &&
+                  !selectedAnswersList.any((answer) => !correctAnswers.contains(answer));
+              questionResults[currentIndex] = allCorrect;
+              questionManager.updateChiTietBoDe(allCorrect, questionManager.currentQuestionId, idBoDe!);
+            }
             break;
 
           case 'truefalse':
+            final selectedAnswer1 = selectedAnswers[currentIndex];
+            if (selectedAnswer1 == null) {
+              _showEmptyAnswerDialog();
+              isChecked = false;
+            } else {
+              bool isCorrect = selectedAnswer1 == questionManager.correctAnswer as bool?;
+              _handleTrueFalseAnswer(isCorrect);
+            }
             break;
 
           case 'matching':
+            final isAllCorrect = true; // Implement your matching answer check logic here
+            _handleMatchingAnswer(isAllCorrect);
             break;
 
           default:
@@ -178,16 +143,34 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
     });
   }
 
-  void _previousQuestion() {
-    setState(() {
-      if (questionManager.currentQuestionIndex > 0) {
-        questionManager.currentQuestionIndex--;
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
-        _checkMatchingQuestion();
-      }
-    });
+  void _showEmptyAnswerDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Cảnh báo',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Bạn không được để trống đáp án. Vui lòng chọn một đáp án trước khi tiếp tục.',
+            style: TextStyle(fontSize: 20),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'OK',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
-
 
 
   void _showSubmitDialog() {
@@ -354,7 +337,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
                         MatchingQuestionPrac(
                           matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
                           onAllCorrect: _handleMatchingAnswer,
-                          isChecked: isChecked, // Truyền trạng thái kiểm tra
+                          isChecked: isChecked,
                         )
                       else if (questionManager.currentQuestionType == 'multiple_choice')
                         MultipleChoiceQuestionPrac(
@@ -397,22 +380,6 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
                         children: [
-                          if (questionManager.currentQuestionIndex > 0)
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
-                                minimumSize: Size(75, 35),
-                              ),
-                              icon: Icon(Icons.arrow_back, color: Colors.white),
-                              label: Text(
-                                'Quay về',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              onPressed: _previousQuestion,
-                            ),
                           Spacer(),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
