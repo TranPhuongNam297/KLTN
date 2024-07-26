@@ -21,7 +21,7 @@ class _TestRulesScreenState extends State<TestRulesScreen> {
     // Lấy boDeId từ SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? boDeId = prefs.getString('boDeId');
-
+    prefs.setString('mode', 'lambai');
     if (boDeId != null) {
       // Truy xuất dữ liệu và lấy trường Mode
       bool isPracticeMode = await _fetchModeFromBoDe(boDeId);

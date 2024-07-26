@@ -61,7 +61,7 @@ class Result extends StatelessWidget {
               'Chế độ:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            Text('Luyện tập', style: TextStyle(fontSize: 20)),
+            Text('Kiểm tra', style: TextStyle(fontSize: 20)),
             SizedBox(height: 16),
             Text(
               'Ngày hoàn thành:',
