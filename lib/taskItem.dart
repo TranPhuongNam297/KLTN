@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 class TaskItem extends StatelessWidget {
   final String title;
   final String imageUrl;
+  final String modeText;
   final Function()? onTap;
 
-  TaskItem({required this.title, required this.imageUrl, this.onTap});
+  TaskItem({
+    required this.title,
+    required this.imageUrl,
+    required this.modeText,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +46,15 @@ class TaskItem extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 30,
+                      color: Colors.white,
+                      fontFamily: 'OpenSans',
+                    ),
+                  ),
+                  Text(
+                    modeText,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
                       color: Colors.white,
                       fontFamily: 'OpenSans',
                     ),
