@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:khoa_luan_tot_nghiep/Core%20funtion/ResultPractice.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Core funtion/QuestionManager.dart';
 import '../Core funtion/Result.dart';
@@ -205,7 +206,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Result(
+                    builder: (context) => ResultPractice(
                       totalQuestions: questionManager.questions.length,
                       correctAnswers: correctCount,
                       questionResults: questionResults,

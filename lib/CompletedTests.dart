@@ -124,7 +124,7 @@ class CompletedTests extends StatelessWidget {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('Bo_de')
-          .where('Tinh_trang', isEqualTo: true)
+          .where('Tinh_trang', isEqualTo: true).where('Mode', isEqualTo: false)
           .get();
 
       int totalScore = 0;
