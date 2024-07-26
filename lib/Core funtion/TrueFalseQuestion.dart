@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'QuestionManager.dart';
 
 class TrueFalseQuestion extends StatefulWidget {
-  final QuestionManager questionManager;
+  final Map<String, dynamic> trueFalseQuestion; // Thay đổi từ QuestionManager thành Map
   final void Function(bool) onAnswerSelected;
-  final String mode; // Add a mode parameter
+  final String mode;
 
   TrueFalseQuestion({
-    required this.questionManager,
+    required this.trueFalseQuestion, // Cập nhật tham số
     required this.onAnswerSelected,
-    required this.mode, // Initialize the mode parameter
+    required this.mode,
   });
 
   @override
@@ -25,11 +24,17 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     _initializeSelectedAnswers();
   }
 
-  void _initializeSelectedAnswers() {
-    final subQuestions = widget.questionManager.questions[widget.questionManager.currentQuestionIndex]['subQuestions1'];
-    _selectedAnswers = List<bool?>.filled(subQuestions.length, null);
+  @override
+  void didUpdateWidget(TrueFalseQuestion oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.trueFalseQuestion != oldWidget.trueFalseQuestion) {
+      _initializeSelectedAnswers();
+    }
+  }
 
-    // If mode is "xem đáp án", prefill _selectedAnswers with correct answers
+  void _initializeSelectedAnswers() {
+    final subQuestions = widget.trueFalseQuestion['subQuestions1'];
+    _selectedAnswers = List<bool?>.filled(subQuestions.length, null);
     if (widget.mode == 'xemdapan') {
       for (int i = 0; i < subQuestions.length; i++) {
         _selectedAnswers[i] = subQuestions[i]['correctAnswer'];
@@ -39,7 +44,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
 
   @override
   Widget build(BuildContext context) {
-    final subQuestions = widget.questionManager.questions[widget.questionManager.currentQuestionIndex]['subQuestions1'];
+    final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
@@ -95,7 +100,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                               });
                               widget.onAnswerSelected(_selectedAnswers.every((answer) =>
                               answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
-                            } : null, // Disable in "xem đáp án" mode
+                            } : null,
                           ),
                           Radio<bool?>(
                             value: false,
@@ -106,7 +111,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                               });
                               widget.onAnswerSelected(_selectedAnswers.every((answer) =>
                               answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
-                            } : null, // Disable in "xem đáp án" mode
+                            } : null,
                           ),
                         ],
                       ),

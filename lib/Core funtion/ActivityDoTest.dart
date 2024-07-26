@@ -85,7 +85,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   void _handleTrueFalseAnswer(bool allCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
     bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
-
     setState(() {
       questionResults[currentIndex] = allCorrect;
       if (allCorrect) {
@@ -127,10 +126,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       final currentIndex = questionManager.currentQuestionIndex;
       setState(() {
         this.selectedAnswers[currentIndex] = selectedAnswers;
-
         List<String> selected = this.selectedAnswers[currentIndex] ?? [];
         bool allCorrect = true;
-
         for (var answer in selected) {
           if (!correctAnswers.contains(answer)) {
             allCorrect = false;
@@ -378,12 +375,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                         )
                       else if (questionManager.currentQuestionType == 'truefalse')
                           TrueFalseQuestion(
-                            questionManager: questionManager,
-                            onAnswerSelected: (allCorrect) {
-                              setState(() {
-                                _handleTrueFalseAnswer(allCorrect);
-                              });
-                            },
+                            trueFalseQuestion: questionManager.questions[questionManager.currentQuestionIndex], // Truyền câu hỏi cụ thể
+                            onAnswerSelected: _handleTrueFalseAnswer,
                             mode: mode ?? 'lambai',
                           )
                         else if (questionManager.currentQuestionType == 'multiple_answer')

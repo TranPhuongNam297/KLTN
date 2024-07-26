@@ -107,7 +107,6 @@ class Result extends StatelessWidget {
                 onPressed: () async{
                   SharedPreferences prefs = await SharedPreferences.getInstance();
                   await prefs.setString('mode', 'xemdapan');
-                  print(prefs.getString("mode cua che do result"));
                   // Navigate to a new screen to show detailed answers
                   Navigator.of(context).push(
                     MaterialPageRoute(
