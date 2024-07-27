@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:khoa_luan_tot_nghiep/UpdateAccount.dart';
 import 'ActivityRegister.dart';
 import 'mainLayout.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -315,28 +316,32 @@ class _LoginState extends State<Login> {
     );
   }
 
-  _signinwithgoogle() async {
+  void _signinwithgoogle() async {
     String uid = "";
     final GoogleSignIn _ggSignin = GoogleSignIn();
     try {
       final GoogleSignInAccount? googleSignInAccount = await _ggSignin.signIn();
       if (googleSignInAccount != null) {
         final GoogleSignInAuthentication googleSignInAuthentication =
-            await googleSignInAccount.authentication;
+        await googleSignInAccount.authentication;
 
         final AuthCredential credential = GoogleAuthProvider.credential(
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken,
         );
         UserCredential userCredential =
-            await _firebaseAuth.signInWithCredential(credential);
+        await _firebaseAuth.signInWithCredential(credential);
         User? user = userCredential.user;
         if (user != null) {
           uid = user.uid;
           print("User UID: $uid");
           if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => ActivityRegister(uid: uid)));
+            // Điều hướng đến UserAccountManagement với chế độ chỉnh sửa
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => UpdateAccount(uid: uid, isEditing: true),
+              ),
+            );
           } else {
             _CheckUserUIDFirebase(uid);
           }
@@ -354,6 +359,7 @@ class _LoginState extends State<Login> {
     }
   }
 
+
   void _CheckUserUIDFirebase(String uid) async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     DocumentSnapshot userDoc =
@@ -363,7 +369,7 @@ class _LoginState extends State<Login> {
           .push(MaterialPageRoute(builder: (context) => mainLayout()));
     } else {
       Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => ActivityRegister(uid: uid)));
+          builder: (context) => UpdateAccount(uid: uid)));
     }
   }
 }
