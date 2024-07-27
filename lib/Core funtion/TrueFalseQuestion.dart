@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TrueFalseQuestion extends StatefulWidget {
-  final Map<String, dynamic> trueFalseQuestion; // Thay đổi từ QuestionManager thành Map
+  final Map<String, dynamic> trueFalseQuestion; // Cập nhật từ QuestionManager thành Map
   final void Function(bool) onAnswerSelected;
   final String mode;
 
@@ -41,6 +43,60 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       }
     }
   }
+
+  void _onRadioChanged(bool? value, int index) async {
+    setState(() {
+      _selectedAnswers[index] = value;
+    });
+
+    // Xác định tất cả các câu trả lời có đúng không
+    bool allCorrect = _selectedAnswers.every((answer) {
+      int answerIndex = _selectedAnswers.indexOf(answer);
+      return answer != null && answer == widget.trueFalseQuestion['subQuestions1'][answerIndex]['correctAnswer'];
+    });
+
+    // Thực hiện callback khi câu trả lời được chọn
+    widget.onAnswerSelected(allCorrect);
+
+    if (widget.mode == 'lambai') {
+      final prefs = await SharedPreferences.getInstance();
+      final idBoDe = prefs.getString('boDeId')!;
+      final subQuestions = widget.trueFalseQuestion['subQuestions1'];
+
+      if (subQuestions.length > index) {
+        final questionId = subQuestions[index]['Id']; // ID câu hỏi trong subQuestions
+        print(idBoDe);
+        print(questionId);
+
+        CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+
+        try {
+          // Tìm tài liệu cụ thể dựa trên Id và Id_bo_de
+          QuerySnapshot snapshot = await chiTietBoDeRef
+              .where('Id_cau_hoi', isEqualTo: questionId)
+              .where('Id_bo_de', isEqualTo: idBoDe)
+              .get();
+
+          // Cập nhật tài liệu đầu tiên nếu có tài liệu khớp với điều kiện
+          if (snapshot.docs.isNotEmpty) {
+            DocumentSnapshot document = snapshot.docs.first;
+
+            await document.reference.update({
+              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'],
+            });
+            print('Update successful');
+          } else {
+            print('No document found for the given Id_cau_hoi and Id_bo_de');
+          }
+        } catch (error) {
+          print('Failed to update: $error');
+        }
+      } else {
+        print('Invalid index for subQuestions');
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -95,22 +151,14 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                             value: true,
                             groupValue: _selectedAnswers[i],
                             onChanged: widget.mode == 'lambai' ? (value) {
-                              setState(() {
-                                _selectedAnswers[i] = value;
-                              });
-                              widget.onAnswerSelected(_selectedAnswers.every((answer) =>
-                              answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
+                              _onRadioChanged(value, i);
                             } : null,
                           ),
                           Radio<bool?>(
                             value: false,
                             groupValue: _selectedAnswers[i],
                             onChanged: widget.mode == 'lambai' ? (value) {
-                              setState(() {
-                                _selectedAnswers[i] = value;
-                              });
-                              widget.onAnswerSelected(_selectedAnswers.every((answer) =>
-                              answer != null && answer == subQuestions[_selectedAnswers.indexOf(answer)]['correctAnswer']));
+                              _onRadioChanged(value, i);
                             } : null,
                           ),
                         ],

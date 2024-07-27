@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MatchingQuestion extends StatefulWidget {
   final Map<String, dynamic> matchingQuestion;
@@ -30,10 +32,12 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
       } else {
         selectedAnswers[question] = answer;
       }
+
       correctness[question] = widget.matchingQuestion['subQuestions']
           .firstWhere((q) => q['question'] == question)['correctAnswer'] == answer;
 
       widget.onAllCorrect(_checkAllCorrect());
+      _updateFirestore(question, answer);
     });
   }
 
@@ -44,6 +48,38 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
       }
     }
     return true;
+  }
+
+  Future<void> _updateFirestore(String question, String? answer) async {
+    if (widget.mode == 'lambai') {
+      final prefs = await SharedPreferences.getInstance();
+      final idBoDe = prefs.getString('boDeId')!;
+      final subQuestions = widget.matchingQuestion['subQuestions'];
+
+      final questionId = subQuestions.firstWhere((q) => q['question'] == question)['Id'];
+
+      try {
+        CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+        QuerySnapshot snapshot = await chiTietBoDeRef
+            .where('Id_cau_hoi', isEqualTo: questionId)
+            .where('Id_bo_de', isEqualTo: idBoDe)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          DocumentSnapshot document = snapshot.docs.first;
+
+          await document.reference.update({
+            'IsCorrect': answer == widget.matchingQuestion['subQuestions']
+                .firstWhere((q) => q['question'] == question)['correctAnswer'],
+          });
+          print('Firestore update successful');
+        } else {
+          print('No document found for the given Id_cau_hoi and Id_bo_de');
+        }
+      } catch (error) {
+        print('Failed to update Firestore: $error');
+      }
+    }
   }
 
   @override

@@ -52,7 +52,6 @@ class MultipleAnswerQuestion extends StatelessWidget {
         ...answers.map((answer) {
           bool isSelected = selectedAnswers.contains(answer);
           bool isCorrect = mode == 'xemdapan' && isSelected;
-
           return Column(
             children: [
               InkWell(
@@ -94,9 +93,9 @@ class MultipleAnswerQuestion extends StatelessWidget {
   }
 
   void printAnswers() {
-    print('Danh sách đáp án:');
-    for (var answer in answers) {
-      print(answer);
-    }
+    // print('Danh sách đáp án:');
+    // for (var answer in answers) {
+    //   print(answer);
+    // }
   }
 }

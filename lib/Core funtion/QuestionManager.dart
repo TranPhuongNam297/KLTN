@@ -160,7 +160,6 @@ class QuestionManager {
         }
       }
     }
-
     matchingQuestionTemplate.forEach((question) {
       if (question['subQuestions'].isNotEmpty) {
         questions.add(question);
@@ -175,7 +174,6 @@ class QuestionManager {
   }
 
   String get currentQuestion => questions[currentQuestionIndex]['question'];
-
   List<String>? get currentAnswers {
     if (questions[currentQuestionIndex]['type'] == 'multiple_choice' ||
         questions[currentQuestionIndex]['type'] == 'multiple_answer') {
@@ -209,12 +207,11 @@ class QuestionManager {
       if (snapshot.docs.isNotEmpty) {
         // Lấy tài liệu đầu tiên (giả sử Id và Id_bo_de là duy nhất)
         DocumentSnapshot document = snapshot.docs.first;
-
         // Cập nhật giá trị IsCorrect
         await document.reference.update({'IsCorrect': isCorrect});
-        print('Cập nhật thành công!');
+        print("update ok");
       } else {
-        print('Không tìm thấy tài liệu phù hợp.');
+        print("update k dc");
       }
     } catch (e) {
       print('Có lỗi xảy ra: $e');
