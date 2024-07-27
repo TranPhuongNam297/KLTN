@@ -35,6 +35,7 @@ class _HomeState extends State<Home> {
         .collection('Bo_de')
         .where('Id_user_tao', isEqualTo: userId)
         .where('Tinh_trang', isEqualTo: false)
+        .where('Generate', isEqualTo: true)
         .get();
 
     setState(() {
@@ -74,7 +75,8 @@ class _HomeState extends State<Home> {
                   itemBuilder: (context, index) {
                     return ActivityItemMain(
                       title: 'Bộ đề ${index + 1}',
-                      boDeId: activityList[index]['Id'], // Truyền boDeId vào ActivityItemMain
+                      boDeId: activityList[index]['Id'],
+                      mode: activityList[index]['Mode'], // Truyền Mode vào ActivityItemMain
                     );
                   },
                 ),

@@ -32,6 +32,15 @@ class _MultipleChoiceQuestionPracState extends State<MultipleChoiceQuestionPrac>
     _updateAnswerStates();
   }
 
+  @override
+  void didUpdateWidget(MultipleChoiceQuestionPrac oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.questionText != oldWidget.questionText) {
+      _isSelected = List.filled(widget.answers.length, false);
+      _updateAnswerStates();
+    }
+  }
+
   void _updateAnswerStates() {
     if (widget.selectedAnswer != null) {
       int selectedIndex = widget.answers.indexOf(widget.selectedAnswer!);
@@ -94,10 +103,10 @@ class _MultipleChoiceQuestionPracState extends State<MultipleChoiceQuestionPrac>
                     color: widget.isChecked
                         ? (isUserAnswer
                         ? (isCorrect
-                        ? Colors.green[200]
-                        : Colors.red[200])
+                        ? Colors.green
+                        : Colors.red)
                         : Colors.grey[350])
-                        : (isSelected ? Colors.blue[200] : Colors.grey[350]),
+                        : (isSelected ? Colors.blue : Colors.grey[350]),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,

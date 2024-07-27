@@ -121,6 +121,14 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
             } else {
               bool isCorrect = selectedAnswer1 == questionManager.correctAnswer as bool?;
               _handleTrueFalseAnswer(isCorrect);
+              // Chuyển sang câu tiếp theo
+              if (currentIndex < questionManager.questions.length - 1) {
+                questionManager.currentQuestionIndex++;
+                isChecked = false;
+                _checkMatchingQuestion();
+              } else {
+                _showSubmitDialog();
+              }
             }
             break;
 
@@ -143,6 +151,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
       }
     });
   }
+
 
   void _showEmptyAnswerDialog() {
     showDialog(

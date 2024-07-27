@@ -3,9 +3,10 @@ import 'TestRulesScreen.dart';
 
 class ActivityItemMain extends StatelessWidget {
   final String title;
-  final String boDeId; // Thêm trường boDeId để xác định bài kiểm tra
+  final String boDeId;
+  final bool mode; // Thêm trường mode để xác định chế độ của bộ đề
 
-  ActivityItemMain({required this.title, required this.boDeId});
+  ActivityItemMain({required this.title, required this.boDeId, required this.mode});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class ActivityItemMain extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TestRulesScreen()), // Truyền boDeId đến TestRulesScreen
+          MaterialPageRoute(builder: (context) => TestRulesScreen()),
         );
       },
       child: Container(
@@ -47,6 +48,14 @@ class ActivityItemMain extends StatelessWidget {
                       fontSize: 30,
                       color: Colors.white,
                       fontFamily: 'OpenSans',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    mode ? 'Chế độ: Luyện tập' : 'Chế độ: Kiểm tra', // Hiển thị chế độ dựa trên giá trị của mode
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
                     ),
                   ),
                 ],
