@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:khoa_luan_tot_nghiep/Model/User_info.dart';
-
 import 'Login.dart';
 
 class ActivityRegister extends StatefulWidget {
-  String uid;
+  final String uid;
+
   ActivityRegister({required this.uid});
+
   @override
   _ActivityRegister createState() => _ActivityRegister();
 }
@@ -17,14 +18,10 @@ class _ActivityRegister extends State<ActivityRegister> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
+  String? _phoneNumberError;
+  String? _userNameError;
+  bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      shopDiablog(context, "Thông báo", "Mời bạn nhập thông tin để hoàn tất tạo tài khoản");
-    });
-  }
   @override
   void dispose() {
     _fullNameController.dispose();
@@ -34,13 +31,98 @@ class _ActivityRegister extends State<ActivityRegister> {
     super.dispose();
   }
 
+  String? _validateFullName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Bạn chưa nhập họ và tên';
+    }
+    if (RegExp(r'\d').hasMatch(value)) {
+      return 'Họ và tên không được chứa số';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Bạn chưa nhập mật khẩu';
+    }
+    if (value.length < 8) {
+      return 'Mật khẩu phải dài ít nhất 8 ký tự';
+    }
+    if (value.length > 20) {
+      return 'Mật khẩu không được dài quá 20 ký tự';
+    }
+    if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+      return 'Mật khẩu phải chứa ít nhất một chữ cái in hoa';
+    }
+    if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
+      return 'Mật khẩu phải chứa ít nhất một số';
+    }
+    if (!RegExp(r'(?=.*[@$!%*?&])').hasMatch(value)) {
+      return 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt';
+    }
+    return null;
+  }
+
+  String? _validatePhoneNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Bạn chưa nhập số điện thoại';
+    }
+    if (value.length != 10 || !value.startsWith('0')) {
+      return 'Số điện thoại phải có 10 số và bắt đầu bằng 0';
+    }
+    return null;
+  }
+
+  String? _validateUserName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Bạn chưa nhập tài khoản';
+    }
+    if (value.length < 8 || value.length > 20) {
+      return 'Tài khoản phải có từ 8 đến 20 ký tự';
+    }
+    return null;
+  }
+
+  Future<void> _checkExistingUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    String phoneNumber = _phoneNumberController.text;
+    String userName = _userNameController.text;
+
+    bool phoneNumberExists = await FirebaseFirestore.instance
+        .collection('User_info')
+        .where('phoneNumber', isEqualTo: phoneNumber)
+        .get()
+        .then((snapshot) => snapshot.docs.isNotEmpty);
+
+    bool userNameExists = await FirebaseFirestore.instance
+        .collection('User_info')
+        .where('userName', isEqualTo: userName)
+        .get()
+        .then((snapshot) => snapshot.docs.isNotEmpty);
+
+    setState(() {
+      _phoneNumberError = phoneNumberExists ? 'Số điện thoại đã tồn tại' : null;
+      _userNameError = userNameExists ? 'Tài khoản đã tồn tại' : null;
+      _isLoading = false;
+    });
+
+    if (_phoneNumberError != null || _userNameError != null) {
+      // Nếu có lỗi, không tiếp tục đăng ký
+      return;
+    }
+
+    // Nếu không có lỗi, thực hiện đăng ký
+    _registerUser();
+  }
+
   void _registerUser() {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus(); // Hide keyboard
-      String userId = widget.uid;
-      if(userId == ""){
-        userId = FirebaseFirestore.instance.collection('users').doc().id;
-      }
+      String userId = widget.uid.isNotEmpty ? widget.uid : FirebaseFirestore.instance.collection('User_info').doc().id;
+
       User_info newUser = User_info(
         FullName: _fullNameController.text,
         Id_User: userId,
@@ -86,32 +168,35 @@ class _ActivityRegister extends State<ActivityRegister> {
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
-   // shopDiablog(context,"Thông báo","Mời bạn nhập thông tin để hoàn tất tạo tài khoản");
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/register_background.png'),
-            fit: BoxFit.cover,
+      home: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
+          title: Text(
+            'Đăng ký',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.indigo,
+          elevation: 0,
         ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.black87),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+        body: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('images/register_background.png'),
+              fit: BoxFit.cover,
             ),
-            title: Text(''),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
           ),
-          body: SingleChildScrollView(
+          child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.all(10),
               child: Column(
@@ -134,12 +219,7 @@ class _ActivityRegister extends State<ActivityRegister> {
                             border: OutlineInputBorder(),
                             labelText: 'Họ và tên',
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Bạn chưa nhập họ và tên';
-                            }
-                            return null;
-                          },
+                          validator: _validateFullName,
                         ),
                         SizedBox(height: 10),
                         TextFormField(
@@ -149,13 +229,9 @@ class _ActivityRegister extends State<ActivityRegister> {
                             filled: true,
                             border: OutlineInputBorder(),
                             labelText: 'Số điện thoại',
+                            errorText: _phoneNumberError,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Bạn chưa nhập số điện thoại';
-                            }
-                            return null;
-                          },
+                          validator: _validatePhoneNumber,
                         ),
                         SizedBox(height: 10),
                         TextFormField(
@@ -165,13 +241,9 @@ class _ActivityRegister extends State<ActivityRegister> {
                             filled: true,
                             border: OutlineInputBorder(),
                             labelText: 'Tài khoản',
+                            errorText: _userNameError,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Bạn chưa nhập tài khoản';
-                            }
-                            return null;
-                          },
+                          validator: _validateUserName,
                         ),
                         SizedBox(height: 10),
                         TextFormField(
@@ -183,15 +255,12 @@ class _ActivityRegister extends State<ActivityRegister> {
                             labelText: 'Mật khẩu',
                           ),
                           obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Bạn chưa nhập mật khẩu';
-                            }
-                            return null;
-                          },
+                          validator: _validatePassword,
                         ),
                         SizedBox(height: 20),
-                        Container(
+                        _isLoading
+                            ? CircularProgressIndicator() // Hiệu ứng loading
+                            : Container(
                           width: width * 0.6,
                           height: height * 0.07,
                           child: ElevatedButton(
@@ -199,7 +268,10 @@ class _ActivityRegister extends State<ActivityRegister> {
                               'Đăng ký',
                               style: TextStyle(fontSize: 15, color: Colors.white),
                             ),
-                            onPressed: _registerUser,
+                            onPressed: () async {
+                              // Kiểm tra dữ liệu không đồng bộ trước khi gọi đăng ký
+                              await _checkExistingUserData();
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.indigo,
                               shape: RoundedRectangleBorder(
@@ -217,25 +289,6 @@ class _ActivityRegister extends State<ActivityRegister> {
           ),
         ),
       ),
-    );
-  }
-  void shopDiablog(BuildContext context,String title,String message){
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

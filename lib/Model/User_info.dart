@@ -1,4 +1,4 @@
-class User_info{
+class User_info {
   String FullName;
   String Id_User;
   bool IsActive;
@@ -24,5 +24,16 @@ class User_info{
       'phoneNumber': PhoneNumber,
       'userName': UserName,
     };
+  }
+
+  factory User_info.fromMap(Map<String, dynamic> map) {
+    return User_info(
+      FullName: map['fullName'] ?? '',
+      Id_User: map['idUser'] ?? '',
+      IsActive: map['isActive'] ?? false,
+      PassWord: map['password'] ?? '',
+      PhoneNumber: map['phoneNumber'] ?? '',
+      UserName: map['userName'] ?? '',
+    );
   }
 }
