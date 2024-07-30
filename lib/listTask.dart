@@ -197,9 +197,21 @@ class _ListTaskState extends State<listTask> {
       }));
     }
 
-    addRandomQuestions(questions, 20);
-    addRandomQuestions(trueFalseQuestions, 40);
-    addRandomQuestions(matchingQuestions, 40);
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('User_info')
+        .doc(boDe.Id_user_tao)
+        .get();
+    bool isActive = userSnapshot.get('isActive');
+    print(isActive.toString() + "con cu");
+    if(isActive == false){
+      addRandomQuestions(questions, 3);
+      addRandomQuestions(trueFalseQuestions, 4);
+      addRandomQuestions(matchingQuestions, 4);
+    } else if(isActive == true){
+      addRandomQuestions(questions, 20);
+      addRandomQuestions(trueFalseQuestions, 40);
+      addRandomQuestions(matchingQuestions, 40);
+    }
 
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');
