@@ -115,32 +115,54 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                             return Container(
                               width: 150,
                               height: 50,
-                              color: Colors.grey[200],
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                border: Border.all(color: Colors.black),
+                                borderRadius: BorderRadius.circular(0),
+                              ),
                               alignment: Alignment.center,
                               child: selectedAnswers[subQuestion['question']] != null
                                   ? Draggable<String>(
                                 data: selectedAnswers[subQuestion['question']],
                                 child: Card(
                                   margin: EdgeInsets.all(5),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
+                                  color: Colors.indigo,
                                   child: Padding(
                                     padding: EdgeInsets.all(10),
-                                    child: Text(selectedAnswers[subQuestion['question']]!),
+                                    child: Text(
+                                      selectedAnswers[subQuestion['question']]!,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                 ),
                                 feedback: Material(
                                   color: Colors.transparent,
                                   child: Card(
                                     margin: EdgeInsets.all(5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(0),
+                                    ),
+                                    color: Colors.indigo,
                                     child: Padding(
                                       padding: EdgeInsets.all(10),
-                                      child: Text(selectedAnswers[subQuestion['question']]!),
+                                      child: Text(
+                                        selectedAnswers[subQuestion['question']]!,
+                                        style: TextStyle(color: Colors.white),
+                                      ),
                                     ),
                                   ),
                                 ),
                                 childWhenDragging: Container(
                                   width: 150,
                                   height: 50,
-                                  color: Colors.grey[200],
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    border: Border.all(color: Colors.black),
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
                                   alignment: Alignment.center,
                                   child: Text('Kéo vào đây', style: TextStyle(fontSize: 16)),
                                 ),
@@ -157,7 +179,11 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                         Container(
                           width: 150,
                           height: 50,
-                          color: Colors.grey[200],
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            border: Border.all(color: Colors.black),
+                            borderRadius: BorderRadius.circular(0),
+                          ),
                           alignment: Alignment.center,
                           child: Text(
                             subQuestion['correctAnswer'],
@@ -181,28 +207,46 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                           data: subQuestion['correctAnswer'],
                           child: Card(
                             margin: EdgeInsets.all(5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                            color: Colors.indigo,
                             child: Padding(
                               padding: EdgeInsets.all(10),
-                              child: Text(subQuestion['correctAnswer']),
+                              child: Text(
+                                subQuestion['correctAnswer'],
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                           feedback: Material(
                             color: Colors.transparent,
                             child: Card(
                               margin: EdgeInsets.all(5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              color: Colors.indigo,
                               child: Padding(
                                 padding: EdgeInsets.all(10),
-                                child: Text(subQuestion['correctAnswer']),
+                                child: Text(
+                                  subQuestion['correctAnswer'],
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ),
                           ),
                           childWhenDragging: Card(
                             margin: EdgeInsets.all(5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                            color: Colors.indigo.withOpacity(0.5),
                             child: Padding(
                               padding: EdgeInsets.all(10),
                               child: Text(
                                 subQuestion['correctAnswer'],
-                                style: TextStyle(color: Colors.grey),
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ),

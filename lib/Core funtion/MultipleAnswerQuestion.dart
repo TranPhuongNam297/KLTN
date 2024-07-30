@@ -26,6 +26,8 @@ class MultipleAnswerQuestion extends StatelessWidget {
     // In danh sách đáp án
     printAnswers();
 
+    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 70% màn hình
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -67,18 +69,13 @@ class MultipleAnswerQuestion extends StatelessWidget {
                 }
                     : null, // Vô hiệu hóa trong chế độ "xemdapan"
                 child: Container(
-                  width: 300,
+                  width: buttonWidth, // Chiều rộng bằng 70% màn hình
                   height: 65,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.blue[200] // Màu cho đáp án đã chọn
-                        : (mode == 'xemdapan' && isCorrect ? Colors.green[200] : Colors.grey[350]), // Màu cho đáp án đúng trong chế độ "xemdapan"
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.blue[300]! // Border màu cho đáp án đã chọn
-                          : (mode == 'xemdapan' && isCorrect ? Colors.green[300]! : Colors.grey[600]!), // Border màu cho đáp án đúng
-                    ),
+                        ? Colors.blue[400] // Màu cho đáp án đã chọn
+                        : (mode == 'xemdapan' && isCorrect ? Colors.green[200] : Colors.grey[400]), // Màu cho đáp án đúng trong chế độ "xemdapan"
+                    // Bỏ borderRadius và border để nút vuông vức
                   ),
                   alignment: Alignment.center,
                   child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),

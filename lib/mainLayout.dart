@@ -27,14 +27,14 @@ class _MainLayoutState extends State<mainLayout> {
         return AlertDialog(
           title: Text('Xác nhận mã key'),
           content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7, // Chiều rộng 70% màn hình
+            width: MediaQuery.of(context).size.width * 0.7,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(width: 2.0), // Đổi dày viền ở đây
+                      borderSide: BorderSide(width: 2.0),
                     ),
                     hintText: 'Nhập mã key',
                     contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0), // Giảm chiều cao ở đây
@@ -52,7 +52,7 @@ class _MainLayoutState extends State<mainLayout> {
             ),
             TextButton(
               onPressed: () {
-                // Xử lý mã kích hoạt ở đây
+
               },
               child: Text('Xác nhận'),
             ),
