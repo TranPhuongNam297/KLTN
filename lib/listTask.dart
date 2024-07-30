@@ -53,13 +53,80 @@ class _ListTaskState extends State<listTask> {
   }
 
   Future<void> _createNewBoDe() async {
-    String? userId = await UserPreferences.getUserId();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('idUser');
 
     if (userId == null) {
-      print("Could not fetch user ID from SharedPreferences");
+      print("User ID not found in SharedPreferences");
       return;
     }
 
+    // Fetch user info to check isActive status
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('User_info')
+        .doc(userId)
+        .get();
+
+    bool isActive = userSnapshot.get('isActive');
+
+    if (!isActive) {
+      // Check how many Bo_de have been created
+      QuerySnapshot boDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId)
+          .get();
+
+      if (boDeSnapshot.docs.length >= 1) {
+        // If already created one Bo_de, show alert
+        _showActivationRequiredDialog();
+        return;
+      }
+    }
+
+    QuerySnapshot keyActiveSnapshot = await FirebaseFirestore.instance
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
+
+    DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+    int currentMonth = keyActiveDoc.get('Month');
+
+    // Check the limit for the current month if Month is 3
+    if (currentMonth == 3) {
+      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: false)
+          .get();
+
+      if (recentBoDeSnapshot.docs.length >= 5) {
+        _showLimitReachedDialog();
+        return;
+      }
+    }
+    if (currentMonth == 6) {
+      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: false)
+          .get();
+
+      if (recentBoDeSnapshot.docs.length >= 10) {
+        _showLimitReachedDialog();
+        return;
+      }
+    }
+    if (currentMonth == 12) {
+      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: false)
+          .get();
+
+      if (recentBoDeSnapshot.docs.length >= 20) {
+        _showLimitReachedDialog();
+        return;
+      }
+    }
+
+    // Create a new Bo_de
     String newId = FirebaseFirestore.instance.collection('Bo_de').doc().id;
     String ngayTao = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
@@ -85,6 +152,59 @@ class _ListTaskState extends State<listTask> {
       boDeList.add(newBoDe.toMap());
     });
   }
+  void _showActivationRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: AlertDialog(
+            title: Text('Thông báo'),
+            content: Text('Bạn cần kích hoạt tài khoản để tạo thêm bộ đề.'),
+            backgroundColor: Colors.white,
+            elevation: 24.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLimitReachedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: AlertDialog(
+            title: Text('Thông báo'),
+            content: Text('Bạn đã hết lượt tạo bộ đề mới.'),
+            backgroundColor: Colors.white,
+            elevation: 24.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void _showCreateNewBoDeDialog() {
     showDialog(
@@ -94,8 +214,8 @@ class _ListTaskState extends State<listTask> {
           child: AlertDialog(
             title: Text('Xác nhận'),
             content: Text('Bạn có muốn tạo bộ đề mới không?'),
-            backgroundColor: Colors.white, // Set background color to white
-            elevation: 24.0, // Add elevation for shadow
+            backgroundColor: Colors.white,
+            elevation: 24.0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
             ),
@@ -119,6 +239,8 @@ class _ListTaskState extends State<listTask> {
       },
     );
   }
+
+
 
   Future<void> _startTest(BuildContext context, String boDeId) async {
     setState(() {
@@ -202,7 +324,6 @@ class _ListTaskState extends State<listTask> {
         .doc(boDe.Id_user_tao)
         .get();
     bool isActive = userSnapshot.get('isActive');
-    print(isActive.toString() + "con cu");
     if(isActive == false){
       addRandomQuestions(questions, 3);
       addRandomQuestions(trueFalseQuestions, 4);

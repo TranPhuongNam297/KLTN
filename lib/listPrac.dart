@@ -53,13 +53,71 @@ class _ListPracState extends State<listPrac> {
   }
 
   Future<void> _createNewBoDe() async {
-    String? userId = await UserPreferences.getUserId();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('idUser');
 
     if (userId == null) {
-      print("Could not fetch user ID from SharedPreferences");
+      print("User ID not found in SharedPreferences");
       return;
     }
 
+    // Fetch user info to check isActive status
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('User_info')
+        .doc(userId)
+        .get();
+
+    bool isActive = userSnapshot.get('isActive');
+
+    if (!isActive) {
+      _showActivationRequiredDialog();
+      return;
+    }
+
+    QuerySnapshot keyActiveSnapshot = await FirebaseFirestore.instance
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
+
+    DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+    int currentMonth = keyActiveDoc.get('Month');
+
+    // Check the limit for the current month if Month is 3
+    if (currentMonth == 3) {
+      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: true)
+          .get();
+
+      if (recentBoDeSnapshot.docs.length >= 5) {
+        _showLimitReachedDialog();
+        return;
+      }
+    }
+    if (currentMonth == 6) {
+      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: true)
+          .get();
+
+      if (recentBoDeSnapshot.docs.length >= 10) {
+        _showLimitReachedDialog();
+        return;
+      }
+    }
+    if (currentMonth == 12) {
+      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: true)
+          .get();
+
+      if (recentBoDeSnapshot.docs.length >= 20) {
+        _showLimitReachedDialog();
+        return;
+      }
+    }
+
+    // Create a new Bo_de
     String newId = FirebaseFirestore.instance.collection('Bo_de').doc().id;
     String ngayTao = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
@@ -70,7 +128,7 @@ class _ListPracState extends State<listPrac> {
         Tinh_trang: false,
         Generate: false,
         DiemSo: 0,
-        Mode: true // Set Mode to true
+        Mode: true // Set Mode to false for new Bo_de
     );
 
     await FirebaseFirestore.instance
@@ -78,11 +136,66 @@ class _ListPracState extends State<listPrac> {
         .doc(newId)
         .set(newBoDe.toMap());
 
+    // Save the new bo_de Id to SharedPreferences using UserPreferences
     await UserPreferences.saveBoDeId(newId);
 
     setState(() {
       boDeList.add(newBoDe.toMap());
     });
+  }
+
+  void _showActivationRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: AlertDialog(
+            title: Text('Thông báo'),
+            content: Text('Bạn cần kích hoạt tài khoản để tạo thêm bộ đề.'),
+            backgroundColor: Colors.white,
+            elevation: 24.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLimitReachedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: AlertDialog(
+            title: Text('Thông báo'),
+            content: Text('Bạn đã hết lượt tạo bộ đề mới.'),
+            backgroundColor: Colors.white,
+            elevation: 24.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _showCreateNewBoDeDialog() {
@@ -109,7 +222,7 @@ class _ListPracState extends State<listPrac> {
                 child: Text('OK'),
                 onPressed: () async {
                   Navigator.of(context).pop();
-                  await _createNewBoDe();
+                  await _createNewBoDe(); // Create new test set
                 },
               ),
             ],
