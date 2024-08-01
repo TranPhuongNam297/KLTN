@@ -74,47 +74,11 @@ class _ListPracState extends State<listPrac> {
       return;
     }
 
-    QuerySnapshot keyActiveSnapshot = await FirebaseFirestore.instance
-        .collection('Key_Active')
-        .where('Id_User', isEqualTo: userId)
-        .get();
+    int testCount = userSnapshot.get('Test');
 
-    DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
-    int currentMonth = keyActiveDoc.get('Month');
-
-    // Check the limit for the current month if Month is 3
-    if (currentMonth == 3) {
-      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de')
-          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: true)
-          .get();
-
-      if (recentBoDeSnapshot.docs.length >= 5) {
-        _showLimitReachedDialog();
-        return;
-      }
-    }
-    if (currentMonth == 6) {
-      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de')
-          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: true)
-          .get();
-
-      if (recentBoDeSnapshot.docs.length >= 10) {
-        _showLimitReachedDialog();
-        return;
-      }
-    }
-    if (currentMonth == 12) {
-      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de')
-          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: true)
-          .get();
-
-      if (recentBoDeSnapshot.docs.length >= 20) {
-        _showLimitReachedDialog();
-        return;
-      }
+    if (testCount <= 0) {
+      _showLimitReachedDialog();
+      return;
     }
 
     // Create a new Bo_de
@@ -128,13 +92,19 @@ class _ListPracState extends State<listPrac> {
         Tinh_trang: false,
         Generate: false,
         DiemSo: 0,
-        Mode: true // Set Mode to false for new Bo_de
+        Mode: true // Set Mode to true for new Bo_de
     );
 
     await FirebaseFirestore.instance
         .collection('Bo_de')
         .doc(newId)
         .set(newBoDe.toMap());
+
+    // Decrease the Test count by 1
+    await FirebaseFirestore.instance
+        .collection('User_info')
+        .doc(userId)
+        .update({'Test': testCount - 1});
 
     // Save the new bo_de Id to SharedPreferences using UserPreferences
     await UserPreferences.saveBoDeId(newId);

@@ -89,41 +89,20 @@ class _ListTaskState extends State<listTask> {
         .get();
 
     DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
-    int currentMonth = keyActiveDoc.get('Month');
+    int currentTestCount = keyActiveDoc.get('Test');
 
-    // Check the limit for the current month if Month is 3
-    if (currentMonth == 3) {
-      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de')
-          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: false)
-          .get();
-
-      if (recentBoDeSnapshot.docs.length >= 5) {
+    if (isActive) {
+      // Check if Test count is greater than 0
+      if (currentTestCount <= 0) {
         _showLimitReachedDialog();
         return;
       }
-    }
-    if (currentMonth == 6) {
-      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de')
-          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: false)
-          .get();
 
-      if (recentBoDeSnapshot.docs.length >= 10) {
-        _showLimitReachedDialog();
-        return;
-      }
-    }
-    if (currentMonth == 12) {
-      QuerySnapshot recentBoDeSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de')
-          .where('Id_user_tao', isEqualTo: userId).where('Mode', isEqualTo: false)
-          .get();
-
-      if (recentBoDeSnapshot.docs.length >= 20) {
-        _showLimitReachedDialog();
-        return;
-      }
+      // Decrement Test count by 1
+      await FirebaseFirestore.instance
+          .collection('Key_Active')
+          .doc(keyActiveDoc.id)
+          .update({'Test': currentTestCount - 1});
     }
 
     // Create a new Bo_de
@@ -152,6 +131,7 @@ class _ListTaskState extends State<listTask> {
       boDeList.add(newBoDe.toMap());
     });
   }
+
   void _showActivationRequiredDialog() {
     showDialog(
       context: context,

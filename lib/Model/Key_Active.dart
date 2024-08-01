@@ -6,6 +6,8 @@ class Key_Active {
   String Time_End;
   String Time_Start;
   bool Used;
+  int Practice;
+  int Test;
 
   Key_Active({
     required this.Date,
@@ -14,7 +16,9 @@ class Key_Active {
     required this.Month,
     required this.Time_End,
     required this.Time_Start,
-    required this.Used
+    required this.Used,
+    required this.Practice,
+    required this.Test
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +30,8 @@ class Key_Active {
       'Time_End': Time_End,
       'Time_Start': Time_Start,
       'Used': Used,
+      'Practice': Practice,
+      'Test': Test
     };
   }
 
@@ -37,7 +43,9 @@ class Key_Active {
         Month: map['Month'],
         Time_End: map['Time_End'],
         Time_Start: map['Time_Start'],
-        Used: map['Used']
+        Used: map['Used'],
+        Practice: map['Practice'],
+        Test: map['Test']
     );
   }
 }
