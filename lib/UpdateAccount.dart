@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:khoa_luan_tot_nghiep/mainLayout.dart'; // Import file chứa trang chủ
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Login.dart';
 import 'Model/User_info.dart';
 import 'SharedPreferences/SharedPreferences.dart'; // Import file UserPreferences để lưu ID người dùng
@@ -149,7 +150,9 @@ class _UpdateAccountState extends State<UpdateAccount> {
             content: Text('Thông tin tài khoản đã được cập nhật thành công!'),
             actions: <Widget>[
               TextButton(
-                onPressed: () {
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('idUser', updatedUser.Id_User);
                   Navigator.of(context).pop(); // Close the dialog
                   Navigator.pushAndRemoveUntil(
                     context,

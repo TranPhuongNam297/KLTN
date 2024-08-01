@@ -202,7 +202,6 @@ class _ListTaskState extends State<listTask> {
         .doc(boDe.Id_user_tao)
         .get();
     bool isActive = userSnapshot.get('isActive');
-    print(isActive.toString() + "con cu");
     if(isActive == false){
       addRandomQuestions(questions, 3);
       addRandomQuestions(trueFalseQuestions, 4);
@@ -212,7 +211,6 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 40);
       addRandomQuestions(matchingQuestions, 40);
     }
-
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
@@ -225,10 +223,8 @@ class _ListTaskState extends State<listTask> {
         Type_cau_hoi: question['type']!,
         IsCorrect: false,
       );
-
       await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
     }
-
     // Update the Bo_de to mark it as generated
     await FirebaseFirestore.instance
         .collection('Bo_de')

@@ -32,10 +32,8 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
       } else {
         selectedAnswers[question] = answer;
       }
-
       correctness[question] = widget.matchingQuestion['subQuestions']
           .firstWhere((q) => q['question'] == question)['correctAnswer'] == answer;
-
       widget.onAllCorrect(_checkAllCorrect());
       _updateFirestore(question, answer);
     });
@@ -55,9 +53,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
       final prefs = await SharedPreferences.getInstance();
       final idBoDe = prefs.getString('boDeId')!;
       final subQuestions = widget.matchingQuestion['subQuestions'];
-
       final questionId = subQuestions.firstWhere((q) => q['question'] == question)['Id'];
-
       try {
         CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
         QuerySnapshot snapshot = await chiTietBoDeRef
