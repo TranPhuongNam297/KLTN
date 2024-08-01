@@ -66,7 +66,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       selectedAnswers[currentIndex] = selectedAnswer;
       bool isCorrect = selectedAnswer == correctAnswer;
       answeredCorrectly[currentIndex] = isCorrect;
-
       // Chỉ cộng hoặc trừ điểm nếu câu trả lời thay đổi từ sai sang đúng hoặc ngược lại
       if (isCorrect && !wasCorrect) {
         correctCount++;
@@ -80,8 +79,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = isCorrect;
     });
   }
-
-
   void _handleTrueFalseAnswer(bool allCorrect) {
     print(allCorrect);
     final currentIndex = questionManager.currentQuestionIndex;
@@ -101,42 +98,48 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       }
     });
   }
-
   void _handleMatchingAnswer(bool isAllCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
-    bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
+    bool? wasCorrect = answeredCorrectly[currentIndex];
     setState(() {
-      questionResults[currentIndex] = isAllCorrect;
+      // Kiểm tra và cập nhật trạng thái đúng/sai cho câu hỏi hiện tại
       if (isAllCorrect) {
-        if (!wasCorrect) {
-           correctCount++;
-          //questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
+        if (wasCorrect == false) {
+          correctCount++;
+          answeredCorrectly[currentIndex] = true;
+          // questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
+        } else if (wasCorrect == null) {
+          correctCount++;
+          answeredCorrectly[currentIndex] = true;
+          // questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
         }
       } else {
-        if (wasCorrect) {
-           correctCount--;
-         // questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+        if (wasCorrect == true) {
+          correctCount--;
+          answeredCorrectly[currentIndex] = false;
+          // questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
+        } else if (wasCorrect == null) {
+          answeredCorrectly[currentIndex] = false;
+          // questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
         }
       }
+      questionResults[currentIndex] = isAllCorrect;
     });
+    print(correctCount);
   }
 //nhieu dap an
   void _handleMultipleAnswer(List<String> selectedAnswers) {
     final correctAnswers = List<String>.from(questionManager.correctAnswer);
     final currentIndex = questionManager.currentQuestionIndex;
     bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
-
     setState(() {
       this.selectedAnswers[currentIndex] = selectedAnswers;
       List<String> selected = this.selectedAnswers[currentIndex] ?? [];
-
       // Kiểm tra xem đáp án đã chọn có khớp hoàn toàn với đáp án đúng không
       bool allCorrect = selected.length == correctAnswers.length &&
           selected.every((answer) => correctAnswers.contains(answer));
-
       questionResults[currentIndex] = allCorrect;
       bool isCorrect = allCorrect;
-
       // Chỉ cộng hoặc trừ điểm nếu câu trả lời thay đổi từ sai sang đúng hoặc ngược lại
       if (isCorrect && !wasCorrect) {
         correctCount++;
@@ -177,12 +180,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       if (questionManager.currentQuestionIndex > 0) {
         questionManager.currentQuestionIndex--;
-        // if(mode == 'lambai'){
-        //   questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
-        // }
         _checkMatchingQuestion();
       }
-
     });
   }
 

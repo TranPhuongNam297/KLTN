@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:khoa_luan_tot_nghiep/LoadingScreen.dart';
 import 'package:khoa_luan_tot_nghiep/Model/User_info.dart';
+import 'package:khoa_luan_tot_nghiep/mainLayout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Login.dart';
 
 class ActivityRegister extends StatefulWidget {
@@ -122,7 +125,6 @@ class _ActivityRegister extends State<ActivityRegister> {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus(); // Hide keyboard
       String userId = widget.uid.isNotEmpty ? widget.uid : FirebaseFirestore.instance.collection('User_info').doc().id;
-
       User_info newUser = User_info(
         FullName: _fullNameController.text,
         Id_User: userId,
@@ -131,7 +133,7 @@ class _ActivityRegister extends State<ActivityRegister> {
         PhoneNumber: _phoneNumberController.text,
         UserName: _userNameController.text,
       );
-
+      print(newUser.Id_User);
       FirebaseFirestore.instance
           .collection('User_info')
           .doc(newUser.Id_User)
@@ -145,9 +147,11 @@ class _ActivityRegister extends State<ActivityRegister> {
               content: Text('Chúc mừng bạn đã đăng ký tài khoản thành công!'),
               actions: <Widget>[
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('idUser', newUser.Id_User);
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => Login()),
+                      MaterialPageRoute(builder: (context) => mainLayout()),
                     );
                   },
                   child: Text('OK'),

@@ -48,7 +48,6 @@ class _LoginState extends State<Login> {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('idUser', idUser); // Save to SharedPreferences
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => mainLayout()),
@@ -365,6 +364,8 @@ class _LoginState extends State<Login> {
     DocumentSnapshot userDoc =
         await _firestore.collection('User_info').doc(uid).get();
     if (userDoc.exists) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('idUser',uid);
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => mainLayout()));
     } else {

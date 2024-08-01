@@ -313,7 +313,6 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 40);
       addRandomQuestions(matchingQuestions, 40);
     }
-
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
@@ -326,10 +325,8 @@ class _ListTaskState extends State<listTask> {
         Type_cau_hoi: question['type']!,
         IsCorrect: false,
       );
-
       await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
     }
-
     // Update the Bo_de to mark it as generated
     await FirebaseFirestore.instance
         .collection('Bo_de')
