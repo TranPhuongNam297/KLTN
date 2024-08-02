@@ -21,7 +21,7 @@ class TaskItem extends StatelessWidget {
         width: 350,
         height: 150,
         decoration: BoxDecoration(
-          color: Colors.indigo[400],
+          color: Color.fromRGBO(46, 172, 35, 1),
           borderRadius: BorderRadius.circular(10),
         ),
         margin: EdgeInsets.only(bottom: 30, left: 20, right: 20),

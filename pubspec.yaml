@@ -70,6 +70,8 @@ flutter:
     - images/background.jpg
     - images/tetmass3.png
     - images/register_background.png
+    - images/kiemtra.jpg
+    - images/luyentap.jpg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

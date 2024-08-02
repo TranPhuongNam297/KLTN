@@ -2,7 +2,6 @@ class Key_Active {
   int Date;
   String Id_Key;
   String Id_User;
-  int Month;
   String Time_End;
   String Time_Start;
   bool Used;
@@ -13,7 +12,6 @@ class Key_Active {
     required this.Date,
     required this.Id_Key,
     required this.Id_User,
-    required this.Month,
     required this.Time_End,
     required this.Time_Start,
     required this.Used,
@@ -26,7 +24,6 @@ class Key_Active {
       'Date': Date,
       'Id_Key': Id_Key,
       'Id_User': Id_User,
-      'Month': Month,
       'Time_End': Time_End,
       'Time_Start': Time_Start,
       'Used': Used,
@@ -40,7 +37,6 @@ class Key_Active {
         Date: map['Date'],
         Id_Key: id,
         Id_User: map['Id_User'],
-        Month: map['Month'],
         Time_End: map['Time_End'],
         Time_Start: map['Time_Start'],
         Used: map['Used'],

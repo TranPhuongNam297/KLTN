@@ -16,6 +16,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
   late TextEditingController _phoneNumberController;
   late TextEditingController _userNameController;
   late TextEditingController _passwordController;
+  late TextEditingController _statusController;
 
   @override
   void initState() {
@@ -24,6 +25,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _phoneNumberController = TextEditingController();
     _userNameController = TextEditingController();
     _passwordController = TextEditingController();
+    _statusController = TextEditingController();
   }
 
   @override
@@ -32,6 +34,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _phoneNumberController.dispose();
     _userNameController.dispose();
     _passwordController.dispose();
+    _statusController.dispose();
     super.dispose();
   }
 
@@ -165,11 +168,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                 _phoneNumberController.text = userInfo.PhoneNumber;
                 _userNameController.text = userInfo.UserName;
                 _passwordController.text = userInfo.PassWord;
-              } else {
-                _fullNameController.clear();
-                _phoneNumberController.clear();
-                _userNameController.clear();
-                _passwordController.clear();
+                _statusController.text = userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
               }
 
               return SingleChildScrollView(
@@ -186,31 +185,34 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                       SizedBox(height: 16),
                       _buildPasswordTextField('Mật khẩu', _passwordController),
                       SizedBox(height: 16),
-                      Text(
-                        'Tình trạng tài khoản: ${userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt'}',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 32),
+                      _buildStatusTextField('Tình trạng tài khoản', _statusController, userInfo.IsActive),
+                      SizedBox(height: 50),
                       Center(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
-                          ),
-                          onPressed: () async {
-                            if (_isEditing) {
-                              // Save the changes
-                              await _updateUserInfo(userId);
-                            }
-                            setState(() {
-                              _isEditing = !_isEditing;
-                            });
-                          },
-                          child: Text(
-                            _isEditing ? 'Lưu' : 'Chỉnh sửa',
-                            style: TextStyle(color: Colors.white),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                            ),
+                            onPressed: () async {
+                              if (_isEditing) {
+                                // Save the changes
+                                await _updateUserInfo(userId);
+                              }
+
+                              // Keep editing mode if any validation fails
+                              bool hasValidationError = _phoneNumberController.text != userInfo.PhoneNumber ||
+                                  _userNameController.text != userInfo.UserName;
+
+                              setState(() {
+                                _isEditing = hasValidationError || !_isEditing;
+                              });
+                            },
+                            child: Text(
+                              _isEditing ? 'Lưu' : 'Chỉnh sửa',
+                              style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'Open Sans'),
+                            ),
                           ),
                         ),
                       ),
@@ -232,7 +234,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         Text(
           labelText,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -257,7 +259,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         Text(
           labelText,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -267,6 +269,31 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
           obscureText: true,
           decoration: InputDecoration(
             hintText: '*************', // Always show asterisks
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.black, width: 2.0),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusTextField(String labelText, TextEditingController controller, bool isActive) {
+    controller.text = isActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          labelText,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        TextField(
+          controller: controller,
+          enabled: false,
+          decoration: InputDecoration(
             border: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.black, width: 2.0),
             ),

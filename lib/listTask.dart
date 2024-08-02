@@ -55,7 +55,7 @@ class _ListTaskState extends State<listTask> {
   Future<void> _createNewBoDe() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('idUser');
-
+    print(userId);
     if (userId == null) {
       print("User ID not found in SharedPreferences");
       return;
@@ -83,26 +83,29 @@ class _ListTaskState extends State<listTask> {
       }
     }
 
+    // Check if the user exists in Key_Active collection
     QuerySnapshot keyActiveSnapshot = await FirebaseFirestore.instance
         .collection('Key_Active')
         .where('Id_User', isEqualTo: userId)
         .get();
 
-    DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
-    int currentTestCount = keyActiveDoc.get('Test');
+    if (keyActiveSnapshot.docs.isNotEmpty) {
+      DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+      int currentTestCount = keyActiveDoc.get('Test');
 
-    if (isActive) {
-      // Check if Test count is greater than 0
-      if (currentTestCount <= 0) {
-        _showLimitReachedDialog();
-        return;
+      if (isActive) {
+        // Check if Test count is greater than 0
+        if (currentTestCount <= 0) {
+          _showLimitReachedDialog();
+          return;
+        }
+
+        // Decrement Test count by 1
+        await FirebaseFirestore.instance
+            .collection('Key_Active')
+            .doc(keyActiveDoc.id)
+            .update({'Test': currentTestCount - 1});
       }
-
-      // Decrement Test count by 1
-      await FirebaseFirestore.instance
-          .collection('Key_Active')
-          .doc(keyActiveDoc.id)
-          .update({'Test': currentTestCount - 1});
     }
 
     // Create a new Bo_de
@@ -219,8 +222,6 @@ class _ListTaskState extends State<listTask> {
       },
     );
   }
-
-
 
   Future<void> _startTest(BuildContext context, String boDeId) async {
     setState(() {

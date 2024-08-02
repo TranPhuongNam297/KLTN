@@ -16,64 +16,70 @@ class doTest extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => listTask(),
-                    ),
-                  );
-                },
-                icon: Icon(
-                  Icons.edit_note_outlined,
-                  color: Colors.white,
-                  size: 32,
-                ),
-                label: Text(
-                  'Kiểm tra',
-                  style: TextStyle(
+              Container(
+                width: 250,
+                height: 250,  // Set the height you want
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => listTask(),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.edit_note_outlined,
                     color: Colors.white,
-                    fontSize: 18,
+                    size: 32,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  fixedSize: Size(350, 75),
-                  backgroundColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(color: Colors.black),
+                  label: Text(
+                    'Kiểm tra',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(color: Colors.black),
+                    ),
                   ),
                 ),
               ),
               SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => listPrac(),
-                    ),
-                  );
-                },
-                icon: Icon(
-                  Icons.menu_book_sharp,
-                  color: Colors.white,
-                  size: 32,
-                ),
-                label: Text(
-                  'Luyện tập',
-                  style: TextStyle(
+              Container(
+                width: 250,
+                height: 250,  // Set the height you want
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => listPrac(),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.menu_book_sharp,
                     color: Colors.white,
-                    fontSize: 18,
+                    size: 32,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  fixedSize: Size(350, 75),
-                  backgroundColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(color: Colors.black),
+                  label: Text(
+                    'Luyện tập',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(color: Colors.black),
+                    ),
                   ),
                 ),
               ),
