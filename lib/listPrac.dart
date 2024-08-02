@@ -250,35 +250,54 @@ class _ListPracState extends State<listPrac> {
 
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
+    Set<String> usedIds = {}; // Set to keep track of used IDs
 
     void addRandomQuestions<T>(List<T> questionList, int count) {
       questionList.shuffle(random);
       int takeCount = min(count, questionList.length);
-      selectedQuestions.addAll(questionList.take(takeCount).map((q) {
+
+      for (var q in questionList.take(takeCount)) {
+        String id;
+        String type;
+
         if (q is list_question) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type,
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else if (q is list_truefalse) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type,
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else if (q is list_matching) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type,
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else {
           throw Exception('Unknown question type');
         }
-      }));
+
+        // Only add question if its ID has not been used before
+        if (!usedIds.contains(id)) {
+          selectedQuestions.add({
+            'id': id,
+            'type': type,
+          });
+          usedIds.add(id);
+        }
+      }
     }
 
-    addRandomQuestions(questions, 20);
-    addRandomQuestions(trueFalseQuestions, 40);
-    addRandomQuestions(matchingQuestions, 40);
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('User_info')
+        .doc(boDe.Id_user_tao)
+        .get();
+    bool isActive = userSnapshot.get('isActive');
+    if(isActive == false){
+      addRandomQuestions(questions, 3);
+      addRandomQuestions(trueFalseQuestions, 4);
+      addRandomQuestions(matchingQuestions, 4);
+    } else if(isActive == true){
+      addRandomQuestions(questions, 20);
+      addRandomQuestions(trueFalseQuestions, 40);
+      addRandomQuestions(matchingQuestions, 40);
+    }
 
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');

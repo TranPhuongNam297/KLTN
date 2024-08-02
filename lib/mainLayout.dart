@@ -114,7 +114,7 @@ class _MainLayoutState extends State<mainLayout> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text('Kích hoạt mã key thành công.'),
+            content: Text('Kích hoạt mã key thành công.', style: TextStyle(fontSize: 20),),
             actions: <Widget>[
               TextButton(
                 onPressed: () {

@@ -97,7 +97,6 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
@@ -105,70 +104,72 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 50,
-            child: Text(
-              'Câu hỏi đúng sai',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                'Đúng / Sai',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 50,
+              child: Text(
+                'Câu hỏi đúng sai',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
+                textAlign: TextAlign.center,
               ),
-            ],
-          ),
-          for (int i = 0; i < subQuestions.length; i++)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
-                      child: Text(
-                        subQuestions[i]['question'],
-                        style: TextStyle(fontSize: 18),
-                        softWrap: true,
-                        overflow: TextOverflow.visible,
-                        maxLines: null,
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Radio<bool?>(
-                            value: true,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai' ? (value) {
-                              _onRadioChanged(value, i);
-                            } : null,
-                          ),
-                          Radio<bool?>(
-                            value: false,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai' ? (value) {
-                              _onRadioChanged(value, i);
-                            } : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Đúng / Sai',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-        ],
+            for (int i = 0; i < subQuestions.length; i++)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Container(
+                        width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
+                        child: Text(
+                          subQuestions[i]['question'],
+                          style: TextStyle(fontSize: 18),
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                          maxLines: null,
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Radio<bool?>(
+                              value: true,
+                              groupValue: _selectedAnswers[i],
+                              onChanged: widget.mode == 'lambai' ? (value) {
+                                _onRadioChanged(value, i);
+                              } : null,
+                            ),
+                            Radio<bool?>(
+                              value: false,
+                              groupValue: _selectedAnswers[i],
+                              onChanged: widget.mode == 'lambai' ? (value) {
+                                _onRadioChanged(value, i);
+                              } : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
