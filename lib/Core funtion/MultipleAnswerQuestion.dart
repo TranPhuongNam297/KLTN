@@ -23,8 +23,6 @@ class MultipleAnswerQuestion extends StatelessWidget {
     assert(selectedAnswers != null, 'Selected answers cannot be null');
     assert(mode.isNotEmpty, 'Mode cannot be empty');
 
-    // In danh sách đáp án
-    printAnswers();
 
     double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 70% màn hình
 
@@ -53,7 +51,14 @@ class MultipleAnswerQuestion extends StatelessWidget {
         SizedBox(height: 20),
         ...answers.map((answer) {
           bool isSelected = selectedAnswers.contains(answer);
-          bool isCorrect = mode == 'xemdapan' && isSelected;
+          bool isCorrect = false;
+
+          if (mode == 'xemdapan') {
+            // Tách chuỗi IsCorrect thành mảng và kiểm tra
+            List<String> correctAnswers = 'Phrases+Address information+Payment methods'.split('+');
+            isCorrect = correctAnswers.contains(answer);
+          }
+
           return Column(
             children: [
               InkWell(
@@ -74,8 +79,10 @@ class MultipleAnswerQuestion extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Colors.blue[400] // Màu cho đáp án đã chọn
-                        : (mode == 'xemdapan' && isCorrect ? Colors.green[200] : Colors.grey[400]), // Màu cho đáp án đúng trong chế độ "xemdapan"
-                    // Bỏ borderRadius và border để nút vuông vức
+                        : (mode == 'xemdapan'
+                        ? (isCorrect ? Colors.green[200] : Colors.red[200]) // Màu cho đáp án đúng/sai trong chế độ "xemdapan"
+                        : Colors.grey[400]), // Màu cho câu trả lời không chọn
+                    borderRadius: BorderRadius.circular(0), // Bỏ borderRadius và border để nút vuông vức
                   ),
                   alignment: Alignment.center,
                   child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
@@ -90,6 +97,7 @@ class MultipleAnswerQuestion extends StatelessWidget {
   }
 
   void printAnswers() {
+    // Uncomment this method if you need to print the list of answers
     // print('Danh sách đáp án:');
     // for (var answer in answers) {
     //   print(answer);

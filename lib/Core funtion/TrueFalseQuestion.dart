@@ -3,12 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TrueFalseQuestion extends StatefulWidget {
-  final Map<String, dynamic> trueFalseQuestion; // Cập nhật từ QuestionManager thành Map
+  final Map<String, dynamic> trueFalseQuestion;
   final void Function(bool) onAnswerSelected;
   final String mode;
 
   TrueFalseQuestion({
-    required this.trueFalseQuestion, // Cập nhật tham số
+    required this.trueFalseQuestion,
     required this.onAnswerSelected,
     required this.mode,
   });
@@ -19,11 +19,15 @@ class TrueFalseQuestion extends StatefulWidget {
 
 class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
   List<bool?> _selectedAnswers = [];
+  List<Color> _answerColors = [];
 
   @override
   void initState() {
     super.initState();
     _initializeSelectedAnswers();
+    if (widget.mode == 'xemdapan') {
+      _fetchAnswerColors();
+    }
   }
 
   @override
@@ -31,15 +35,51 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     super.didUpdateWidget(oldWidget);
     if (widget.trueFalseQuestion != oldWidget.trueFalseQuestion) {
       _initializeSelectedAnswers();
+      if (widget.mode == 'xemdapan') {
+        _fetchAnswerColors();
+      }
     }
   }
 
   void _initializeSelectedAnswers() {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     _selectedAnswers = List<bool?>.filled(subQuestions.length, null);
-    if (widget.mode == 'xemdapan') {
-      for (int i = 0; i < subQuestions.length; i++) {
-        _selectedAnswers[i] = subQuestions[i]['correctAnswer'];
+    _answerColors = List<Color>.filled(subQuestions.length, Colors.black);
+  }
+
+  Future<void> _fetchAnswerColors() async {
+    final prefs = await SharedPreferences.getInstance();
+    final idBoDe = prefs.getString('boDeId')!;
+    final subQuestions = widget.trueFalseQuestion['subQuestions1'];
+
+    for (int i = 0; i < subQuestions.length; i++) {
+      final questionId = subQuestions[i]['Id'];
+
+      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+
+      try {
+        QuerySnapshot snapshot = await chiTietBoDeRef
+            .where('Id_cau_hoi', isEqualTo: questionId)
+            .where('Id_bo_de', isEqualTo: idBoDe)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          DocumentSnapshot document = snapshot.docs.first;
+          String isCorrect = document['IsCorrect'];
+          bool userAnswer; // Lấy đáp án của người dùng
+          if(isCorrect == 'dung'){
+            userAnswer = true;
+          }
+          else{
+            userAnswer = false;
+          }
+          setState(() {
+            _answerColors[i] = isCorrect == 'dung' ? Colors.green : Colors.red;
+            _selectedAnswers[i] = userAnswer; // Cập nhật radio button theo đáp án người dùng
+          });
+        }
+      } catch (error) {
+        print('Failed to fetch answer colors: $error');
       }
     }
   }
@@ -49,13 +89,11 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       _selectedAnswers[index] = value;
     });
 
-    // Xác định tất cả các câu trả lời có đúng không
     bool allCorrect = _selectedAnswers.every((answer) {
       int answerIndex = _selectedAnswers.indexOf(answer);
       return answer != null && answer == widget.trueFalseQuestion['subQuestions1'][answerIndex]['correctAnswer'];
     });
 
-    // Thực hiện callback khi câu trả lời được chọn
     widget.onAnswerSelected(allCorrect);
 
     if (widget.mode == 'lambai') {
@@ -64,25 +102,20 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       final subQuestions = widget.trueFalseQuestion['subQuestions1'];
 
       if (subQuestions.length > index) {
-        final questionId = subQuestions[index]['Id']; // ID câu hỏi trong subQuestions
-        print(idBoDe);
-        print(questionId);
+        final questionId = subQuestions[index]['Id'];
 
         CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
         try {
-          // Tìm tài liệu cụ thể dựa trên Id và Id_bo_de
           QuerySnapshot snapshot = await chiTietBoDeRef
               .where('Id_cau_hoi', isEqualTo: questionId)
               .where('Id_bo_de', isEqualTo: idBoDe)
               .get();
-
-          // Cập nhật tài liệu đầu tiên nếu có tài liệu khớp với điều kiện
           if (snapshot.docs.isNotEmpty) {
             DocumentSnapshot document = snapshot.docs.first;
-
             await document.reference.update({
-              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer']?'dung':'sai',
+              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'] ? 'dung' : 'sai',
+             // 'UserAnswer': _selectedAnswers[index] == true ? 'dung' : 'sai' // Lưu đáp án của người dùng
             });
             print('Update successful');
           } else {
@@ -96,7 +129,6 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -134,10 +166,10 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                 Row(
                   children: [
                     Container(
-                      width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
+                      width: screenWidth * 0.5,
                       child: Text(
                         subQuestions[i]['question'],
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 18, color: _answerColors[i]),
                         softWrap: true,
                         overflow: TextOverflow.visible,
                         maxLines: null,

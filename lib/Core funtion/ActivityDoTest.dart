@@ -68,18 +68,13 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       answeredCorrectly[currentIndex] = isCorrect;
       print(selectedAnswer);
       questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
-      // Chỉ cộng hoặc trừ điểm nếu câu trả lời thay đổi từ sai sang đúng hoặc ngược lại
+
       if (isCorrect && !wasCorrect) {
         correctCount++;
-        //questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
-        //questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
       } else if (!isCorrect && wasCorrect) {
         correctCount--;
-        //questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
-        //questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
       }
-    print(correctCount);
-      // Lưu kết quả cho câu hỏi hiện tại
+      print(correctCount);
       questionResults[currentIndex] = isCorrect;
     });
   }
@@ -121,10 +116,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
         if (wasCorrect == true) {
           correctCount--;
           answeredCorrectly[currentIndex] = false;
-          // questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
         } else if (wasCorrect == null) {
           answeredCorrectly[currentIndex] = false;
-          // questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
         }
       }
       questionResults[currentIndex] = isAllCorrect;
@@ -144,17 +137,11 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           selected.every((answer) => correctAnswers.contains(answer));
       questionResults[currentIndex] = allCorrect;
       bool isCorrect = allCorrect;
-      print(selectedAnswers);
       questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
-      // Chỉ cộng hoặc trừ điểm nếu câu trả lời thay đổi từ sai sang đúng hoặc ngược lại
       if (isCorrect && !wasCorrect) {
         correctCount++;
-        //questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
-        //questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
       } else if (!isCorrect && wasCorrect) {
         correctCount--;
-        //questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
-        //questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
       }
       print(correctCount);
       answeredCorrectly[currentIndex] = isCorrect;
