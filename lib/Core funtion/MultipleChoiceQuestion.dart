@@ -47,9 +47,7 @@ class MultipleChoiceQuestion extends StatelessWidget {
           bool isCorrect = false;
 
           if (mode == 'xemdapan') {
-            // Assuming you have a way to get the correct answer, add your logic here
-            // For example, if `correctAnswer` is provided:
-            // isCorrect = answer == correctAnswer;
+
           }
 
           return Column(

@@ -324,7 +324,7 @@ class _ListTaskState extends State<listTask> {
         Id_bo_de: boDeId,
         Id_cau_hoi: question['id']!,
         Type_cau_hoi: question['type']!,
-        IsCorrect: false,
+        IsCorrect: 'sai',
       );
       await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
     }

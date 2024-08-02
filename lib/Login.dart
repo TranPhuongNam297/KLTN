@@ -357,8 +357,6 @@ class _LoginState extends State<Login> {
           fontSize: 16.0);
     }
   }
-
-
   void _CheckUserUIDFirebase(String uid) async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     DocumentSnapshot userDoc =

@@ -5,7 +5,7 @@ class chi_tiet_bo_de {
   String Id_bo_de;
   String Id_cau_hoi;
   String Type_cau_hoi;
-  bool IsCorrect;
+  String IsCorrect;
 
   chi_tiet_bo_de({
     required this.Id,

@@ -194,7 +194,7 @@ class QuestionManager {
   String get currentQuestionType => questions[currentQuestionIndex]['type'];
 
 
-  Future<void> updateChiTietBoDe(bool isCorrect, String id, String idBoDe) async {
+  Future<void> updateChiTietBoDe(String isCorrect, String id, String idBoDe) async {
     try {
       // Truy cập vào bảng chi_tiet_bo_de
       CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
@@ -203,12 +203,60 @@ class QuestionManager {
           .where('Id_cau_hoi', isEqualTo: id)
           .where('Id_bo_de', isEqualTo: idBoDe)
           .get();
-
       if (snapshot.docs.isNotEmpty) {
         // Lấy tài liệu đầu tiên (giả sử Id và Id_bo_de là duy nhất)
         DocumentSnapshot document = snapshot.docs.first;
         // Cập nhật giá trị IsCorrect
         await document.reference.update({'IsCorrect': isCorrect});
+        print("update ok");
+      } else {
+        print("update k dc");
+      }
+    } catch (e) {
+      print('Có lỗi xảy ra: $e');
+    }
+  }
+  Future<void> updateChiTietBoDeMutipleAnswers(List<String> answers, String id, String idBoDe) async {
+    try {
+      // Truy cập vào bảng chi_tiet_bo_de
+      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+
+      // Tìm tài liệu cụ thể dựa trên Id và Id_bo_de
+      QuerySnapshot snapshot = await chiTietBoDeRef
+          .where('Id_cau_hoi', isEqualTo: id)
+          .where('Id_bo_de', isEqualTo: idBoDe)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        // Lấy tài liệu đầu tiên (giả sử Id và Id_bo_de là duy nhất)
+        DocumentSnapshot document = snapshot.docs.first;
+
+        // Chuyển đổi danh sách thành chuỗi
+        String answersString = answers.join('+');
+        // Cập nhật giá trị IsCorrect
+        await document.reference.update({'IsCorrect': answersString});
+        print("update ok");
+      } else {
+        print("update k dc");
+      }
+    } catch (e) {
+      print('Có lỗi xảy ra: $e');
+    }
+  }
+
+  Future<void> updateChiTietBoDeMutipleChoise(String Answers, String id, String idBoDe) async {
+    try {
+      // Truy cập vào bảng chi_tiet_bo_de
+      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+      // Tìm tài liệu cụ thể dựa trên Id và Id_bo_de
+      QuerySnapshot snapshot = await chiTietBoDeRef
+          .where('Id_cau_hoi', isEqualTo: id)
+          .where('Id_bo_de', isEqualTo: idBoDe)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        // Lấy tài liệu đầu tiên (giả sử Id và Id_bo_de là duy nhất)
+        DocumentSnapshot document = snapshot.docs.first;
+        // Cập nhật giá trị IsCorrect
+        await document.reference.update({'IsCorrect': Answers});
         print("update ok");
       } else {
         print("update k dc");

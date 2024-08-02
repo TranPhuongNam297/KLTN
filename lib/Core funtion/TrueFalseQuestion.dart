@@ -82,7 +82,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             DocumentSnapshot document = snapshot.docs.first;
 
             await document.reference.update({
-              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'],
+              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer']?'dung':'sai',
             });
             print('Update successful');
           } else {

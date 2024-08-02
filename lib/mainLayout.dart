@@ -21,16 +21,27 @@ class _MainLayoutState extends State<mainLayout> {
   void _onItemTapped(int index) {
     _pageController.jumpToPage(index);
   }
-
   Future<void> _activateKey(BuildContext context, String key) async {
     try {
       // Lấy user ID từ SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? userId = prefs.getString('idUser');
-
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không tìm thấy thông tin người dùng.')),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text('Không tìm thấy thông tin người dùng.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
         );
         return;
       }
@@ -42,16 +53,43 @@ class _MainLayoutState extends State<mainLayout> {
           .get();
 
       if (!keyDoc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Mã key không tồn tại.')),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text('Mã key không tồn tại.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
         );
         return;
       }
+
       // Kiểm tra xem mã key đã được sử dụng chưa
       bool isUsed = keyDoc.data()?['Used'] ?? true;
       if (isUsed) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Mã key đã được kích hoạt.')),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text('Mã key đã được kích hoạt.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
         );
         return;
       }
@@ -68,18 +106,46 @@ class _MainLayoutState extends State<mainLayout> {
         'Time_End': timeEnd,
         'Used': true,
       });
+      await FirebaseFirestore.instance.collection('User_info').doc(userId).update({
+        'isActive': true,
+      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kích hoạt mã key thành công.')),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text('Kích hoạt mã key thành công.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Đóng dialog và quay lại màn hình trước
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
       );
-      Navigator.of(context).pop();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Có lỗi xảy ra: $e')),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text('Có lỗi xảy ra: $e'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
       );
     }
   }
-
   void _showActivationCodeDialog(BuildContext context) {
     final TextEditingController _keyController = TextEditingController();
 

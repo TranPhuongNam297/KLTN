@@ -64,7 +64,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
       bool isCorrect = selectedAnswer == correctAnswer;
       answeredCorrectly[currentIndex] = isCorrect;
       questionResults[currentIndex] = isCorrect;
-      questionManager.updateChiTietBoDe(isCorrect, questionManager.currentQuestionId, idBoDe!);
+      questionManager.updateChiTietBoDe(isCorrect ?'dung':'sai', questionManager.currentQuestionId, idBoDe!);
     });
   }
 
@@ -73,9 +73,9 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
     setState(() {
       questionResults[currentIndex] = isAllCorrect;
       if (isAllCorrect) {
-        questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
+        questionManager.updateChiTietBoDe('dung', questionManager.currentQuestionId, idBoDe!);
       } else {
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
+        questionManager.updateChiTietBoDe('sai', questionManager.currentQuestionId, idBoDe!);
       }
     });
   }
@@ -95,7 +95,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
               bool isCorrect = selectedAnswer == correctAnswer;
               answeredCorrectly[currentIndex] = isCorrect;
               questionResults[currentIndex] = isCorrect;
-              questionManager.updateChiTietBoDe(isCorrect, questionManager.currentQuestionId, idBoDe!);
+              questionManager.updateChiTietBoDe(isCorrect ?'dung':'sai', questionManager.currentQuestionId, idBoDe!);
             }
             break;
 
@@ -109,7 +109,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
               bool allCorrect = selectedAnswersList.length == correctAnswers.length &&
                   !selectedAnswersList.any((answer) => !correctAnswers.contains(answer));
               questionResults[currentIndex] = allCorrect;
-              questionManager.updateChiTietBoDe(allCorrect, questionManager.currentQuestionId, idBoDe!);
+              questionManager.updateChiTietBoDe(allCorrect ?'dung':'sai', questionManager.currentQuestionId, idBoDe!);
             }
             break;
 
