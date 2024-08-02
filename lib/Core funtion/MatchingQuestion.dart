@@ -13,28 +13,50 @@ class MatchingQuestion extends StatefulWidget {
     required this.onAllCorrect,
     required this.mode,
   }) : super(key: key);
+
   @override
   _MatchingQuestionState createState() => _MatchingQuestionState();
 }
+
 class _MatchingQuestionState extends State<MatchingQuestion> {
   Map<String, String?> selectedAnswers = {};
   Map<String, bool> correctness = {};
+  Map<String, Color> answerColors = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnswerColors();
+    if (widget.mode == 'xemdapan') {
+      _fetchAnswerColors();
+    }
+  }
+
+  void _initializeAnswerColors() {
+    final subQuestions = widget.matchingQuestion['subQuestions'] as List;
+    for (var subQuestion in subQuestions) {
+      answerColors[subQuestion['question']] = Colors.black;
+    }
+  }
 
   void onAnswerDropped(String question, String? answer) {
-    setState(() {
-      if (selectedAnswers.containsKey(question)) {
-        final previousAnswer = selectedAnswers[question];
-        selectedAnswers.remove(question);
-        selectedAnswers[question] = answer;
-        selectedAnswers.removeWhere((key, value) => value == previousAnswer);
-      } else {
-        selectedAnswers[question] = answer;
-      }
-      correctness[question] = widget.matchingQuestion['subQuestions']
-          .firstWhere((q) => q['question'] == question)['correctAnswer'] == answer;
-      widget.onAllCorrect(_checkAllCorrect());
-      _updateFirestore(question, answer);
-    });
+    if (widget.mode == 'lambai') {
+      setState(() {
+        if (selectedAnswers.containsKey(question)) {
+          final previousAnswer = selectedAnswers[question];
+          selectedAnswers.remove(question);
+          selectedAnswers[question] = answer;
+          selectedAnswers.removeWhere((key, value) => value == previousAnswer);
+        } else {
+          selectedAnswers[question] = answer;
+        }
+        correctness[question] = widget.matchingQuestion['subQuestions']
+            .firstWhere((q) => q['question'] == question)['correctAnswer'] == answer;
+        //answerColors[question] = correctness[question]! ? Colors.green : Colors.red;
+        widget.onAllCorrect(_checkAllCorrect());
+        _updateFirestore(question, answer);
+      });
+    }
   }
 
   bool _checkAllCorrect() {
@@ -64,7 +86,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
 
           await document.reference.update({
             'IsCorrect': answer == widget.matchingQuestion['subQuestions']
-                .firstWhere((q) => q['question'] == question)['correctAnswer']?'dung':'sai',
+                .firstWhere((q) => q['question'] == question)['correctAnswer'] ? 'dung' : 'sai',
           });
           print('Firestore update successful');
         } else {
@@ -72,6 +94,35 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
         }
       } catch (error) {
         print('Failed to update Firestore: $error');
+      }
+    }
+  }
+
+  Future<void> _fetchAnswerColors() async {
+    final prefs = await SharedPreferences.getInstance();
+    final idBoDe = prefs.getString('boDeId')!;
+    final subQuestions = widget.matchingQuestion['subQuestions'] as List;
+
+    for (var subQuestion in subQuestions) {
+      final questionId = subQuestion['Id'];
+
+      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+
+      try {
+        QuerySnapshot snapshot = await chiTietBoDeRef
+            .where('Id_cau_hoi', isEqualTo: questionId)
+            .where('Id_bo_de', isEqualTo: idBoDe)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          DocumentSnapshot document = snapshot.docs.first;
+          String isCorrect = document['IsCorrect'];
+          setState(() {
+            answerColors[subQuestion['question']] = isCorrect == 'dung' ? Colors.green : Colors.red;
+          });
+        }
+      } catch (error) {
+        print('Failed to fetch answer colors: $error');
       }
     }
   }
@@ -100,7 +151,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                       Expanded(
                         child: Text(
                           subQuestion['question'],
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(fontSize: 18, color: answerColors[subQuestion['question']]),
                         ),
                       ),
                       if (widget.mode == 'lambai')
@@ -227,20 +278,6 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                                   subQuestion['correctAnswer'],
                                   style: TextStyle(color: Colors.white),
                                 ),
-                              ),
-                            ),
-                          ),
-                          childWhenDragging: Card(
-                            margin: EdgeInsets.all(5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(0),
-                            ),
-                            color: Colors.indigo.withOpacity(0.5),
-                            child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Text(
-                                subQuestion['correctAnswer'],
-                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ),
