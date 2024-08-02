@@ -82,7 +82,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             DocumentSnapshot document = snapshot.docs.first;
 
             await document.reference.update({
-              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer']?'dung':'sai',
+              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'] ? 'dung' : 'sai',
             });
             print('Update successful');
           } else {
@@ -102,18 +102,23 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Câu hỏi đúng sai'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               height: 50,
-              child: Text(
-                'Câu hỏi đúng sai',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
-                textAlign: TextAlign.center,
+              child: Center(
+                child: Text(
+                  'Câu hỏi đúng sai',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
             SizedBox(height: 15),
@@ -126,48 +131,58 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                 ),
               ],
             ),
-            for (int i = 0; i < subQuestions.length; i++)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Container(
-                        width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
-                        child: Text(
-                          subQuestions[i]['question'],
-                          style: TextStyle(fontSize: 18),
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                          maxLines: null,
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: subQuestions.length,
+              itemBuilder: (context, i) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Container(
+                          width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
+                          child: Text(
+                            subQuestions[i]['question'],
+                            style: TextStyle(fontSize: 18),
+                            softWrap: true,
+                            overflow: TextOverflow.visible,
+                            maxLines: null,
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Radio<bool?>(
-                              value: true,
-                              groupValue: _selectedAnswers[i],
-                              onChanged: widget.mode == 'lambai' ? (value) {
-                                _onRadioChanged(value, i);
-                              } : null,
-                            ),
-                            Radio<bool?>(
-                              value: false,
-                              groupValue: _selectedAnswers[i],
-                              onChanged: widget.mode == 'lambai' ? (value) {
-                                _onRadioChanged(value, i);
-                              } : null,
-                            ),
-                          ],
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Radio<bool?>(
+                                value: true,
+                                groupValue: _selectedAnswers[i],
+                                onChanged: widget.mode == 'lambai'
+                                    ? (value) {
+                                  _onRadioChanged(value, i);
+                                }
+                                    : null,
+                              ),
+                              Radio<bool?>(
+                                value: false,
+                                groupValue: _selectedAnswers[i],
+                                onChanged: widget.mode == 'lambai'
+                                    ? (value) {
+                                  _onRadioChanged(value, i);
+                                }
+                                    : null,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),
