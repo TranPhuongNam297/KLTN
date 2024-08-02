@@ -67,12 +67,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
           DocumentSnapshot document = snapshot.docs.first;
           String isCorrect = document['IsCorrect'];
           bool userAnswer; // Lấy đáp án của người dùng
-          if(isCorrect == 'dung'){
-            userAnswer = true;
-          }
-          else{
-            userAnswer = false;
-          }
+          userAnswer = isCorrect == 'dung';
+
           setState(() {
             _answerColors[i] = isCorrect == 'dung' ? Colors.green : Colors.red;
             _selectedAnswers[i] = userAnswer; // Cập nhật radio button theo đáp án người dùng
@@ -115,7 +111,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             DocumentSnapshot document = snapshot.docs.first;
             await document.reference.update({
               'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'] ? 'dung' : 'sai',
-             // 'UserAnswer': _selectedAnswers[index] == true ? 'dung' : 'sai' // Lưu đáp án của người dùng
+              // 'UserAnswer': _selectedAnswers[index] == true ? 'dung' : 'sai' // Lưu đáp án của người dùng
             });
             print('Update successful');
           } else {
@@ -153,41 +149,9 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      width: screenWidth * 0.5,
-                      child: Text(
-                        subQuestions[i]['question'],
-                        style: TextStyle(fontSize: 18, color: _answerColors[i]),
-                        softWrap: true,
-                        overflow: TextOverflow.visible,
-                        maxLines: null,
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Radio<bool?>(
-                            value: true,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai' ? (value) {
-                              _onRadioChanged(value, i);
-                            } : null,
-                          ),
-                          Radio<bool?>(
-                            value: false,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai' ? (value) {
-                              _onRadioChanged(value, i);
-                            } : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Đúng / Sai',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -199,10 +163,10 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                   Row(
                     children: [
                       Container(
-                        width: screenWidth * 0.5, // Giới hạn chiều rộng là 50% màn hình
+                        width: screenWidth * 0.5,
                         child: Text(
                           subQuestions[i]['question'],
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(fontSize: 18, color: _answerColors[i]),
                           softWrap: true,
                           overflow: TextOverflow.visible,
                           maxLines: null,
