@@ -66,13 +66,17 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       selectedAnswers[currentIndex] = selectedAnswer;
       bool isCorrect = selectedAnswer == correctAnswer;
       answeredCorrectly[currentIndex] = isCorrect;
+      print(selectedAnswer);
+      questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
       // Chỉ cộng hoặc trừ điểm nếu câu trả lời thay đổi từ sai sang đúng hoặc ngược lại
       if (isCorrect && !wasCorrect) {
         correctCount++;
-        questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
+        //questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
+        //questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
       } else if (!isCorrect && wasCorrect) {
         correctCount--;
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
+        //questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+        //questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
       }
     print(correctCount);
       // Lưu kết quả cho câu hỏi hiện tại
@@ -88,12 +92,12 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       if (allCorrect) {
         if (!wasCorrect) {
           correctCount++;
-          questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
+          questionManager.updateChiTietBoDe('dung',questionManager.currentQuestionId,idBoDe!);
         }
       } else {
         if (wasCorrect) {
            correctCount--;
-          questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+          questionManager.updateChiTietBoDe('sai',questionManager.currentQuestionId,idBoDe!);
         }
       }
     });
@@ -140,13 +144,17 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           selected.every((answer) => correctAnswers.contains(answer));
       questionResults[currentIndex] = allCorrect;
       bool isCorrect = allCorrect;
+      print(selectedAnswers);
+      questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
       // Chỉ cộng hoặc trừ điểm nếu câu trả lời thay đổi từ sai sang đúng hoặc ngược lại
       if (isCorrect && !wasCorrect) {
         correctCount++;
-        questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
+        //questionManager.updateChiTietBoDe(true,questionManager.currentQuestionId,idBoDe!);
+        //questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
       } else if (!isCorrect && wasCorrect) {
         correctCount--;
-        questionManager.updateChiTietBoDe(false, questionManager.currentQuestionId, idBoDe!);
+        //questionManager.updateChiTietBoDe(false,questionManager.currentQuestionId,idBoDe!);
+        //questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
       }
       print(correctCount);
       answeredCorrectly[currentIndex] = isCorrect;
@@ -244,7 +252,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       },
     );
   }
-
   Future<void> _submitTest() async {
     final firestore = FirebaseFirestore.instance;
     try {

@@ -13,11 +13,9 @@ class MatchingQuestion extends StatefulWidget {
     required this.onAllCorrect,
     required this.mode,
   }) : super(key: key);
-
   @override
   _MatchingQuestionState createState() => _MatchingQuestionState();
 }
-
 class _MatchingQuestionState extends State<MatchingQuestion> {
   Map<String, String?> selectedAnswers = {};
   Map<String, bool> correctness = {};
@@ -66,7 +64,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
 
           await document.reference.update({
             'IsCorrect': answer == widget.matchingQuestion['subQuestions']
-                .firstWhere((q) => q['question'] == question)['correctAnswer'],
+                .firstWhere((q) => q['question'] == question)['correctAnswer']?'dung':'sai',
           });
           print('Firestore update successful');
         } else {
