@@ -55,7 +55,7 @@ class _ListPracState extends State<listPrac> {
   Future<void> _createNewBoDe() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('idUser');
-
+    print(userId);
     if (userId == null) {
       print("User ID not found in SharedPreferences");
       return;
@@ -70,15 +70,42 @@ class _ListPracState extends State<listPrac> {
     bool isActive = userSnapshot.get('isActive');
 
     if (!isActive) {
-      _showActivationRequiredDialog();
-      return;
+      // Check how many Bo_de have been created
+      QuerySnapshot boDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId)
+          .get();
+
+      if (boDeSnapshot.docs.length >= 1) {
+        // If already created one Bo_de, show alert
+        _showActivationRequiredDialog();
+        return;
+      }
     }
 
-    int testCount = userSnapshot.get('Test');
+    // Check if the user exists in Key_Active collection
+    QuerySnapshot keyActiveSnapshot = await FirebaseFirestore.instance
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
 
-    if (testCount <= 0) {
-      _showLimitReachedDialog();
-      return;
+    if (keyActiveSnapshot.docs.isNotEmpty) {
+      DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+      int currentTestCount = keyActiveDoc.get('Practice');
+
+      if (isActive) {
+        // Check if Test count is greater than 0
+        if (currentTestCount <= 0) {
+          _showLimitReachedDialog();
+          return;
+        }
+
+        // Decrement Test count by 1
+        await FirebaseFirestore.instance
+            .collection('Key_Active')
+            .doc(keyActiveDoc.id)
+            .update({'Practice': currentTestCount - 1});
+      }
     }
 
     // Create a new Bo_de
@@ -92,19 +119,13 @@ class _ListPracState extends State<listPrac> {
         Tinh_trang: false,
         Generate: false,
         DiemSo: 0,
-        Mode: true // Set Mode to true for new Bo_de
+        Mode: true // Set Mode to false for new Bo_de
     );
 
     await FirebaseFirestore.instance
         .collection('Bo_de')
         .doc(newId)
         .set(newBoDe.toMap());
-
-    // Decrease the Test count by 1
-    await FirebaseFirestore.instance
-        .collection('User_info')
-        .doc(userId)
-        .update({'Test': testCount - 1});
 
     // Save the new bo_de Id to SharedPreferences using UserPreferences
     await UserPreferences.saveBoDeId(newId);
