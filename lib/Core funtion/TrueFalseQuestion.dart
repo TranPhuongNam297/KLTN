@@ -67,10 +67,9 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
           DocumentSnapshot document = snapshot.docs.first;
           String isCorrect = document['IsCorrect'];
           bool userAnswer; // Lấy đáp án của người dùng
-          if(isCorrect == 'dung'){
+          if (isCorrect == 'dung') {
             userAnswer = true;
-          }
-          else{
+          } else {
             userAnswer = false;
           }
           setState(() {
@@ -115,7 +114,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             DocumentSnapshot document = snapshot.docs.first;
             await document.reference.update({
               'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'] ? 'dung' : 'sai',
-             // 'UserAnswer': _selectedAnswers[index] == true ? 'dung' : 'sai' // Lưu đáp án của người dùng
+              // 'UserAnswer': _selectedAnswers[index] == true ? 'dung' : 'sai' // Lưu đáp án của người dùng
             });
             print('Update successful');
           } else {
@@ -134,73 +133,74 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
   Widget build(BuildContext context) {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     double screenWidth = MediaQuery.of(context).size.width;
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 50,
-            child: Text(
-              'Câu hỏi đúng sai',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                'Đúng / Sai',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child: SingleChildScrollView( // Sử dụng SingleChildScrollView để cuộn
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 50,
+              child: Text(
+                'Câu hỏi đúng sai',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
+                textAlign: TextAlign.center,
               ),
-            ],
-          ),
-          for (int i = 0; i < subQuestions.length; i++)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      width: screenWidth * 0.5,
-                      child: Text(
-                        subQuestions[i]['question'],
-                        style: TextStyle(fontSize: 18, color: _answerColors[i]),
-                        softWrap: true,
-                        overflow: TextOverflow.visible,
-                        maxLines: null,
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Radio<bool?>(
-                            value: true,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai' ? (value) {
-                              _onRadioChanged(value, i);
-                            } : null,
-                          ),
-                          Radio<bool?>(
-                            value: false,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai' ? (value) {
-                              _onRadioChanged(value, i);
-                            } : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Đúng / Sai',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-        ],
+            for (int i = 0; i < subQuestions.length; i++)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Container(
+                        width: screenWidth * 0.5,
+                        child: Text(
+                          subQuestions[i]['question'],
+                          style: TextStyle(fontSize: 18, color: _answerColors[i]),
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                          maxLines: null,
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Radio<bool?>(
+                              value: true,
+                              groupValue: _selectedAnswers[i],
+                              onChanged: widget.mode == 'lambai' ? (value) {
+                                _onRadioChanged(value, i);
+                              } : null,
+                            ),
+                            Radio<bool?>(
+                              value: false,
+                              groupValue: _selectedAnswers[i],
+                              onChanged: widget.mode == 'lambai' ? (value) {
+                                _onRadioChanged(value, i);
+                              } : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
