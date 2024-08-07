@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 class StarButton extends StatefulWidget {
+  final String Currentindex;
+  const StarButton({super.key, required this.Currentindex});
   @override
   _StarButtonState createState() => _StarButtonState();
 }

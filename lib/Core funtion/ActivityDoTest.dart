@@ -66,7 +66,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       selectedAnswers[currentIndex] = selectedAnswer;
       bool isCorrect = selectedAnswer == correctAnswer;
       answeredCorrectly[currentIndex] = isCorrect;
-      print(selectedAnswer);
       questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
 
       if (isCorrect && !wasCorrect) {
@@ -74,12 +73,10 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       } else if (!isCorrect && wasCorrect) {
         correctCount--;
       }
-      print(correctCount);
       questionResults[currentIndex] = isCorrect;
     });
   }
   void _handleTrueFalseAnswer(bool allCorrect) {
-    print(allCorrect);
     final currentIndex = questionManager.currentQuestionIndex;
     bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
     setState(() {
@@ -87,12 +84,12 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       if (allCorrect) {
         if (!wasCorrect) {
           correctCount++;
-          questionManager.updateChiTietBoDe('dung',questionManager.currentQuestionId,idBoDe!);
+          questionManager.updateChiTietBoDe('dung', questionManager.currentQuestionId, idBoDe!);
         }
       } else {
         if (wasCorrect) {
-           correctCount--;
-          questionManager.updateChiTietBoDe('sai',questionManager.currentQuestionId,idBoDe!);
+          correctCount--;
+          questionManager.updateChiTietBoDe('sai', questionManager.currentQuestionId, idBoDe!);
         }
       }
     });
@@ -101,16 +98,10 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     final currentIndex = questionManager.currentQuestionIndex;
     bool? wasCorrect = answeredCorrectly[currentIndex];
     setState(() {
-      // Kiểm tra và cập nhật trạng thái đúng/sai cho câu hỏi hiện tại
       if (isAllCorrect) {
-        if (wasCorrect == false) {
+        if (wasCorrect == false || wasCorrect == null) {
           correctCount++;
           answeredCorrectly[currentIndex] = true;
-          // questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
-        } else if (wasCorrect == null) {
-          correctCount++;
-          answeredCorrectly[currentIndex] = true;
-          // questionManager.updateChiTietBoDe(true, questionManager.currentQuestionId, idBoDe!);
         }
       } else {
         if (wasCorrect == true) {
@@ -122,7 +113,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       }
       questionResults[currentIndex] = isAllCorrect;
     });
-    print(correctCount);
   }
 //nhieu dap an
   void _handleMultipleAnswer(List<String> selectedAnswers) {
@@ -132,7 +122,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     setState(() {
       this.selectedAnswers[currentIndex] = selectedAnswers;
       List<String> selected = this.selectedAnswers[currentIndex] ?? [];
-      // Kiểm tra xem đáp án đã chọn có khớp hoàn toàn với đáp án đúng không
       bool allCorrect = selected.length == correctAnswers.length &&
           selected.every((answer) => correctAnswers.contains(answer));
       questionResults[currentIndex] = allCorrect;
@@ -143,7 +132,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       } else if (!isCorrect && wasCorrect) {
         correctCount--;
       }
-      print(correctCount);
       answeredCorrectly[currentIndex] = isCorrect;
     });
   }
@@ -161,10 +149,9 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
         questionManager.currentQuestionIndex++;
         _checkMatchingQuestion();
       } else {
-        if(mode == 'lambai'){
+        if (mode == 'lambai') {
           _showSubmitDialog();
-        }
-        else{
+        } else {
           _BackHome();
         }
       }
@@ -345,7 +332,9 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                             '${questionManager.currentQuestionIndex + 1}/${questionManager.questions.length}',
                             style: TextStyle(fontSize: 24),
                           ),
-                          StarButton(),
+                          StarButton(
+                              Currentindex :questionManager.currentQuestionIndex.toString(),
+                          ),
                         ],
                       ),
                       if (questionManager.currentQuestionType == 'matching')

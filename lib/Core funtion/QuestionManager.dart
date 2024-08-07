@@ -62,6 +62,116 @@ class QuestionManager {
     }
   }
 
+  // Future<void> transferData() async {
+  //   List<Map<String, dynamic>> matchingQuestionTemplate = List.generate(10, (_) => {
+  //     'type': 'matching',
+  //     'question': 'Ghép các câu sau đây:',
+  //     'subQuestions': [],
+  //   });
+  //
+  //   List<Map<String, dynamic>> trueFalseQuestionTemplate = List.generate(10, (_) => {
+  //     'type': 'truefalse',
+  //     'subQuestions1': [],
+  //   });
+  //
+  //   int matchingQuestionIndex = 0;
+  //   int trueFalseQuestionIndex = 0;
+  //
+  //   for (var chiTiet in chiTietList) {
+  //     if (chiTiet.Type_cau_hoi == 'matching') {
+  //       String idCauHoi = chiTiet.Id_cau_hoi;
+  //       list_matching matchingData = await getListMatchingData(idCauHoi);
+  //       matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].add({
+  //         'question': matchingData.Question,
+  //         'correctAnswer': matchingData.CorrectAnswer,
+  //         'Id': idCauHoi,
+  //       });
+  //       if (matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].length == 4) {
+  //         matchingQuestionIndex++;
+  //       }
+  //     } else if (chiTiet.Type_cau_hoi == 'truefalse') {
+  //       String idCauHoi = chiTiet.Id_cau_hoi;
+  //       list_truefalse truefalseData = await getListTrueFalseData(idCauHoi);
+  //       trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].add({
+  //         'question': truefalseData.Question,
+  //         'correctAnswer': truefalseData.CorrectAnswer,
+  //         'Id': idCauHoi,
+  //       });
+  //       if (trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].length == 4) {
+  //         trueFalseQuestionIndex++;
+  //       }
+  //     } else if (chiTiet.Type_cau_hoi == 'multiple_answer') {
+  //       String idCauHoi = chiTiet.Id_cau_hoi;
+  //
+  //       try {
+  //         list_question question = await list_question.getListQuestionById(idCauHoi);
+  //         List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
+  //
+  //         List<String> answerTexts = [];
+  //         List<String> correctAnswers = [];
+  //
+  //         answers.forEach((answer) {
+  //           answerTexts.add(answer.Dap_An);
+  //           if (answer.Is_Correct == true) {
+  //             correctAnswers.add(answer.Dap_An);
+  //           }
+  //         });
+  //
+  //         Map<String, dynamic> listquestions = {
+  //           'type': 'multiple_answer',
+  //           'question': question.Question,
+  //           'answers': answerTexts,
+  //           'correctAnswer': correctAnswers,
+  //           'Id': idCauHoi,
+  //         };
+  //
+  //         questions.add(listquestions);
+  //       } catch (e) {
+  //         print('Error processing multiple_answer question: $e');
+  //       }
+  //     } else if (chiTiet.Type_cau_hoi == 'multiple_choice') {
+  //       String idCauHoi = chiTiet.Id_cau_hoi;
+  //
+  //       try {
+  //         list_question question = await list_question.getListQuestionById(idCauHoi);
+  //         List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
+  //
+  //         List<String> answerTexts = [];
+  //         String? correctAnswer;
+  //
+  //         answers.forEach((answer) {
+  //           answerTexts.add(answer.Dap_An);
+  //           if (answer.Is_Correct) {
+  //             correctAnswer = answer.Dap_An;
+  //           }
+  //         });
+  //
+  //         Map<String, dynamic> listquestions = {
+  //           'type': 'multiple_choice',
+  //           'question': question.Question,
+  //           'answers': answerTexts,
+  //           'correctAnswer': correctAnswer,
+  //           'Id': idCauHoi,
+  //         };
+  //
+  //         questions.add(listquestions);
+  //       } catch (e) {
+  //         print('Error processing multiple_choice question: $e');
+  //       }
+  //     }
+  //   }
+  //   matchingQuestionTemplate.forEach((question) {
+  //     if (question['subQuestions'].isNotEmpty) {
+  //       questions.add(question);
+  //     }
+  //   });
+  //
+  //   trueFalseQuestionTemplate.forEach((question) {
+  //     if (question['subQuestions1'].isNotEmpty) {
+  //       questions.add(question);
+  //     }
+  //   });
+  // }
   Future<void> transferData() async {
     List<Map<String, dynamic>> matchingQuestionTemplate = List.generate(10, (_) => {
       'type': 'matching',
@@ -77,89 +187,100 @@ class QuestionManager {
     int matchingQuestionIndex = 0;
     int trueFalseQuestionIndex = 0;
 
+    List<Future<void>> futures = [];
+
     for (var chiTiet in chiTietList) {
       if (chiTiet.Type_cau_hoi == 'matching') {
         String idCauHoi = chiTiet.Id_cau_hoi;
-        list_matching matchingData = await getListMatchingData(idCauHoi);
-        matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].add({
-          'question': matchingData.Question,
-          'correctAnswer': matchingData.CorrectAnswer,
-          'Id': idCauHoi,
-        });
-        if (matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].length == 4) {
-          matchingQuestionIndex++;
-        }
+        futures.add(() async {
+          list_matching matchingData = await getListMatchingData(idCauHoi);
+          matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].add({
+            'question': matchingData.Question,
+            'correctAnswer': matchingData.CorrectAnswer,
+            'Id': idCauHoi,
+          });
+          if (matchingQuestionTemplate[matchingQuestionIndex]['subQuestions'].length == 4) {
+            matchingQuestionIndex++;
+          }
+        }());
       } else if (chiTiet.Type_cau_hoi == 'truefalse') {
         String idCauHoi = chiTiet.Id_cau_hoi;
-        list_truefalse truefalseData = await getListTrueFalseData(idCauHoi);
-        trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].add({
-          'question': truefalseData.Question,
-          'correctAnswer': truefalseData.CorrectAnswer,
-          'Id': idCauHoi,
-        });
-        if (trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].length == 4) {
-          trueFalseQuestionIndex++;
-        }
+        futures.add(() async {
+          list_truefalse truefalseData = await getListTrueFalseData(idCauHoi);
+          trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].add({
+            'question': truefalseData.Question,
+            'correctAnswer': truefalseData.CorrectAnswer,
+            'Id': idCauHoi,
+          });
+          if (trueFalseQuestionTemplate[trueFalseQuestionIndex]['subQuestions1'].length == 4) {
+            trueFalseQuestionIndex++;
+          }
+        }());
       } else if (chiTiet.Type_cau_hoi == 'multiple_answer') {
         String idCauHoi = chiTiet.Id_cau_hoi;
+        futures.add(() async {
+          try {
+            list_question question = await list_question.getListQuestionById(idCauHoi);
+            List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
 
-        try {
-          list_question question = await list_question.getListQuestionById(idCauHoi);
-          List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
+            List<String> answerTexts = [];
+            List<String> correctAnswers = [];
 
-          List<String> answerTexts = [];
-          List<String> correctAnswers = [];
+            answers.forEach((answer) {
+              answerTexts.add(answer.Dap_An);
+              if (answer.Is_Correct == true) {
+                correctAnswers.add(answer.Dap_An);
+              }
+            });
 
-          answers.forEach((answer) {
-            answerTexts.add(answer.Dap_An);
-            if (answer.Is_Correct == true) {
-              correctAnswers.add(answer.Dap_An);
-            }
-          });
+            Map<String, dynamic> listquestions = {
+              'type': 'multiple_answer',
+              'question': question.Question,
+              'answers': answerTexts,
+              'correctAnswer': correctAnswers,
+              'Id': idCauHoi,
+            };
 
-          Map<String, dynamic> listquestions = {
-            'type': 'multiple_answer',
-            'question': question.Question,
-            'answers': answerTexts,
-            'correctAnswer': correctAnswers,
-            'Id': idCauHoi,
-          };
-
-          questions.add(listquestions);
-        } catch (e) {
-          print('Error processing multiple_answer question: $e');
-        }
+            questions.add(listquestions);
+          } catch (e) {
+            print('Error processing multiple_answer question: $e');
+          }
+        }());
       } else if (chiTiet.Type_cau_hoi == 'multiple_choice') {
         String idCauHoi = chiTiet.Id_cau_hoi;
+        futures.add(() async {
+          try {
+            list_question question = await list_question.getListQuestionById(idCauHoi);
+            List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
 
-        try {
-          list_question question = await list_question.getListQuestionById(idCauHoi);
-          List<list_answer> answers = await list_answer.getListAnswerById(question.Id_Question);
+            List<String> answerTexts = [];
+            String? correctAnswer;
 
-          List<String> answerTexts = [];
-          String? correctAnswer;
+            answers.forEach((answer) {
+              answerTexts.add(answer.Dap_An);
+              if (answer.Is_Correct) {
+                correctAnswer = answer.Dap_An;
+              }
+            });
 
-          answers.forEach((answer) {
-            answerTexts.add(answer.Dap_An);
-            if (answer.Is_Correct) {
-              correctAnswer = answer.Dap_An;
-            }
-          });
+            Map<String, dynamic> listquestions = {
+              'type': 'multiple_choice',
+              'question': question.Question,
+              'answers': answerTexts,
+              'correctAnswer': correctAnswer,
+              'Id': idCauHoi,
+            };
 
-          Map<String, dynamic> listquestions = {
-            'type': 'multiple_choice',
-            'question': question.Question,
-            'answers': answerTexts,
-            'correctAnswer': correctAnswer,
-            'Id': idCauHoi,
-          };
-
-          questions.add(listquestions);
-        } catch (e) {
-          print('Error processing multiple_choice question: $e');
-        }
+            questions.add(listquestions);
+          } catch (e) {
+            print('Error processing multiple_choice question: $e');
+          }
+        }());
       }
     }
+
+    await Future.wait(futures);
+
     matchingQuestionTemplate.forEach((question) {
       if (question['subQuestions'].isNotEmpty) {
         questions.add(question);
