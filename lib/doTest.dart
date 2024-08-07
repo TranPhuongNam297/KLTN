@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:khoa_luan_tot_nghiep/listContinue.dart';
 import 'package:khoa_luan_tot_nghiep/listPrac.dart';
 import 'listTask.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 
 class doTest extends StatelessWidget {
   @override
@@ -17,9 +13,16 @@ class doTest extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 250,
-                height: 250,  // Set the height you want
-                child: ElevatedButton.icon(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.width * 0.5,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(color: Colors.black),
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -28,32 +31,43 @@ class doTest extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: Icon(
-                    Icons.edit_note_outlined,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                  label: Text(
-                    'Kiểm tra',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    shape: RoundedRectangleBorder(
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('images/kiemtra.jpg'), // Đường dẫn tới hình ảnh
+                        fit: BoxFit.cover,
+                      ),
                       borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.black),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        color: Colors.white,
+                        child: Text(
+                          'Kiểm tra',
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold, fontFamily: 'OpenSans'
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
               SizedBox(height: 16),
               Container(
-                width: 250,
-                height: 250,  // Set the height you want
-                child: ElevatedButton.icon(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.width * 0.5,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(color: Colors.black),
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -62,23 +76,28 @@ class doTest extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: Icon(
-                    Icons.menu_book_sharp,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                  label: Text(
-                    'Luyện tập',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    shape: RoundedRectangleBorder(
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('images/luyentap.png'), // Đường dẫn tới hình ảnh
+                        fit: BoxFit.cover,
+                      ),
                       borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.black),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        color: Colors.white,
+                        child: Text(
+                          'Luyện tập',
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'OpenSans'
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

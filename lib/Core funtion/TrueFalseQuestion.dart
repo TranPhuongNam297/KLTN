@@ -67,11 +67,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
           DocumentSnapshot document = snapshot.docs.first;
           String isCorrect = document['IsCorrect'];
           bool userAnswer; // Lấy đáp án của người dùng
-          if (isCorrect == 'dung') {
-            userAnswer = true;
-          } else {
-            userAnswer = false;
-          }
+          userAnswer = isCorrect == 'dung';
+
           setState(() {
             _answerColors[i] = isCorrect == 'dung' ? Colors.green : Colors.red;
             _selectedAnswers[i] = userAnswer; // Cập nhật radio button theo đáp án người dùng
@@ -135,7 +132,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     double screenWidth = MediaQuery.of(context).size.width;
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView( // Sử dụng SingleChildScrollView để cuộn
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

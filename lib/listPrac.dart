@@ -55,7 +55,7 @@ class _ListPracState extends State<listPrac> {
   Future<void> _createNewBoDe() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('idUser');
-
+    print(userId);
     if (userId == null) {
       print("User ID not found in SharedPreferences");
       return;
@@ -70,15 +70,42 @@ class _ListPracState extends State<listPrac> {
     bool isActive = userSnapshot.get('isActive');
 
     if (!isActive) {
-      _showActivationRequiredDialog();
-      return;
+      // Check how many Bo_de have been created
+      QuerySnapshot boDeSnapshot = await FirebaseFirestore.instance
+          .collection('Bo_de')
+          .where('Id_user_tao', isEqualTo: userId)
+          .get();
+
+      if (boDeSnapshot.docs.length >= 1) {
+        // If already created one Bo_de, show alert
+        _showActivationRequiredDialog();
+        return;
+      }
     }
 
-    int testCount = userSnapshot.get('Test');
+    // Check if the user exists in Key_Active collection
+    QuerySnapshot keyActiveSnapshot = await FirebaseFirestore.instance
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
 
-    if (testCount <= 0) {
-      _showLimitReachedDialog();
-      return;
+    if (keyActiveSnapshot.docs.isNotEmpty) {
+      DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+      int currentTestCount = keyActiveDoc.get('Practice');
+
+      if (isActive) {
+        // Check if Test count is greater than 0
+        if (currentTestCount <= 0) {
+          _showLimitReachedDialog();
+          return;
+        }
+
+        // Decrement Test count by 1
+        await FirebaseFirestore.instance
+            .collection('Key_Active')
+            .doc(keyActiveDoc.id)
+            .update({'Practice': currentTestCount - 1});
+      }
     }
 
     // Create a new Bo_de
@@ -92,19 +119,13 @@ class _ListPracState extends State<listPrac> {
         Tinh_trang: false,
         Generate: false,
         DiemSo: 0,
-        Mode: true // Set Mode to true for new Bo_de
+        Mode: true // Set Mode to false for new Bo_de
     );
 
     await FirebaseFirestore.instance
         .collection('Bo_de')
         .doc(newId)
         .set(newBoDe.toMap());
-
-    // Decrease the Test count by 1
-    await FirebaseFirestore.instance
-        .collection('User_info')
-        .doc(userId)
-        .update({'Test': testCount - 1});
 
     // Save the new bo_de Id to SharedPreferences using UserPreferences
     await UserPreferences.saveBoDeId(newId);
@@ -250,35 +271,54 @@ class _ListPracState extends State<listPrac> {
 
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
+    Set<String> usedIds = {}; // Set to keep track of used IDs
 
     void addRandomQuestions<T>(List<T> questionList, int count) {
       questionList.shuffle(random);
       int takeCount = min(count, questionList.length);
-      selectedQuestions.addAll(questionList.take(takeCount).map((q) {
+
+      for (var q in questionList.take(takeCount)) {
+        String id;
+        String type;
+
         if (q is list_question) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type,
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else if (q is list_truefalse) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type,
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else if (q is list_matching) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type,
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else {
           throw Exception('Unknown question type');
         }
-      }));
+
+        // Only add question if its ID has not been used before
+        if (!usedIds.contains(id)) {
+          selectedQuestions.add({
+            'id': id,
+            'type': type,
+          });
+          usedIds.add(id);
+        }
+      }
     }
 
-    addRandomQuestions(questions, 20);
-    addRandomQuestions(trueFalseQuestions, 40);
-    addRandomQuestions(matchingQuestions, 40);
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('User_info')
+        .doc(boDe.Id_user_tao)
+        .get();
+    bool isActive = userSnapshot.get('isActive');
+    if(isActive == false){
+      addRandomQuestions(questions, 3);
+      addRandomQuestions(trueFalseQuestions, 4);
+      addRandomQuestions(matchingQuestions, 4);
+    } else if(isActive == true){
+      addRandomQuestions(questions, 20);
+      addRandomQuestions(trueFalseQuestions, 40);
+      addRandomQuestions(matchingQuestions, 40);
+    }
 
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');

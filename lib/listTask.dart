@@ -274,30 +274,37 @@ class _ListTaskState extends State<listTask> {
 
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
+    Set<String> usedIds = {};
 
     void addRandomQuestions<T>(List<T> questionList, int count) {
       questionList.shuffle(random);
       int takeCount = min(count, questionList.length);
-      selectedQuestions.addAll(questionList.take(takeCount).map((q) {
+
+      for (var q in questionList.take(takeCount)) {
+        String id;
+        String type;
+
         if (q is list_question) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type, // Use the Type value from the model
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else if (q is list_truefalse) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type, // Use the Type value from the model
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else if (q is list_matching) {
-          return {
-            'id': q.Id_Question,
-            'type': q.Type, // Use the Type value from the model
-          };
+          id = q.Id_Question;
+          type = q.Type;
         } else {
           throw Exception('Unknown question type');
         }
-      }));
+
+        if (!usedIds.contains(id)) {
+          selectedQuestions.add({
+            'id': id,
+            'type': type,
+          });
+          usedIds.add(id);
+        }
+      }
     }
 
     DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
@@ -314,6 +321,7 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 40);
       addRandomQuestions(matchingQuestions, 40);
     }
+
     CollectionReference chiTietBoDeCollection =
     FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
@@ -345,6 +353,7 @@ class _ListTaskState extends State<listTask> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
