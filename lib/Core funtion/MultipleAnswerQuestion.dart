@@ -23,8 +23,7 @@ class MultipleAnswerQuestion extends StatelessWidget {
     assert(selectedAnswers != null, 'Selected answers cannot be null');
     assert(mode.isNotEmpty, 'Mode cannot be empty');
 
-
-    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 70% màn hình
+    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 90% màn hình
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,8 +33,8 @@ class MultipleAnswerQuestion extends StatelessWidget {
           height: 250,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.black),
+            borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(10) thành BorderRadius.zero
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -74,15 +73,15 @@ class MultipleAnswerQuestion extends StatelessWidget {
                 }
                     : null, // Vô hiệu hóa trong chế độ "xemdapan"
                 child: Container(
-                  width: buttonWidth, // Chiều rộng bằng 70% màn hình
+                  width: buttonWidth, // Chiều rộng bằng 90% màn hình
                   height: 65,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.blue[400] // Màu cho đáp án đã chọn
+                        ? Colors.blue[900] // Màu cho đáp án đã chọn
                         : (mode == 'xemdapan'
-                        ? (isCorrect ? Colors.green[200] : Colors.red[200]) // Màu cho đáp án đúng/sai trong chế độ "xemdapan"
-                        : Colors.grey[400]), // Màu cho câu trả lời không chọn
-                    borderRadius: BorderRadius.circular(0), // Bỏ borderRadius và border để nút vuông vức
+                        ? (isCorrect ? Colors.green[700] : Colors.red[700]) // Màu cho đáp án đúng/sai trong chế độ "xemdapan"
+                        : Colors.blueGrey[200]), // Màu cho câu trả lời không chọn
+                    borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(0) thành BorderRadius.zero
                   ),
                   alignment: Alignment.center,
                   child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
@@ -94,13 +93,5 @@ class MultipleAnswerQuestion extends StatelessWidget {
         }).toList(),
       ],
     );
-  }
-
-  void printAnswers() {
-    // Uncomment this method if you need to print the list of answers
-    // print('Danh sách đáp án:');
-    // for (var answer in answers) {
-    //   print(answer);
-    // }
   }
 }

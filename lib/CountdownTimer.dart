@@ -1,47 +1,30 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-class CountdownTimer with ChangeNotifier {
-  static const int _initialTime = 3600;
-  int remainingTime = _initialTime;
-  Timer? _timer;
-
-  int get time => remainingTime;
+class CountdownTimer extends ChangeNotifier {
+  Duration remainingDuration = Duration(minutes: 1);
+  late Timer _timer;
+  VoidCallback? onTimerEnd;
 
   void startTimer() {
-    // Prevent starting a new timer if one is already running
-    if (_timer != null && _timer!.isActive) {
-      return;
-    }
-
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (remainingTime > 0) {
-        remainingTime--;
+      if (remainingDuration.inSeconds > 0) {
+        remainingDuration = remainingDuration - Duration(seconds: 1);
+        notifyListeners();
       } else {
-        timer.cancel();
-        remainingTime = 0;
+        _timer.cancel();
+        if (onTimerEnd != null) {
+          onTimerEnd!();
+        }
       }
-      notifyListeners();
     });
   }
 
-  String get formattedTime {
-    int hours = remainingTime ~/ 3600;
-    int minutes = (remainingTime % 3600) ~/ 60;
-    int seconds = remainingTime % 60;
-    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  Duration get remainingDuration {
-    return Duration(seconds: remainingTime);
-  }
-
-  void resetTimer() {
-    remainingTime = _initialTime;
-    notifyListeners();
-  }
-
   void stopTimer() {
-    _timer?.cancel();
+    _timer.cancel();
+  }
+
+  String get formattedTime {
+    return '${remainingDuration.inMinutes.toString().padLeft(2, '0')}:${(remainingDuration.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 }

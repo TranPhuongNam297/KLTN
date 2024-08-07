@@ -37,15 +37,17 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
       bool isCorrect = widget.correctAnswers.contains(answer);
       bool isSelected = selectedAnswers.contains(answer);
       if (isSelected) {
-        return isCorrect ? Colors.green[200]! : Colors.red[200]!;
+        return isCorrect ? Colors.green[700]! : Colors.red[700]!;
       }
-      return Colors.grey[350]!;
+      return Colors.blueGrey[200]!;
     }
-    return selectedAnswers.contains(answer) ? Colors.blue[200]! : Colors.grey[350]!;
+    return selectedAnswers.contains(answer) ? Colors.blue[900]! : Colors.blueGrey[200]!;
   }
 
   @override
   Widget build(BuildContext context) {
+    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 90% màn hình
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -54,7 +56,7 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
           height: 250,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(0), // Không bo tròn
             border: Border.all(color: Colors.black),
           ),
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -73,8 +75,8 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
               bool isSelected = selectedAnswers.contains(answer);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
-                child: TextButton(
-                  onPressed: widget.isChecked ? null : () {
+                child: InkWell(
+                  onTap: widget.isChecked ? null : () {
                     setState(() {
                       if (isSelected) {
                         selectedAnswers.remove(answer);
@@ -84,19 +86,13 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
                       widget.onAnswersSelected(selectedAnswers);
                     });
                   },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-                      return _getButtonColor(answer);
-                    }),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
                   child: Container(
-                    width: 300,
-                    height: 55,
+                    width: buttonWidth,
+                    height: 65,
+                    decoration: BoxDecoration(
+                      color: _getButtonColor(answer),
+                      borderRadius: BorderRadius.circular(0), // Không bo tròn
+                    ),
                     alignment: Alignment.center,
                     child: Text(
                       answer,

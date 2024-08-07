@@ -87,9 +87,9 @@ class _MatchingQuestionPracState extends State<MatchingQuestionPrac> {
                             height: 50,
                             color: widget.isChecked
                                 ? (correctness[question] == true
-                                ? Colors.green[200]
-                                : Colors.red[200])
-                                : Colors.grey[200],
+                                ? Colors.green[700]
+                                : Colors.red[700])
+                                : Colors.blueGrey[200],
                             alignment: Alignment.center,
                             child: selectedAnswers[question] != null
                                 ? Draggable<String>(
@@ -114,7 +114,7 @@ class _MatchingQuestionPracState extends State<MatchingQuestionPrac> {
                               childWhenDragging: Container(
                                 width: 150,
                                 height: 50,
-                                color: Colors.grey[200],
+                                color: Colors.blueGrey[200],
                                 alignment: Alignment.center,
                                 child: Text('Kéo vào đây',
                                     style: TextStyle(fontSize: 16)),

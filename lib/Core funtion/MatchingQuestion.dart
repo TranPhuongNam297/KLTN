@@ -161,7 +161,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                               width: 150,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: Colors.blueGrey[200],
                                 border: Border.all(color: Colors.black),
                                 borderRadius: BorderRadius.circular(0),
                               ),
@@ -204,7 +204,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                                   width: 150,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
+                                    color: Colors.blueGrey[200],
                                     border: Border.all(color: Colors.black),
                                     borderRadius: BorderRadius.circular(0),
                                   ),
@@ -225,7 +225,7 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
                           width: 150,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: Colors.blueGrey[200],
                             border: Border.all(color: Colors.black),
                             borderRadius: BorderRadius.circular(0),
                           ),

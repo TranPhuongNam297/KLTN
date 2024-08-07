@@ -30,34 +30,43 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   Future<void>? _initialization;
   String? idBoDe;
   String? mode;
+
   @override
   void initState() {
     super.initState();
-    countdownTimer.startTimer();
-    _initialization = questionManager.testFirestoreFunction().then((_) {
-      setState(() {
-        questionResults = List<bool?>.filled(questionManager.questions.length, null);
-        for (int i = 0; i < questionManager.questions.length; i++) {
-          selectedAnswers[i] = null;
-          answeredCorrectly[i] = false;
-        }
-        _checkMatchingQuestion();
+    _loadIdBoDe().then((_) {
+      if (mode != 'xemdapan') {
+        countdownTimer.startTimer();
+      }
+      _initialization = questionManager.testFirestoreFunction().then((_) {
+        setState(() {
+          questionResults =
+          List<bool?>.filled(questionManager.questions.length, null);
+          for (int i = 0; i < questionManager.questions.length; i++) {
+            selectedAnswers[i] = null;
+            answeredCorrectly[i] = false;
+          }
+          _checkMatchingQuestion();
+        });
       });
     });
-    _loadIdBoDe();
   }
+
   Future<void> _loadIdBoDe() async {
     final prefs = await SharedPreferences.getInstance();
-    idBoDe = prefs.getString('boDeId')!;
-    mode = prefs.getString("mode")!;
-    print(mode);
+    setState(() {
+      idBoDe = prefs.getString('boDeId')!;
+      mode = prefs.getString('mode')!;
+      print(mode);
+    });
   }
+
   void _checkMatchingQuestion() {
     setState(() {
       isMatchingQuestion = questionManager.currentQuestionType == 'matching';
     });
   }
-//1 dap an dung
+
   void _handleAnswer(String selectedAnswer) {
     final correctAnswer = questionManager.correctAnswer;
     final currentIndex = questionManager.currentQuestionIndex;
@@ -66,7 +75,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       selectedAnswers[currentIndex] = selectedAnswer;
       bool isCorrect = selectedAnswer == correctAnswer;
       answeredCorrectly[currentIndex] = isCorrect;
-      questionManager.updateChiTietBoDeMutipleChoise(selectedAnswer, questionManager.currentQuestionId, idBoDe!);
+      questionManager.updateChiTietBoDeMutipleChoise(
+          selectedAnswer, questionManager.currentQuestionId, idBoDe!);
 
       if (isCorrect && !wasCorrect) {
         correctCount++;
@@ -76,6 +86,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = isCorrect;
     });
   }
+
   void _handleTrueFalseAnswer(bool allCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
     bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
@@ -84,16 +95,19 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       if (allCorrect) {
         if (!wasCorrect) {
           correctCount++;
-          questionManager.updateChiTietBoDe('dung', questionManager.currentQuestionId, idBoDe!);
+          questionManager.updateChiTietBoDe(
+              'dung', questionManager.currentQuestionId, idBoDe!);
         }
       } else {
         if (wasCorrect) {
           correctCount--;
-          questionManager.updateChiTietBoDe('sai', questionManager.currentQuestionId, idBoDe!);
+          questionManager.updateChiTietBoDe(
+              'sai', questionManager.currentQuestionId, idBoDe!);
         }
       }
     });
   }
+
   void _handleMatchingAnswer(bool isAllCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
     bool? wasCorrect = answeredCorrectly[currentIndex];
@@ -114,7 +128,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = isAllCorrect;
     });
   }
-//nhieu dap an
+
   void _handleMultipleAnswer(List<String> selectedAnswers) {
     final correctAnswers = List<String>.from(questionManager.correctAnswer);
     final currentIndex = questionManager.currentQuestionIndex;
@@ -126,7 +140,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           selected.every((answer) => correctAnswers.contains(answer));
       questionResults[currentIndex] = allCorrect;
       bool isCorrect = allCorrect;
-      questionManager.updateChiTietBoDeMutipleAnswers(selectedAnswers, questionManager.currentQuestionId, idBoDe!);
+      questionManager.updateChiTietBoDeMutipleAnswers(
+          selectedAnswers, questionManager.currentQuestionId, idBoDe!);
       if (isCorrect && !wasCorrect) {
         correctCount++;
       } else if (!isCorrect && wasCorrect) {
@@ -136,7 +151,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     });
   }
 
-
   @override
   void dispose() {
     countdownTimer.stopTimer();
@@ -145,12 +159,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
 
   void _nextQuestion() {
     setState(() {
-      if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
+      if (questionManager.currentQuestionIndex <
+          questionManager.questions.length - 1) {
         questionManager.currentQuestionIndex++;
         _checkMatchingQuestion();
       } else {
         if (mode == 'lambai') {
           _showSubmitDialog();
+        } else if (mode == 'xemdapan') {
+          _showEndViewDialog();
         } else {
           _BackHome();
         }
@@ -167,15 +184,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
     });
   }
 
-  void _BackHome(){
+  void _BackHome() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => mainLayout(
-        ),
+        builder: (context) => mainLayout(),
       ),
     );
   }
+
   void _showSubmitDialog() {
     showDialog(
       context: context,
@@ -203,16 +220,18 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
               onPressed: () async {
                 await _submitTest();
                 final totalDuration = Duration(hours: 1);
-                final timeSpent = totalDuration - countdownTimer.remainingDuration;
+                final timeSpent = totalDuration -
+                    countdownTimer.remainingDuration;
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Result(
-                      totalQuestions: questionManager.questions.length,
-                      correctAnswers: correctCount,
-                      questionResults: questionResults,
-                      timeSpent: timeSpent,
-                    ),
+                    builder: (context) =>
+                        Result(
+                          totalQuestions: questionManager.questions.length,
+                          correctAnswers: correctCount,
+                          questionResults: questionResults,
+                          timeSpent: timeSpent,
+                        ),
                   ),
                 );
               },
@@ -226,6 +245,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       },
     );
   }
+
   Future<void> _submitTest() async {
     final firestore = FirebaseFirestore.instance;
     try {
@@ -233,68 +253,117 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
           .collection('chi_tiet_bo_de')
           .where('Id_bo_de', isEqualTo: idBoDe)
           .get();
-      updateBoDe(idBoDe!,correctCount,(Duration(hours: 1) - countdownTimer.remainingDuration).toString());
+      updateBoDe(idBoDe!, correctCount,
+          (Duration(hours: 1) - countdownTimer.remainingDuration).toString());
     } catch (e) {
-      // Xử lý lỗi
       print('Error: $e');
     }
   }
-  Future<void> updateBoDe(String idBoDe, int diemSo,String time) async {
+
+  Future<void> updateBoDe(String idBoDe, int diemSo, String time) async {
     final firestore = FirebaseFirestore.instance;
     try {
       await firestore.collection('Bo_de').doc(idBoDe).update({
         'Tinh_trang': true,
         'DiemSo': diemSo,
-        'Time_finish' : time,
+        'Time_finish': time,
       });
     } catch (e) {
-      // Xử lý lỗi
       print('Error: $e');
     }
   }
 
-
+  void _showEndViewDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Thông báo',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Bạn có muốn kết thúc xem chi tiết đáp án?',
+            style: TextStyle(fontSize: 20),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Hủy',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        Result(
+                          totalQuestions: questionManager.questions.length,
+                          correctAnswers: correctCount,
+                          questionResults: questionResults,
+                          timeSpent: Duration.zero,
+                        ),
+                  ),
+                );
+              },
+              child: Text(
+                'Đồng ý',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return await showDialog(
-          context: context,
-          builder: (context) => ConfirmDialog(
-            onConfirmed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => mainLayout()),
-              );
-            },
-          ),
-        ) ??
-            false;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.indigo,
-          title: Text(
-            'Làm bài',
-            style: TextStyle(color: Colors.white),
-          ),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => ConfirmDialog(
-                  onConfirmed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => mainLayout()),
-                    );
-                  },
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.indigo,
+        title: Text(
+          mode == 'xemdapan' ? 'Chi tiết đáp án' : 'Làm bài',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            if (mode == 'xemdapan') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      Result(
+                        totalQuestions: questionManager.questions.length,
+                        correctAnswers: correctCount,
+                        questionResults: questionResults,
+                        timeSpent: Duration.zero,
+                      ),
                 ),
               );
-            },
-          ),
+            } else {
+              showDialog(
+                context: context,
+                builder: (context) =>
+                    ConfirmDialog(
+                      onConfirmed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => mainLayout()),
+                        );
+                      },
+                    ),
+              );
+            }
+          },
         ),
-        body: FutureBuilder(
+      ),
+      body: Center(
+        child: FutureBuilder<void>(
           future: _initialization,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -306,67 +375,82 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                 children: [
                   Column(
                     children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: AnimatedBuilder(
-                            animation: countdownTimer,
-                            builder: (context, child) {
-                              return Text(
-                                countdownTimer.formattedTime,
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              );
-                            },
+                      if (mode != 'xemdapan')
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: AnimatedBuilder(
+                              animation: countdownTimer,
+                              builder: (context, child) {
+                                return Text(
+                                  countdownTimer.formattedTime,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
-                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${questionManager.currentQuestionIndex + 1}/${questionManager.questions.length}',
+                            '${questionManager.currentQuestionIndex +
+                                1}/${questionManager.questions.length}',
                             style: TextStyle(fontSize: 24),
                           ),
                           StarButton(
-                              Currentindex :questionManager.currentQuestionIndex.toString(),
+                            Currentindex: questionManager.currentQuestionIndex
+                                .toString(),
                           ),
                         ],
                       ),
                       if (questionManager.currentQuestionType == 'matching')
                         MatchingQuestion(
-                          matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                          matchingQuestion: questionManager
+                              .questions[questionManager.currentQuestionIndex],
                           onAllCorrect: _handleMatchingAnswer,
                           mode: mode ?? 'lambai',
                         )
-                      else if (questionManager.currentQuestionType == 'multiple_choice')
-                        MultipleChoiceQuestion(
-                          questionText: questionManager.currentQuestion,
-                          answers: questionManager.currentAnswers!,
-                          onAnswerSelected: _handleAnswer,
-                          selectedAnswer: mode == 'xemdapan' ? questionManager.correctAnswer : selectedAnswers[questionManager.currentQuestionIndex],
-                          mode: mode ?? 'lambai',
-                        )
-                      else if (questionManager.currentQuestionType == 'truefalse')
-                          TrueFalseQuestion(
-                            trueFalseQuestion: questionManager.questions[questionManager.currentQuestionIndex], // Truyền câu hỏi cụ thể
-                            onAnswerSelected: _handleTrueFalseAnswer,
+                      else
+                        if (questionManager.currentQuestionType ==
+                            'multiple_choice')
+                          MultipleChoiceQuestion(
+                            questionText: questionManager.currentQuestion,
+                            answers: questionManager.currentAnswers!,
+                            onAnswerSelected: _handleAnswer,
+                            selectedAnswer: mode == 'xemdapan' ? questionManager
+                                .correctAnswer : selectedAnswers[questionManager
+                                .currentQuestionIndex],
                             mode: mode ?? 'lambai',
                           )
-                        else if (questionManager.currentQuestionType == 'multiple_answer')
-                            MultipleAnswerQuestion(
-                              questionText: questionManager.currentQuestion,
-                              answers: questionManager.currentAnswers ?? [],
-                              onAnswersSelected: _handleMultipleAnswer,
-                              selectedAnswers:mode == 'xemdapan' ?
-                              questionManager.correctAnswer ??[] :
-                              selectedAnswers[questionManager.currentQuestionIndex] ??[],
+                        else
+                          if (questionManager.currentQuestionType ==
+                              'truefalse')
+                            TrueFalseQuestion(
+                              trueFalseQuestion: questionManager
+                                  .questions[questionManager
+                                  .currentQuestionIndex],
+                              onAnswerSelected: _handleTrueFalseAnswer,
                               mode: mode ?? 'lambai',
                             )
+                          else
+                            if (questionManager.currentQuestionType ==
+                                'multiple_answer')
+                              MultipleAnswerQuestion(
+                                questionText: questionManager.currentQuestion,
+                                answers: questionManager.currentAnswers ?? [],
+                                onAnswersSelected: _handleMultipleAnswer,
+                                selectedAnswers: mode == 'xemdapan'
+                                    ? questionManager.correctAnswer ?? []
+                                    : selectedAnswers[questionManager
+                                    .currentQuestionIndex] ?? [],
+                                mode: mode ?? 'lambai',
+                              )
                     ],
                   ),
                   Align(
@@ -400,12 +484,25 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                               ),
                               minimumSize: Size(75, 35),
                             ),
-                            onPressed: _nextQuestion,
+                            onPressed: () {
+                              if (questionManager.currentQuestionIndex <
+                                  questionManager.questions.length - 1) {
+                                _nextQuestion();
+                              } else {
+                                if (mode == 'xemdapan') {
+                                  _showEndViewDialog();
+                                } else {
+                                  _showSubmitDialog();
+                                }
+                              }
+                            },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Text(
-                                  questionManager.currentQuestionIndex < questionManager.questions.length - 1
+                                  (questionManager.currentQuestionIndex <
+                                      questionManager.questions.length - 1 ||
+                                      mode != 'xemdapan')
                                       ? 'Tiếp tục'
                                       : 'Nộp bài',
                                   style: TextStyle(color: Colors.white),

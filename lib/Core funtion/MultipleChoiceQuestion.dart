@@ -76,7 +76,6 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
           height: 250,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.black),
           ),
           child: Padding(
@@ -108,11 +107,11 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
                   height: 65,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.blue[400]
+                        ? Colors.blue[900]
                         : (widget.mode == 'xemdapan'
-                        ? (isCorrect ? Colors.green[200] : Colors.red[200])
-                        : Colors.grey[400]),
-                    borderRadius: BorderRadius.circular(0),
+                        ? (isCorrect ? Colors.green[700] : Colors.red[700])
+                        : Colors.blueGrey[200]),
+                    borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(0) thành BorderRadius.zero
                   ),
                   alignment: Alignment.center,
                   child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
