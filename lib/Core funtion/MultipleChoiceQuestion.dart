@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MultipleChoiceQuestion extends StatefulWidget {
   final String questionText;
@@ -8,6 +6,7 @@ class MultipleChoiceQuestion extends StatefulWidget {
   final Function(String) onAnswerSelected;
   final String? selectedAnswer;
   final String mode;
+  final String correctAnswer; // Thêm biến correctAnswer
 
   MultipleChoiceQuestion({
     required this.questionText,
@@ -15,6 +14,7 @@ class MultipleChoiceQuestion extends StatefulWidget {
     required this.onAnswerSelected,
     required this.selectedAnswer,
     required this.mode,
+    required this.correctAnswer, // Khởi tạo biến correctAnswer
   });
 
   @override
@@ -22,47 +22,6 @@ class MultipleChoiceQuestion extends StatefulWidget {
 }
 
 class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
-  Map<String, String> answerStatus = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchAnswerStatus();
-  }
-
-  Future<void> _fetchAnswerStatus() async {
-    if (widget.mode == 'xemdapan') {
-      final prefs = await SharedPreferences.getInstance();
-      final idBoDe = prefs.getString('boDeId')!;
-      final CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
-
-      try {
-        QuerySnapshot snapshot = await chiTietBoDeRef
-            .where('Id_bo_de', isEqualTo: idBoDe)
-            .get();
-
-        final docs = snapshot.docs;
-        final subQuestions = widget.answers;
-
-        Map<String, String> status = {};
-        for (var doc in docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          final questionId = data['Id_cau_hoi'];
-          final isCorrect = data['IsCorrect'] as String;
-
-          if (subQuestions.contains(questionId)) {
-            status[questionId] = isCorrect;
-          }
-        }
-
-        setState(() {
-          answerStatus = status;
-        });
-      } catch (error) {
-        print('Failed to fetch answer status: $error');
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,12 +50,8 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
         ),
         SizedBox(height: 20),
         ...widget.answers.map((answer) {
-          bool isSelected = widget.selectedAnswer == answer;
-          bool isCorrect = false;
-
-          if (widget.mode == 'xemdapan') {
-            isCorrect = answerStatus[answer] == 'dung';
-          }
+          bool isSelected = widget.selectedAnswer == answer && widget.mode == 'lambai';
+          bool isCorrect = widget.mode == 'xemdapan' && answer == widget.correctAnswer;
 
           return Column(
             children: [
@@ -109,9 +64,9 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
                     color: isSelected
                         ? Colors.blue[900]
                         : (widget.mode == 'xemdapan'
-                        ? (isCorrect ? Colors.green[700] : Colors.red[700])
+                        ? (isCorrect ? Colors.green[700] : Colors.blueGrey[200])
                         : Colors.blueGrey[200]),
-                    borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(0) thành BorderRadius.zero
+                    borderRadius: BorderRadius.zero,
                   ),
                   alignment: Alignment.center,
                   child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),

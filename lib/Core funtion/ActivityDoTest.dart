@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:khoa_luan_tot_nghiep/CompletedTests.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'QuestionManager.dart';
 import '../CountdownTimer.dart';
@@ -82,7 +83,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       answeredCorrectly[currentIndex] = isCorrect;
       questionManager.updateChiTietBoDeMutipleChoise(
           selectedAnswer, questionManager.currentQuestionId, idBoDe!);
-
       if (isCorrect && !wasCorrect) {
         correctCount++;
       } else if (!isCorrect && wasCorrect) {
@@ -234,7 +234,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                         Result(
                           totalQuestions: questionManager.questions.length,
                           correctAnswers: correctCount,
-                          questionResults: questionResults,
                           timeSpent: timeSpent,
                         ),
                   ),
@@ -309,7 +308,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                         Result(
                           totalQuestions: questionManager.questions.length,
                           correctAnswers: correctCount,
-                          questionResults: questionResults,
                           timeSpent: Duration.zero,
                         ),
                   ),
@@ -338,7 +336,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
         builder: (context) => Result(
           totalQuestions: questionManager.questions.length,
           correctAnswers: correctCount,
-          questionResults: questionResults,
           timeSpent: timeSpent,
         ),
       ),
@@ -363,11 +360,8 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      Result(
-                        totalQuestions: questionManager.questions.length,
-                        correctAnswers: correctCount,
-                        questionResults: questionResults,
-                        timeSpent: Duration.zero,
+                      mainLayout(
+                          initialIndex: 2
                       ),
                 ),
               );
@@ -448,6 +442,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                             questionText: questionManager.currentQuestion,
                             answers: questionManager.currentAnswers!,
                             onAnswerSelected: _handleAnswer,
+                            correctAnswer: questionManager.correctAnswer,
                             selectedAnswer: mode == 'xemdapan' ? questionManager
                                 .correctAnswer : selectedAnswers[questionManager
                                 .currentQuestionIndex],

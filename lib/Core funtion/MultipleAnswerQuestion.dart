@@ -34,7 +34,7 @@ class MultipleAnswerQuestion extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(10) thành BorderRadius.zero
+            borderRadius: BorderRadius.zero,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -50,13 +50,7 @@ class MultipleAnswerQuestion extends StatelessWidget {
         SizedBox(height: 20),
         ...answers.map((answer) {
           bool isSelected = selectedAnswers.contains(answer);
-          bool isCorrect = false;
-
-          if (mode == 'xemdapan') {
-            // Tách chuỗi IsCorrect thành mảng và kiểm tra
-            List<String> correctAnswers = 'Phrases+Address information+Payment methods'.split('+');
-            isCorrect = correctAnswers.contains(answer);
-          }
+          bool isCorrect = mode == 'xemdapan' && selectedAnswers.contains(answer);
 
           return Column(
             children: [
@@ -73,15 +67,13 @@ class MultipleAnswerQuestion extends StatelessWidget {
                 }
                     : null, // Vô hiệu hóa trong chế độ "xemdapan"
                 child: Container(
-                  width: buttonWidth, // Chiều rộng bằng 90% màn hình
+                  width: buttonWidth,
                   height: 65,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.blue[900] // Màu cho đáp án đã chọn
-                        : (mode == 'xemdapan'
-                        ? (isCorrect ? Colors.green[700] : Colors.red[700]) // Màu cho đáp án đúng/sai trong chế độ "xemdapan"
-                        : Colors.blueGrey[200]), // Màu cho câu trả lời không chọn
-                    borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(0) thành BorderRadius.zero
+                    color: mode == 'xemdapan'
+                        ? (isCorrect ? Colors.green[700] : Colors.blueGrey[200]) // Màu cho đáp án đúng trong chế độ "xemdapan"
+                        : (isSelected ? Colors.blue[900] : Colors.blueGrey[200]), // Màu cho câu trả lời không chọn
+                    borderRadius: BorderRadius.zero,
                   ),
                   alignment: Alignment.center,
                   child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
