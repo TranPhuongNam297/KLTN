@@ -17,13 +17,12 @@ class MultipleAnswerQuestion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Kiểm tra và đảm bảo rằng các giá trị không bị null
     assert(questionText.isNotEmpty, 'Question text cannot be empty');
     assert(answers.isNotEmpty, 'Answers cannot be empty');
     assert(selectedAnswers != null, 'Selected answers cannot be null');
     assert(mode.isNotEmpty, 'Mode cannot be empty');
 
-    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 90% màn hình
+    double buttonWidth = MediaQuery.of(context).size.width * 0.9;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,7 +33,7 @@ class MultipleAnswerQuestion extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(10) thành BorderRadius.zero
+            borderRadius: BorderRadius.zero,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -53,7 +52,6 @@ class MultipleAnswerQuestion extends StatelessWidget {
           bool isCorrect = false;
 
           if (mode == 'xemdapan') {
-            // Tách chuỗi IsCorrect thành mảng và kiểm tra
             List<String> correctAnswers = 'Phrases+Address information+Payment methods'.split('+');
             isCorrect = correctAnswers.contains(answer);
           }
@@ -71,20 +69,33 @@ class MultipleAnswerQuestion extends StatelessWidget {
                   }
                   onAnswersSelected(updatedSelections);
                 }
-                    : null, // Vô hiệu hóa trong chế độ "xemdapan"
+                    : null,
                 child: Container(
-                  width: buttonWidth, // Chiều rộng bằng 90% màn hình
+                  width: buttonWidth,
                   height: 65,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.blue[900] // Màu cho đáp án đã chọn
+                        ? Colors.blue[900]
                         : (mode == 'xemdapan'
-                        ? (isCorrect ? Colors.green[700] : Colors.red[700]) // Màu cho đáp án đúng/sai trong chế độ "xemdapan"
-                        : Colors.blueGrey[200]), // Màu cho câu trả lời không chọn
-                    borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(0) thành BorderRadius.zero
+                        ? (isCorrect ? Colors.green[700] : Colors.red[700])
+                        : Colors.blueGrey[200]),
+                    borderRadius: BorderRadius.zero,
                   ),
                   alignment: Alignment.center,
-                  child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 10), // Khoảng cách bên trái
+                      Icon(Icons.drag_handle), // Icon ba gạch
+                      VerticalDivider(color: Colors.black, thickness: 2), // Đường thẳng ngăn cách
+                      SizedBox(width: 10), // Khoảng cách giữa đường thẳng và text
+                      Expanded(
+                        child: Text(
+                          answer,
+                          style: TextStyle(fontSize: 20, color: Colors.black),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 10),

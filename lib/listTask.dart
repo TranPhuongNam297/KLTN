@@ -246,7 +246,10 @@ class _ListTaskState extends State<listTask> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TestRulesScreen(),
+          builder: (context) => TestRulesScreen(
+            boDeId: boDeId,
+            mode: boDe.Mode,
+          ),
         ),
       );
       return;
@@ -349,7 +352,10 @@ class _ListTaskState extends State<listTask> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TestRulesScreen(),
+        builder: (context) => TestRulesScreen(
+          boDeId: boDeId,
+          mode: boDe.Mode,
+        ),
       ),
     );
   }

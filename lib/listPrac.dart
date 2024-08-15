@@ -244,7 +244,10 @@ class _ListPracState extends State<listPrac> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TestRulesScreen(),
+          builder: (context) => TestRulesScreen(
+            boDeId: boDeId,
+            mode: boDe.Mode,
+          ),
         ),
       );
       return;
@@ -347,7 +350,10 @@ class _ListPracState extends State<listPrac> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TestRulesScreen(),
+        builder: (context) => TestRulesScreen(
+          boDeId: boDeId,
+          mode: boDe.Mode,
+        ),
       ),
     );
   }

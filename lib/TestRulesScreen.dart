@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
 import 'Core funtion/ActivityDoTest.dart';
 import 'Model/bo_de.dart';
 import 'Practice/ActivityDoPractice.dart'; // Import ActivityDoPractice
 
 class TestRulesScreen extends StatefulWidget {
+  final String boDeId;
+  final bool mode;
+
+  TestRulesScreen({required this.boDeId, required this.mode});
+
   @override
   _TestRulesScreenState createState() => _TestRulesScreenState();
 }
@@ -18,63 +22,20 @@ class _TestRulesScreenState extends State<TestRulesScreen> {
       isLoading = true;
     });
 
-    // Lấy boDeId từ SharedPreferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? boDeId = prefs.getString('boDeId');
-    prefs.setString('mode', 'lambai');
-    if (boDeId != null) {
-      // Truy xuất dữ liệu và lấy trường Mode
-      bool isPracticeMode = await _fetchModeFromBoDe(boDeId);
+    String boDeId = widget.boDeId;
+    bool isPracticeMode = widget.mode;
 
-      setState(() {
-        isLoading = false;
-      });
+    setState(() {
+      isLoading = false;
+    });
 
-      // Điều hướng đến màn hình phù hợp dựa trên giá trị của Mode
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => isPracticeMode ? ActivityDoPractice() : ActivityDoTest(),
-        ),
-      );
-    } else {
-      // Xử lý trường hợp không có boDeId
-      setState(() {
-        isLoading = false;
-      });
-      // Bạn có thể hiển thị một thông báo lỗi hoặc chuyển hướng đến màn hình khác
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không tìm thấy ID bài kiểm tra.')),
-      );
-    }
-  }
-
-  // Phương thức để lấy Mode từ Bo_de
-  Future<bool> _fetchModeFromBoDe(String boDeId) async {
-    try {
-      // Truy xuất dữ liệu từ Firestore
-      DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-          .collection('Bo_de') // Thay thế bằng tên collection của bạn
-          .doc(boDeId)
-          .get();
-
-      if (docSnapshot.exists) {
-        // Lấy dữ liệu từ snapshot
-        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
-        // Tạo đối tượng bo_de từ dữ liệu
-        bo_de boDe = bo_de.fromMap(data, docSnapshot.id);
-        // Trả về giá trị của trường Mode
-        print((boDe.Mode).toString()+ "bo de firebase tra ve");
-        return boDe.Mode;
-      } else {
-        // Xử lý trường hợp không tìm thấy tài liệu
-        throw Exception('Không tìm thấy boDe với ID: $boDeId');
-      }
-    } catch (e) {
-      // Xử lý lỗi
-      print('Lỗi khi lấy dữ liệu: $e');
-      return false; // Hoặc xử lý lỗi theo cách khác nếu cần
-    }
+    // Điều hướng đến màn hình phù hợp dựa trên giá trị của Mode
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => isPracticeMode ? ActivityDoPractice() : ActivityDoTest(),
+      ),
+    );
   }
 
   @override
