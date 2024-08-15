@@ -20,7 +20,7 @@ class ActivityDoTest extends StatefulWidget {
 
 class _ActivityDoTestState extends State<ActivityDoTest> {
   final QuestionManager questionManager = QuestionManager();
-  final CountdownTimer countdownTimer = CountdownTimer();
+  // final CountdownTimer countdownTimer = CountdownTimer();
   final Home home = Home();
   int correctCount = 0;
   Map<int, dynamic> selectedAnswers = {};
@@ -30,10 +30,15 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
   Future<void>? _initialization;
   String? idBoDe;
   String? mode;
+  late CountdownTimer countdownTimer;
 
   @override
   void initState() {
     super.initState();
+    countdownTimer = CountdownTimer(
+      remainingDuration: Duration(hours: 1),
+    );
+    countdownTimer.onTimerEnd = _navigateToResult;
     _loadIdBoDe().then((_) {
       if (mode != 'xemdapan') {
         countdownTimer.startTimer();
@@ -320,6 +325,26 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       },
     );
   }
+
+  void _navigateToResult() async {
+    final totalDuration = Duration(hours: 1); // Adjust this if needed
+    final timeSpent = totalDuration - countdownTimer.remainingDuration;
+
+    await _submitTest(); // Gọi hàm _submitTest để cập nhật kết quả trước khi điều hướng
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Result(
+          totalQuestions: questionManager.questions.length,
+          correctAnswers: correctCount,
+          questionResults: questionResults,
+          timeSpent: timeSpent,
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {

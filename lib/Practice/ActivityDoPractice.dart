@@ -19,7 +19,7 @@ class ActivityDoPractice extends StatefulWidget {
 
 class _ActivityDoPracticeState extends State<ActivityDoPractice> {
   final QuestionManager questionManager = QuestionManager();
-  final CountdownTimer countdownTimer = CountdownTimer();
+  late CountdownTimer countdownTimer;
   int correctCount = 0;
   Map<int, dynamic> selectedAnswers = {};
   Map<int, bool> answeredCorrectly = {};
@@ -32,6 +32,10 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
   @override
   void initState() {
     super.initState();
+    countdownTimer = CountdownTimer(
+      remainingDuration: Duration(hours: 1),
+    );
+    countdownTimer.onTimerEnd = _navigateToResult;
     countdownTimer.startTimer();
     _initialization = questionManager.testFirestoreFunction().then((_) {
       setState(() {
@@ -232,6 +236,24 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
           ],
         );
       },
+    );
+  }
+
+  void _navigateToResult() async {
+    final totalDuration = Duration(hours: 1); // Adjust this if needed
+    final timeSpent = totalDuration - countdownTimer.remainingDuration;
+
+    await _submitTest();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultPractice(
+          totalQuestions: questionManager.questions.length,
+          correctAnswers: correctCount,
+          questionResults: questionResults,
+          timeSpent: timeSpent,
+        ),
+      ),
     );
   }
 

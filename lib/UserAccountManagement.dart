@@ -17,6 +17,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
   late TextEditingController _userNameController;
   late TextEditingController _passwordController;
   late TextEditingController _statusController;
+  late TextEditingController _timeEndController; // Thêm controller cho time_end
 
   @override
   void initState() {
@@ -26,6 +27,8 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _userNameController = TextEditingController();
     _passwordController = TextEditingController();
     _statusController = TextEditingController();
+    _timeEndController =
+        TextEditingController(); // Khởi tạo controller cho time_end
   }
 
   @override
@@ -35,6 +38,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _userNameController.dispose();
     _passwordController.dispose();
     _statusController.dispose();
+    _timeEndController.dispose(); // Dispose controller khi không dùng nữa
     super.dispose();
   }
 
@@ -127,6 +131,20 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     });
   }
 
+  Future<String?> _getTimeEnd(String userId) async {
+    final firestore = FirebaseFirestore.instance;
+    final keyActiveDoc = await firestore
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
+
+    if (keyActiveDoc.docs.isNotEmpty) {
+      return keyActiveDoc.docs.first['Time_End'] as String;
+    } else {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,7 +152,10 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         title: Center(
           child: Text(
             'Thông tin tài khoản',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, fontFamily: 'Open Sans'),
+            style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Open Sans'),
           ),
         ),
       ),
@@ -144,7 +165,8 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
           if (userIdSnapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (userIdSnapshot.hasError) {
-            return Center(child: Text('Đã xảy ra lỗi: ${userIdSnapshot.error}'));
+            return Center(
+                child: Text('Đã xảy ra lỗi: ${userIdSnapshot.error}'));
           } else if (!userIdSnapshot.hasData || userIdSnapshot.data == null) {
             return Center(child: Text('Không có ID người dùng'));
           }
@@ -168,57 +190,88 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                 _phoneNumberController.text = userInfo.PhoneNumber;
                 _userNameController.text = userInfo.UserName;
                 _passwordController.text = userInfo.PassWord;
-                _statusController.text = userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
+                _statusController.text =
+                    userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
               }
 
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildLabeledTextField('Họ và tên', _fullNameController, _isEditing),
-                      SizedBox(height: 16),
-                      _buildLabeledTextField('Số điện thoại', _phoneNumberController, _isEditing),
-                      SizedBox(height: 16),
-                      _buildLabeledTextField('Tên người dùng', _userNameController, _isEditing),
-                      SizedBox(height: 16),
-                      _buildPasswordTextField('Mật khẩu', _passwordController),
-                      SizedBox(height: 16),
-                      _buildStatusTextField('Tình trạng tài khoản', _statusController, userInfo.IsActive),
-                      SizedBox(height: 50),
-                      Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                            ),
-                            onPressed: () async {
-                              if (_isEditing) {
-                                // Save the changes
-                                await _updateUserInfo(userId);
-                              }
+              return FutureBuilder<String?>(
+                future: _getTimeEnd(userId),
+                builder: (context, timeEndSnapshot) {
+                  if (timeEndSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (timeEndSnapshot.hasError) {
+                    return Center(
+                        child: Text('Đã xảy ra lỗi: ${timeEndSnapshot.error}'));
+                  } else if (!timeEndSnapshot.hasData ||
+                      timeEndSnapshot.data == null) {
+                    return Center(child: Text('Không có dữ liệu time_end'));
+                  }
 
-                              // Keep editing mode if any validation fails
-                              bool hasValidationError = _phoneNumberController.text != userInfo.PhoneNumber ||
-                                  _userNameController.text != userInfo.UserName;
+                  _timeEndController.text = timeEndSnapshot.data!;
 
-                              setState(() {
-                                _isEditing = hasValidationError || !_isEditing;
-                              });
-                            },
-                            child: Text(
-                              _isEditing ? 'Lưu' : 'Chỉnh sửa',
-                              style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'Open Sans'),
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabeledTextField(
+                            'Họ và tên', _fullNameController, _isEditing),
+                        SizedBox(height: 16),
+                        _buildLabeledTextField('Số điện thoại',
+                            _phoneNumberController, _isEditing),
+                        SizedBox(height: 16),
+                        _buildLabeledTextField(
+                            'Tên người dùng', _userNameController, _isEditing),
+                        SizedBox(height: 16),
+                        _buildPasswordTextField(
+                            'Mật khẩu', _passwordController),
+                        SizedBox(height: 16),
+                        _buildStatusTextField('Tình trạng tài khoản',
+                            _statusController, userInfo.IsActive),
+                        SizedBox(height: 16),
+                        _buildTimeEndTextField(
+                            'Thời hạn tài khoản', _timeEndController),
+                        // Thêm dòng này
+                        SizedBox(height: 50),
+                        Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            height: 60, // Điều chỉnh chiều cao của nút
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                              ),
+                              onPressed: () async {
+                                if (_isEditing) {
+                                  // Save the changes
+                                  await _updateUserInfo(userId);
+                                }
+
+                                // Keep editing mode if any validation fails
+                                bool hasValidationError =
+                                    _phoneNumberController.text !=
+                                            userInfo.PhoneNumber ||
+                                        _userNameController.text !=
+                                            userInfo.UserName;
+
+                                setState(() {
+                                  _isEditing =
+                                      hasValidationError || !_isEditing;
+                                });
+                              },
+                              child: Text(
+                                _isEditing ? 'Lưu' : 'Chỉnh sửa',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 20),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                        )
+                      ],
+                    ),
+                  );
+                },
               );
             },
           );
@@ -227,76 +280,85 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     );
   }
 
-  Widget _buildLabeledTextField(String labelText, TextEditingController controller, bool enabled) {
+  Widget _buildLabeledTextField(
+      String label, TextEditingController controller, bool isEnabled) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          labelText,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          label,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         TextField(
           controller: controller,
-          enabled: enabled,
+          enabled: isEnabled,
           decoration: InputDecoration(
-            hintText: enabled ? 'Nhập $labelText' : controller.text,
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black, width: 2.0),
-            ),
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPasswordTextField(String labelText, TextEditingController controller) {
+  Widget _buildPasswordTextField(
+      String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          labelText,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          label,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         TextField(
           controller: controller,
-          enabled: false,
+          enabled: false, // Password field should not be editable
           obscureText: true,
           decoration: InputDecoration(
-            hintText: '*************', // Always show asterisks
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black, width: 2.0),
-            ),
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatusTextField(String labelText, TextEditingController controller, bool isActive) {
-    controller.text = isActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
+  Widget _buildStatusTextField(
+      String label, TextEditingController controller, bool isActive) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          labelText,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          label,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         TextField(
           controller: controller,
-          enabled: false,
+          enabled: false, // Status field should not be editable
           decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black, width: 2.0),
-            ),
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeEndTextField(
+      String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        TextField(
+          controller: controller,
+          enabled: false, // Time end field should not be editable
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
       ],
