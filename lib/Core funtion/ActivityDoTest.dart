@@ -447,6 +447,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                                 .correctAnswer : selectedAnswers[questionManager
                                 .currentQuestionIndex],
                             mode: mode ?? 'lambai',
+                            idQuestion: questionManager.currentQuestionId,
                           )
                         else
                           if (questionManager.currentQuestionType ==
@@ -470,6 +471,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                                     : selectedAnswers[questionManager
                                     .currentQuestionIndex] ?? [],
                                 mode: mode ?? 'lambai',
+                                idQuestion: questionManager.currentQuestionId,
                               )
                     ],
                   ),

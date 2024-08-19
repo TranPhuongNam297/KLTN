@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TrueFalseQuestion extends StatefulWidget {
@@ -55,7 +55,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     for (int i = 0; i < subQuestions.length; i++) {
       final questionId = subQuestions[i]['Id'];
 
-      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+      CollectionReference chiTietBoDeRef =
+      FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
       try {
         QuerySnapshot snapshot = await chiTietBoDeRef
@@ -71,7 +72,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
 
           setState(() {
             _answerColors[i] = isCorrect == 'dung' ? Colors.green : Colors.red;
-            _selectedAnswers[i] = userAnswer; // Cập nhật radio button theo đáp án người dùng
+            _selectedAnswers[i] =
+                userAnswer; // Cập nhật radio button theo đáp án người dùng
           });
         }
       } catch (error) {
@@ -87,7 +89,9 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
 
     bool allCorrect = _selectedAnswers.every((answer) {
       int answerIndex = _selectedAnswers.indexOf(answer);
-      return answer != null && answer == widget.trueFalseQuestion['subQuestions1'][answerIndex]['correctAnswer'];
+      return answer != null &&
+          answer == widget.trueFalseQuestion['subQuestions1'][answerIndex]
+          ['correctAnswer'];
     });
 
     widget.onAnswerSelected(allCorrect);
@@ -100,7 +104,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       if (subQuestions.length > index) {
         final questionId = subQuestions[index]['Id'];
 
-        CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+        CollectionReference chiTietBoDeRef =
+        FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
         try {
           QuerySnapshot snapshot = await chiTietBoDeRef
@@ -110,12 +115,15 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
           if (snapshot.docs.isNotEmpty) {
             DocumentSnapshot document = snapshot.docs.first;
             await document.reference.update({
-              'IsCorrect': _selectedAnswers[index] == subQuestions[index]['correctAnswer'] ? 'dung' : 'sai',
-              // 'UserAnswer': _selectedAnswers[index] == true ? 'dung' : 'sai' // Lưu đáp án của người dùng
+              'IsCorrect': _selectedAnswers[index] ==
+                  subQuestions[index]['correctAnswer']
+                  ? 'dung'
+                  : 'sai',
             });
             print('Update successful');
           } else {
-            print('No document found for the given Id_cau_hoi and Id_bo_de');
+            print(
+                'No document found for the given Id_cau_hoi and Id_bo_de');
           }
         } catch (error) {
           print('Failed to update: $error');
@@ -130,75 +138,89 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
   Widget build(BuildContext context) {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     double screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 50,
-              child: Text(
-                'Câu hỏi đúng sai',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
-                textAlign: TextAlign.center,
-              ),
+            Text(
+              'Câu hỏi đúng sai',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 35),
+              textAlign: TextAlign.center,
             ),
             SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  'Đúng / Sai',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
             for (int i = 0; i < subQuestions.length; i++)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 10),
-                  Row(
+              Card(
+                elevation: 2,
+                margin: EdgeInsets.symmetric(vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: screenWidth * 0.5,
-                        child: Text(
-                          subQuestions[i]['question'],
-                          style: TextStyle(fontSize: 18, color: _answerColors[i]),
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                          maxLines: null,
+                      // Văn bản câu hỏi
+                      Text(
+                        subQuestions[i]['question'],
+                        style: TextStyle(
+                          fontSize: 16, // Giảm kích thước chữ
+                          color: _answerColors[i],
                         ),
                       ),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Radio<bool?>(
-                              value: true,
-                              groupValue: _selectedAnswers[i],
-                              onChanged: widget.mode == 'lambai' ? (value) {
-                                _onRadioChanged(value, i);
-                              } : null,
-                            ),
-                            Radio<bool?>(
-                              value: false,
-                              groupValue: _selectedAnswers[i],
-                              onChanged: widget.mode == 'lambai' ? (value) {
-                                _onRadioChanged(value, i);
-                              } : null,
-                            ),
-                          ],
-                        ),
+                      SizedBox(height: 8), // Thêm khoảng cách giữa văn bản câu hỏi và các nút radio
+                      // Các nút radio
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Đúng",
+                                style: TextStyle(fontSize: 14), // Giảm kích thước chữ
+                              ),
+                              Radio<bool?>(
+                                value: true,
+                                groupValue: _selectedAnswers[i],
+                                onChanged: widget.mode == 'lambai'
+                                    ? (value) {
+                                  _onRadioChanged(value, i);
+                                }
+                                    : null,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                "Sai",
+                                style: TextStyle(fontSize: 14), // Giảm kích thước chữ
+                              ),
+                              Radio<bool?>(
+                                value: false,
+                                groupValue: _selectedAnswers[i],
+                                onChanged: widget.mode == 'lambai'
+                                    ? (value) {
+                                  _onRadioChanged(value, i);
+                                }
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
           ],
         ),
       ),
     );
   }
+
+
 }
