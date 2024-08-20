@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:khoa_luan_tot_nghiep/Model/list_sort.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Model/bo_de.dart';
@@ -14,6 +13,7 @@ import 'SharedPreferences/SharedPreferences.dart';
 import 'Model/chi_tiet_bo_de.dart';
 import 'TestRulesScreen.dart'; // Import the UserPreferences class
 
+
 class listTask extends StatefulWidget {
   @override
   _ListTaskState createState() => _ListTaskState();
@@ -21,7 +21,7 @@ class listTask extends StatefulWidget {
 
 class _ListTaskState extends State<listTask> {
   List<Map<String, dynamic>> boDeList = [];
-  bool _isLoading = false; // Track loading state for popup
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -38,12 +38,11 @@ class _ListTaskState extends State<listTask> {
       return;
     }
 
-    // Fetch only those Bo_de where Tinh_trang is false and Mode is false
+    // Fetch only those Bo_de where Mode is true
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('Bo_de')
         .where('Id_user_tao', isEqualTo: userId)
-        .where('Tinh_trang', isEqualTo: false) // Filter by Tinh_trang
-        .where('Mode', isEqualTo: false) // Filter by Mode being false (for 'Kiểm tra')
+        .where('Mode', isEqualTo: true) // Add this line to filter by Mode
         .get();
 
     setState(() {
@@ -270,18 +269,14 @@ class _ListTaskState extends State<listTask> {
   }
 
 
-
-
-
   Future<void> _startTest(BuildContext context, String boDeId) async {
     setState(() {
-      _isLoading = true; // Show loading popup
+      _isLoading = true;
     });
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('boDeId', boDeId);
 
-    // Check if the Bo_de has been generated
     DocumentSnapshot boDeSnapshot =
     await FirebaseFirestore.instance.collection('Bo_de').doc(boDeId).get();
 
@@ -289,9 +284,8 @@ class _ListTaskState extends State<listTask> {
     bo_de.fromMap(boDeSnapshot.data() as Map<String, dynamic>, boDeId);
 
     if (boDe.Generate) {
-      // If already generated, just navigate to the test screen
       setState(() {
-        _isLoading = false; // Hide loading popup
+        _isLoading = false;
       });
       Navigator.push(
         context,
@@ -305,15 +299,12 @@ class _ListTaskState extends State<listTask> {
       return;
     }
 
-    // Fetch questions and other data here
     QuerySnapshot questionSnapshot =
     await FirebaseFirestore.instance.collection('list_question').get();
     QuerySnapshot trueFalseSnapshot =
     await FirebaseFirestore.instance.collection('list_truefalse').get();
     QuerySnapshot matchingSnapshot =
     await FirebaseFirestore.instance.collection('list_matching').get();
-    // QuerySnapshot sortSnapshot =
-    // await FirebaseFirestore.instance.collection('list_sort').get();
 
     List<list_question> questions = questionSnapshot.docs.map((doc) {
       return list_question.fromMap(doc.data() as Map<String, dynamic>, doc.id);
@@ -327,13 +318,9 @@ class _ListTaskState extends State<listTask> {
       return list_matching.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
 
-     // List<list_sort> sortQuestions = sortSnapshot.docs.map((doc) {
-     //   return list_sort.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-     // }).toList();
-
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
-    Set<String> usedIds = {};
+    Set<String> usedIds = {}; // Set to keep track of used IDs
 
     void addRandomQuestions<T>(List<T> questionList, int count) {
       questionList.shuffle(random);
@@ -352,14 +339,11 @@ class _ListTaskState extends State<listTask> {
         } else if (q is list_matching) {
           id = q.Id_Question;
           type = q.Type;
-        }//else if(q is list_sort){
-          //id = q.Id;
-          //type = q.Type;
-        //}
-        else {
+        } else {
           throw Exception('Unknown question type');
         }
 
+        // Only add question if its ID has not been used before
         if (!usedIds.contains(id)) {
           selectedQuestions.add({
             'id': id,
@@ -379,12 +363,10 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(questions, 3);
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
-      //addRandomQuestions(sortQuestions, 1);
     } else if(isActive == true){
       addRandomQuestions(questions, 20);
       addRandomQuestions(trueFalseQuestions, 40);
       addRandomQuestions(matchingQuestions, 40);
-      //addRandomQuestions(sortQuestions, 10);
     }
 
     CollectionReference chiTietBoDeCollection =
@@ -393,22 +375,22 @@ class _ListTaskState extends State<listTask> {
     for (var question in selectedQuestions) {
       chi_tiet_bo_de chiTiet = chi_tiet_bo_de(
         Id: chiTietBoDeCollection.doc().id,
-        // Auto-generate ID
         Id_bo_de: boDeId,
         Id_cau_hoi: question['id']!,
         Type_cau_hoi: question['type']!,
         IsCorrect: 'sai',
       );
+
       await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
     }
-    // Update the Bo_de to mark it as generated
+
     await FirebaseFirestore.instance
         .collection('Bo_de')
         .doc(boDeId)
         .update({'Generate': true});
 
     setState(() {
-      _isLoading = false; // Hide loading popup
+      _isLoading = false;
     });
 
     Navigator.push(
@@ -421,7 +403,6 @@ class _ListTaskState extends State<listTask> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -443,7 +424,7 @@ class _ListTaskState extends State<listTask> {
                     return TaskItem(
                       title: 'Bộ đề ${index + 1}',
                       imageUrl: 'images/tetmass3.png',
-                      modeText: 'Chế độ: Kiểm tra', // Set mode text to "Kiểm tra"
+                      modeText: 'Chế độ: Kiểm tra', // Display Mode text
                       onTap: () {
                         String boDeId = boDeList[index]['Id'];
                         _startTest(context, boDeId);
@@ -454,7 +435,7 @@ class _ListTaskState extends State<listTask> {
               ),
             ],
           ),
-          if (_isLoading) // Show loading popup
+          if (_isLoading)
             Center(
               child: AlertDialog(
                 title: Text('Đang tải...'),
@@ -477,9 +458,9 @@ class _ListTaskState extends State<listTask> {
       ),
       floatingActionButton: ClipOval(
         child: Material(
-          color: Colors.indigo, // Replace with your desired color
+          color: Colors.indigo,
           child: InkWell(
-            splashColor: Colors.white, // Splash color when tapped
+            splashColor: Colors.white,
             child: SizedBox(
                 width: 56,
                 height: 56,
