@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:khoa_luan_tot_nghiep/Model/list_sort.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Model/bo_de.dart';
@@ -189,14 +190,59 @@ class _ListTaskState extends State<listTask> {
     );
   }
 
-  void _showCreateNewBoDeDialog() {
+  void _showCreateNewBoDeDialog() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('idUser');
+
+    if (userId == null) {
+      print("User ID not found in SharedPreferences");
+      return;
+    }
+
+    // Start fetching user data and Key_Active in parallel
+    final userDocFuture = FirebaseFirestore.instance.collection('User_info').doc(userId).get();
+    final keyActiveFuture = FirebaseFirestore.instance
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
+
+    // Wait for both operations to complete and cast results to the correct types
+    final List<dynamic> results = await Future.wait([userDocFuture, keyActiveFuture]);
+
+    DocumentSnapshot userSnapshot = results[0] as DocumentSnapshot;
+    QuerySnapshot keyActiveSnapshot = results[1] as QuerySnapshot;
+
+    bool isActive = userSnapshot.get('isActive');
+    DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+    int currentTestCount = keyActiveDoc.get('Test');
+
+    // Fetch number of existing Bo_de created by the user
+    int existingBoDeCount = await FirebaseFirestore.instance
+        .collection('Bo_de')
+        .where('Id_user_tao', isEqualTo: userId)
+        .get()
+        .then((boDeSnapshot) => boDeSnapshot.docs.length);
+
+    // Determine the remaining number of Bo_de the user can create
+    int maxBoDeCount = isActive ? currentTestCount : 1;
+    int remainingBoDeCount = maxBoDeCount - existingBoDeCount;
+
+    // Show the dialog with remaining count
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Center(
           child: AlertDialog(
             title: Text('Xác nhận'),
-            content: Text('Bạn có muốn tạo bộ đề mới không?'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Bạn có muốn tạo bộ đề mới không?'),
+                SizedBox(height: 16),
+                Text('Số lần tạo đề còn lại: $remainingBoDeCount'),
+              ],
+            ),
             backgroundColor: Colors.white,
             elevation: 24.0,
             shape: RoundedRectangleBorder(
@@ -222,6 +268,10 @@ class _ListTaskState extends State<listTask> {
       },
     );
   }
+
+
+
+
 
   Future<void> _startTest(BuildContext context, String boDeId) async {
     setState(() {
@@ -262,6 +312,8 @@ class _ListTaskState extends State<listTask> {
     await FirebaseFirestore.instance.collection('list_truefalse').get();
     QuerySnapshot matchingSnapshot =
     await FirebaseFirestore.instance.collection('list_matching').get();
+    // QuerySnapshot sortSnapshot =
+    // await FirebaseFirestore.instance.collection('list_sort').get();
 
     List<list_question> questions = questionSnapshot.docs.map((doc) {
       return list_question.fromMap(doc.data() as Map<String, dynamic>, doc.id);
@@ -274,6 +326,10 @@ class _ListTaskState extends State<listTask> {
     List<list_matching> matchingQuestions = matchingSnapshot.docs.map((doc) {
       return list_matching.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
+
+     // List<list_sort> sortQuestions = sortSnapshot.docs.map((doc) {
+     //   return list_sort.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+     // }).toList();
 
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
@@ -296,7 +352,11 @@ class _ListTaskState extends State<listTask> {
         } else if (q is list_matching) {
           id = q.Id_Question;
           type = q.Type;
-        } else {
+        }//else if(q is list_sort){
+          //id = q.Id;
+          //type = q.Type;
+        //}
+        else {
           throw Exception('Unknown question type');
         }
 
@@ -319,10 +379,12 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(questions, 3);
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
+      //addRandomQuestions(sortQuestions, 1);
     } else if(isActive == true){
       addRandomQuestions(questions, 20);
       addRandomQuestions(trueFalseQuestions, 40);
       addRandomQuestions(matchingQuestions, 40);
+      //addRandomQuestions(sortQuestions, 10);
     }
 
     CollectionReference chiTietBoDeCollection =

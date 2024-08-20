@@ -9,6 +9,7 @@ import '../mainLayout.dart';
 import 'MatchingQuestion.dart';
 import '../ConfirmDialog.dart';
 import 'MultipleChoiceQuestion.dart';
+import 'SortQuestion.dart';
 import 'TrueFalseQuestion.dart';
 import 'MultipleAnswerQuestion.dart';
 import '../Home.dart';
@@ -155,6 +156,30 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       answeredCorrectly[currentIndex] = isCorrect;
     });
   }
+
+  void _handleSort(List<String> sortedAnswers) {
+    final correctOrder = List<String>.from(questionManager.correctAnswer);
+    final currentIndex = questionManager.currentQuestionIndex;
+
+    setState(() {
+      // So sánh mảng sortedAnswers với correctOrder
+      bool isCorrect = ListEquality().equals(sortedAnswers, correctOrder);
+
+      // Cập nhật kết quả câu hỏi
+      questionResults[currentIndex] = isCorrect;
+
+      // Cập nhật số câu trả lời đúng
+      if (isCorrect) {
+        // Nếu câu trả lời đúng, tăng biến đếm correctCount lên 1
+        correctCount++;
+      }
+
+      // Cập nhật trạng thái đã trả lời đúng hay sai
+      answeredCorrectly[currentIndex] = isCorrect;
+    });
+  }
+
+
 
   @override
   void dispose() {

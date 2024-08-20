@@ -34,22 +34,12 @@ class Result extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Tên đề thi:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
             SizedBox(height: 16),
             Text(
               'Thời gian hoàn thành:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
             Text('$formattedDuration / 01:00:00', style: TextStyle(fontSize: 20)),
-            SizedBox(height: 16),
-            Text(
-              'Chức độ:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-            Text('Spark level 2', style: TextStyle(fontSize: 20)),
             SizedBox(height: 16),
             Text(
               'Điểm:',

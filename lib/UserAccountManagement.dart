@@ -17,7 +17,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
   late TextEditingController _userNameController;
   late TextEditingController _passwordController;
   late TextEditingController _statusController;
-  late TextEditingController _timeEndController; // Thêm controller cho time_end
+  late TextEditingController _timeEndController;
 
   @override
   void initState() {
@@ -27,8 +27,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _userNameController = TextEditingController();
     _passwordController = TextEditingController();
     _statusController = TextEditingController();
-    _timeEndController =
-        TextEditingController(); // Khởi tạo controller cho time_end
+    _timeEndController = TextEditingController();
   }
 
   @override
@@ -38,7 +37,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _userNameController.dispose();
     _passwordController.dispose();
     _statusController.dispose();
-    _timeEndController.dispose(); // Dispose controller khi không dùng nữa
+    _timeEndController.dispose();
     super.dispose();
   }
 
@@ -57,15 +56,6 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     return await UserPreferences.getUserId();
   }
 
-  Future<bool> _isUserNameTaken(String userName) async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('User_info')
-        .where('userName', isEqualTo: userName)
-        .get();
-
-    return querySnapshot.docs.isNotEmpty;
-  }
-
   Future<bool> _isPhoneNumberTaken(String phoneNumber) async {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('User_info')
@@ -80,17 +70,17 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     return regex.hasMatch(phoneNumber);
   }
 
-  bool _validateUserName(String userName) {
-    return userName.length >= 8 && userName.length <= 20;
+  bool _validatePassword(String password) {
+    final regex = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$');
+    return regex.hasMatch(password);
   }
 
   Future<void> _updateUserInfo(String userId) async {
     final firestore = FirebaseFirestore.instance;
 
-    final newUserName = _userNameController.text;
     final newPhoneNumber = _phoneNumberController.text;
+    final newPassword = _passwordController.text;
 
-    // Validate phone number and username
     if (!_validatePhoneNumber(newPhoneNumber)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Số điện thoại không hợp lệ')),
@@ -98,23 +88,16 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
       return;
     }
 
-    if (!_validateUserName(newUserName)) {
+    if (!_validatePassword(newPassword)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tên tài khoản phải có từ 8 đến 20 ký tự')),
+        SnackBar(
+            content: Text(
+                'Mật khẩu phải từ 8 đến 20 ký tự, có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt')),
       );
       return;
     }
 
-    // Check if the new username or phone number is already taken
-    bool isUserNameTaken = await _isUserNameTaken(newUserName);
     bool isPhoneNumberTaken = await _isPhoneNumberTaken(newPhoneNumber);
-
-    if (isUserNameTaken && userInfo.UserName != newUserName) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tên tài khoản đã tồn tại')),
-      );
-      return;
-    }
 
     if (isPhoneNumberTaken && userInfo.PhoneNumber != newPhoneNumber) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,8 +109,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     await firestore.collection('User_info').doc(userId).update({
       'fullName': _fullNameController.text,
       'phoneNumber': newPhoneNumber,
-      'userName': newUserName,
-      // Keep password unchanged for security reasons
+      'password': newPassword,
     });
   }
 
@@ -191,7 +173,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                 _userNameController.text = userInfo.UserName;
                 _passwordController.text = userInfo.PassWord;
                 _statusController.text =
-                    userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
+                userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
               }
 
               return FutureBuilder<String?>(
@@ -222,38 +204,33 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                             _phoneNumberController, _isEditing),
                         SizedBox(height: 16),
                         _buildLabeledTextField(
-                            'Tên người dùng', _userNameController, _isEditing),
+                            'Tên người dùng', _userNameController, false), // Tên người dùng không thể chỉnh sửa
                         SizedBox(height: 16),
                         _buildPasswordTextField(
-                            'Mật khẩu', _passwordController),
+                            'Mật khẩu', _passwordController, _isEditing), // Mật khẩu có thể chỉnh sửa khi _isEditing là true
                         SizedBox(height: 16),
                         _buildStatusTextField('Tình trạng tài khoản',
                             _statusController, userInfo.IsActive),
                         SizedBox(height: 16),
                         _buildTimeEndTextField(
                             'Thời hạn tài khoản', _timeEndController),
-                        // Thêm dòng này
                         SizedBox(height: 50),
                         Center(
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width * 0.7,
-                            height: 60, // Điều chỉnh chiều cao của nút
+                            height: 60,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.indigo,
                               ),
                               onPressed: () async {
                                 if (_isEditing) {
-                                  // Save the changes
                                   await _updateUserInfo(userId);
                                 }
 
-                                // Keep editing mode if any validation fails
                                 bool hasValidationError =
                                     _phoneNumberController.text !=
-                                            userInfo.PhoneNumber ||
-                                        _userNameController.text !=
-                                            userInfo.UserName;
+                                        userInfo.PhoneNumber;
 
                                 setState(() {
                                   _isEditing =
@@ -302,7 +279,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
   }
 
   Widget _buildPasswordTextField(
-      String label, TextEditingController controller) {
+      String label, TextEditingController controller, bool isEnabled) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -312,7 +289,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         ),
         TextField(
           controller: controller,
-          enabled: false, // Password field should not be editable
+          enabled: isEnabled,
           obscureText: true,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
@@ -334,18 +311,20 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         ),
         TextField(
           controller: controller,
-          enabled: false, // Status field should not be editable
+          enabled: false,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
+          style: TextStyle(
+              color: isActive ? Colors.green : Colors.red,
+              fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 
-  Widget _buildTimeEndTextField(
-      String label, TextEditingController controller) {
+  Widget _buildTimeEndTextField(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -355,7 +334,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         ),
         TextField(
           controller: controller,
-          enabled: false, // Time end field should not be editable
+          enabled: false,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

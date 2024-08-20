@@ -76,7 +76,7 @@ class _HomeState extends State<Home> {
                     return ActivityItemMain(
                       title: 'Bộ đề ${index + 1}',
                       boDeId: activityList[index]['Id'],
-                      mode: activityList[index]['Mode'], // Truyền Mode vào ActivityItemMain
+                      mode: activityList[index]['Mode'],
                     );
                   },
                 ),
