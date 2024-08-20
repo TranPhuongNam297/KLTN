@@ -10,15 +10,26 @@ import 'UserAccountManagement.dart';
 import 'doTest.dart'; // Import màn hình đăng nhập
 
 class mainLayout extends StatefulWidget {
+  final int initialIndex;
+  mainLayout({this.initialIndex = 0});
   @override
   _MainLayoutState createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<mainLayout> {
   int _selectedIndex = 0;
-  final _pageController = PageController();
-  final _keycontroller = TextEditingController();
+
+  late PageController _pageController;
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
   void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
     _pageController.jumpToPage(index);
   }
   Future<void> _activateKey(BuildContext context, String key) async {

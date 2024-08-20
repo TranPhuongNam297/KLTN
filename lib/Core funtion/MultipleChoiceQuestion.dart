@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+String idBoDe = "";
+String DapAnDaChon = "";
 
 class MultipleChoiceQuestion extends StatefulWidget {
   final String questionText;
@@ -8,6 +11,8 @@ class MultipleChoiceQuestion extends StatefulWidget {
   final Function(String) onAnswerSelected;
   final String? selectedAnswer;
   final String mode;
+  final String correctAnswer;
+  final String idQuestion;
 
   MultipleChoiceQuestion({
     required this.questionText,
@@ -15,6 +20,8 @@ class MultipleChoiceQuestion extends StatefulWidget {
     required this.onAnswerSelected,
     required this.selectedAnswer,
     required this.mode,
+    required this.correctAnswer,
+    required this.idQuestion,
   });
 
   @override
@@ -22,44 +29,50 @@ class MultipleChoiceQuestion extends StatefulWidget {
 }
 
 class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
-  Map<String, String> answerStatus = {};
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchAnswerStatus();
+    loadData();
   }
 
-  Future<void> _fetchAnswerStatus() async {
-    if (widget.mode == 'xemdapan') {
-      final prefs = await SharedPreferences.getInstance();
-      final idBoDe = prefs.getString('boDeId')!;
-      final CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+  @override
+  void didUpdateWidget(covariant MultipleChoiceQuestion oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.idQuestion != oldWidget.idQuestion) {
+      // Nếu idQuestion thay đổi, gọi lại hàm để tải dữ liệu mới
+      loadData();
+    }
+  }
 
-      try {
-        QuerySnapshot snapshot = await chiTietBoDeRef
-            .where('Id_bo_de', isEqualTo: idBoDe)
-            .get();
+  Future<void> loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+    await GetStringBoDe();
+    await fetchSelectedAnswer(widget.idQuestion);
+    setState(() {
+      isLoading = false;
+    });
+  }
 
-        final docs = snapshot.docs;
-        final subQuestions = widget.answers;
+  Future<void> GetStringBoDe() async {
+    final prefs = await SharedPreferences.getInstance();
+    idBoDe = prefs.getString('boDeId') ?? "";
+  }
 
-        Map<String, String> status = {};
-        for (var doc in docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          final questionId = data['Id_cau_hoi'];
-          final isCorrect = data['IsCorrect'] as String;
+  Future<void> fetchSelectedAnswer(String idQuestion) async {
+    if (idBoDe.isNotEmpty) {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('chi_tiet_bo_de')
+          .where('Id_cau_hoi', isEqualTo: idQuestion)
+          .where('Id_bo_de', isEqualTo: idBoDe)
+          .get();
 
-          if (subQuestions.contains(questionId)) {
-            status[questionId] = isCorrect;
-          }
-        }
-
-        setState(() {
-          answerStatus = status;
-        });
-      } catch (error) {
-        print('Failed to fetch answer status: $error');
+      if (docSnapshot.docs.isNotEmpty) {
+        var data = docSnapshot.docs.first.data();
+        DapAnDaChon = data['IsCorrect'] as String;
       }
     }
   }
@@ -67,6 +80,12 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
   @override
   Widget build(BuildContext context) {
     double buttonWidth = MediaQuery.of(context).size.width * 0.9;
+
+    if (isLoading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -91,12 +110,10 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
         ),
         SizedBox(height: 20),
         ...widget.answers.map((answer) {
-          bool isSelected = widget.selectedAnswer == answer;
-          bool isCorrect = false;
-
-          if (widget.mode == 'xemdapan') {
-            isCorrect = answerStatus[answer] == 'dung';
-          }
+          bool isSelected = widget.selectedAnswer == answer && widget.mode == 'lambai';
+          bool isCorrect = widget.mode == 'xemdapan' && answer == widget.correctAnswer;
+          bool isUserSelected = widget.mode == 'xemdapan' && answer == DapAnDaChon;
+          bool isIncorrect = widget.mode == 'xemdapan' && widget.selectedAnswer == answer && answer != widget.correctAnswer;
 
           return Column(
             children: [
@@ -106,15 +123,59 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
                   width: buttonWidth,
                   height: 65,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.blue[900]
-                        : (widget.mode == 'xemdapan'
-                        ? (isCorrect ? Colors.green[700] : Colors.red[700])
-                        : Colors.blueGrey[200]),
-                    borderRadius: BorderRadius.zero, // Đã thay đổi từ BorderRadius.circular(0) thành BorderRadius.zero
+                    color: widget.mode == 'xemdapan'
+                        ? isUserSelected
+                        ? isCorrect
+                        ? Colors.green[100] // Màu nền cho đáp án đúng đã chọn
+                        : Colors.red[100] // Màu nền cho đáp án sai đã chọn
+                        : Colors.blueGrey[200] // Màu nền mặc định cho đáp án chưa chọn
+                        : isSelected
+                        ? Colors.blue[900] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
+                        : Colors.blueGrey[200], // Màu nền mặc định cho đáp án chưa chọn
+                    borderRadius: BorderRadius.zero,
+                    border: Border.all(
+                      color: isUserSelected
+                          ? isCorrect
+                          ? Colors.green[700]! // Viền xanh lá cho đáp án đúng
+                          : Colors.red[700]! // Viền đỏ cho đáp án sai
+                          : Colors.transparent,
+                      width: 2,
+                    ),
                   ),
                   alignment: Alignment.center,
-                  child: Text(answer, style: TextStyle(fontSize: 20, color: Colors.black)),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          answer,
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.black,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // Đậm chữ cho đáp án đã chọn
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      if (isCorrect)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.green[700], // Đổi màu sắc của dấu tích thành xanh lá cây
+                            size: 32, // Tăng kích thước của dấu tích
+                          ),
+                        ),
+                      if (isUserSelected && isIncorrect)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.red[700], // Đổi màu sắc của dấu X thành đỏ
+                            size: 36, // Tăng kích thước của dấu X
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 10),

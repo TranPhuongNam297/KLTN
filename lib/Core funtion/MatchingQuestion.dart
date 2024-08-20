@@ -31,6 +31,16 @@ class _MatchingQuestionState extends State<MatchingQuestion> {
       _fetchAnswerColors();
     }
   }
+  @override
+  void didUpdateWidget(MatchingQuestion oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.matchingQuestion != oldWidget.matchingQuestion) {
+      _initializeAnswerColors();
+      if (widget.mode == 'xemdapan') {
+        _fetchAnswerColors();
+      }
+    }
+  }
 
   void _initializeAnswerColors() {
     final subQuestions = widget.matchingQuestion['subQuestions'] as List;

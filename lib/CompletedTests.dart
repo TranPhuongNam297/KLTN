@@ -56,7 +56,6 @@ class CompletedTests extends StatelessWidget {
                             builder: (context) => Result(
                               totalQuestions: 40, // Placeholder value; update as needed
                               correctAnswers: boDe['DiemSo'] ?? 0, // Handle null value
-                              questionResults: List.generate(10, (index) => true),
                               timeSpent: parseDuration(boDe['Time_finish'] ?? ''), // Handle null value
                             ),
                           ),

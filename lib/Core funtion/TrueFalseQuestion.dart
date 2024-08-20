@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TrueFalseQuestion extends StatefulWidget {
@@ -55,7 +55,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     for (int i = 0; i < subQuestions.length; i++) {
       final questionId = subQuestions[i]['Id'];
 
-      CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+      CollectionReference chiTietBoDeRef =
+      FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
       try {
         QuerySnapshot snapshot = await chiTietBoDeRef
@@ -70,7 +71,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
 
           setState(() {
             _answerColors[i] = isCorrect == 'dung' ? Colors.green : Colors.red;
-            _selectedAnswers[i] = userAnswer; // Cập nhật radio button theo đáp án người dùng
+            _selectedAnswers[i] =
+                userAnswer; // Cập nhật radio button theo đáp án người dùng
           });
         }
       } catch (error) {
@@ -86,7 +88,9 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
 
     bool allCorrect = _selectedAnswers.every((answer) {
       int answerIndex = _selectedAnswers.indexOf(answer);
-      return answer != null && answer == widget.trueFalseQuestion['subQuestions1'][answerIndex]['correctAnswer'];
+      return answer != null &&
+          answer == widget.trueFalseQuestion['subQuestions1'][answerIndex]
+          ['correctAnswer'];
     });
 
     widget.onAnswerSelected(allCorrect);
@@ -99,7 +103,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       if (subQuestions.length > index) {
         final questionId = subQuestions[index]['Id'];
 
-        CollectionReference chiTietBoDeRef = FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+        CollectionReference chiTietBoDeRef =
+        FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
         try {
           QuerySnapshot snapshot = await chiTietBoDeRef
@@ -113,7 +118,8 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             });
             print('Update successful');
           } else {
-            print('No document found for the given Id_cau_hoi and Id_bo_de');
+            print(
+                'No document found for the given Id_cau_hoi and Id_bo_de');
           }
         } catch (error) {
           print('Failed to update: $error');
@@ -128,6 +134,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
   Widget build(BuildContext context) {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     double screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -210,11 +217,13 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
         ],
       ),
     );
   }
+
+
 }
