@@ -92,7 +92,7 @@ class _TestRulesScreenState extends State<TestRulesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Image.asset(
-                  'images/thongbao.jpg', // Đường dẫn tới hình ảnh đầu tiên
+                  'images/thongbao.png', // Đường dẫn tới hình ảnh đầu tiên
                   fit: BoxFit.cover,
                 ),
                 Image.asset(

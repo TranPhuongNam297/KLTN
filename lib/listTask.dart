@@ -369,9 +369,9 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 2);
-      addRandomQuestions(trueFalseQuestions, 0);
-      addRandomQuestions(matchingQuestions, 0);
+      addRandomQuestions(questions, 20);
+      addRandomQuestions(trueFalseQuestions, 40);
+      addRandomQuestions(matchingQuestions, 40);
       addRandomQuestions(sortQuestion, 0);
     }
 

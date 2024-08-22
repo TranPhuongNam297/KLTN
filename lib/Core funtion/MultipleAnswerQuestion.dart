@@ -69,7 +69,7 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: 400,
+          width: buttonWidth,
           height: 250,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -130,29 +130,48 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                   alignment: Alignment.center,
                   child: Row(
                     children: [
+                      // Ba dấu gạch ngang bên trái
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Icon(
+                          Icons.menu,
+                          color: Colors.black,
+                          size: 36, // Kích thước của nút menu
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      VerticalDivider(
+                        width: 1,
+                        color: Colors.black,
+                        thickness: 1,
+                      ),
+                      SizedBox(width: 8),
+                      // Phần đáp án
                       Expanded(
                         child: Text(
                           answer,
                           style: TextStyle(
                             fontSize: 20,
-                            color: isUserSelected ? Colors.black : Colors.black, // Màu chữ
-                            fontWeight: isUserSelected ? FontWeight.bold : FontWeight.normal, // Đậm chữ cho đáp án đã chọn
+                            color: isUserSelected ? Colors.black : Colors.black,
+                            fontWeight: isUserSelected ? FontWeight.bold : FontWeight.normal,
                           ),
-                          textAlign: TextAlign.center,
+                          textAlign: TextAlign.left,
                         ),
                       ),
-                      if (isCorrect)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: Icon(
-                            Icons.check,
-                            color: Colors.green[700], // Đổi màu sắc của dấu tích thành xanh lá cây
-                            size: 36, // Tăng kích thước của dấu tích
+                      // Biểu tượng (nếu có)
+                      if (widget.mode == 'xemdapan')
+                        if (isCorrect)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.green[700], // Đổi màu sắc của dấu tích thành xanh lá cây
+                              size: 36, // Tăng kích thước của dấu tích
+                            ),
                           ),
-                        ),
                       if (isIncorrect)
                         Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
+                          padding: const EdgeInsets.only(left: 16.0),
                           child: Icon(
                             Icons.close,
                             color: Colors.red[700], // Đổi màu sắc của dấu X thành đỏ
