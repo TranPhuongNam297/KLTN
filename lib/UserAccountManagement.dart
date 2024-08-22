@@ -15,9 +15,10 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
   late TextEditingController _fullNameController;
   late TextEditingController _phoneNumberController;
   late TextEditingController _userNameController;
-  late TextEditingController _passwordController;
   late TextEditingController _statusController;
   late TextEditingController _timeEndController;
+  late TextEditingController _testCountController;
+  late TextEditingController _practiceCountController;
 
   @override
   void initState() {
@@ -25,9 +26,10 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _fullNameController = TextEditingController();
     _phoneNumberController = TextEditingController();
     _userNameController = TextEditingController();
-    _passwordController = TextEditingController();
     _statusController = TextEditingController();
     _timeEndController = TextEditingController();
+    _testCountController = TextEditingController();
+    _practiceCountController = TextEditingController();
   }
 
   @override
@@ -35,9 +37,10 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     _fullNameController.dispose();
     _phoneNumberController.dispose();
     _userNameController.dispose();
-    _passwordController.dispose();
     _statusController.dispose();
     _timeEndController.dispose();
+    _testCountController.dispose();
+    _practiceCountController.dispose();
     super.dispose();
   }
 
@@ -56,64 +59,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
     return await UserPreferences.getUserId();
   }
 
-  Future<bool> _isPhoneNumberTaken(String phoneNumber) async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('User_info')
-        .where('phoneNumber', isEqualTo: phoneNumber)
-        .get();
-
-    return querySnapshot.docs.isNotEmpty;
-  }
-
-  bool _validatePhoneNumber(String phoneNumber) {
-    final regex = RegExp(r'^0\d{9}$');
-    return regex.hasMatch(phoneNumber);
-  }
-
-  bool _validatePassword(String password) {
-    final regex = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$');
-    return regex.hasMatch(password);
-  }
-
-  Future<void> _updateUserInfo(String userId) async {
-    final firestore = FirebaseFirestore.instance;
-
-    final newPhoneNumber = _phoneNumberController.text;
-    final newPassword = _passwordController.text;
-
-    if (!_validatePhoneNumber(newPhoneNumber)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Số điện thoại không hợp lệ')),
-      );
-      return;
-    }
-
-    if (!_validatePassword(newPassword)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Mật khẩu phải từ 8 đến 20 ký tự, có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt')),
-      );
-      return;
-    }
-
-    bool isPhoneNumberTaken = await _isPhoneNumberTaken(newPhoneNumber);
-
-    if (isPhoneNumberTaken && userInfo.PhoneNumber != newPhoneNumber) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Số điện thoại đã tồn tại')),
-      );
-      return;
-    }
-
-    await firestore.collection('User_info').doc(userId).update({
-      'fullName': _fullNameController.text,
-      'phoneNumber': newPhoneNumber,
-      'password': newPassword,
-    });
-  }
-
-  Future<String?> _getTimeEnd(String userId) async {
+  Future<Map<String, dynamic>?> _getKeyActiveData(String userId) async {
     final firestore = FirebaseFirestore.instance;
     final keyActiveDoc = await firestore
         .collection('Key_Active')
@@ -121,7 +67,7 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         .get();
 
     if (keyActiveDoc.docs.isNotEmpty) {
-      return keyActiveDoc.docs.first['Time_End'] as String;
+      return keyActiveDoc.docs.first.data();
     } else {
       return null;
     }
@@ -171,81 +117,90 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                 _fullNameController.text = userInfo.FullName;
                 _phoneNumberController.text = userInfo.PhoneNumber;
                 _userNameController.text = userInfo.UserName;
-                _passwordController.text = userInfo.PassWord;
                 _statusController.text =
                 userInfo.IsActive ? 'Đã kích hoạt' : 'Chưa kích hoạt';
               }
 
-              return FutureBuilder<String?>(
-                future: _getTimeEnd(userId),
-                builder: (context, timeEndSnapshot) {
-                  if (timeEndSnapshot.connectionState ==
+              return FutureBuilder<Map<String, dynamic>?>(
+                future: _getKeyActiveData(userId),
+                builder: (context, keyActiveSnapshot) {
+                  if (keyActiveSnapshot.connectionState ==
                       ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
-                  } else if (timeEndSnapshot.hasError) {
+                  } else if (keyActiveSnapshot.hasError) {
                     return Center(
-                        child: Text('Đã xảy ra lỗi: ${timeEndSnapshot.error}'));
-                  } else if (!timeEndSnapshot.hasData ||
-                      timeEndSnapshot.data == null) {
+                        child: Text('Đã xảy ra lỗi: ${keyActiveSnapshot.error}'));
+                  } else if (!keyActiveSnapshot.hasData ||
+                      keyActiveSnapshot.data == null) {
                     return Center(child: Text('Không có dữ liệu time_end'));
                   }
 
-                  _timeEndController.text = timeEndSnapshot.data!;
+                  final keyActiveData = keyActiveSnapshot.data!;
+                  _timeEndController.text = keyActiveData['Time_End'] as String;
+                  _testCountController.text =
+                      keyActiveData['Test']?.toString() ?? '0';
+                  _practiceCountController.text =
+                      keyActiveData['Practice']?.toString() ?? '0';
 
-                  return Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabeledTextField(
-                            'Họ và tên', _fullNameController, _isEditing),
-                        SizedBox(height: 16),
-                        _buildLabeledTextField('Số điện thoại',
-                            _phoneNumberController, _isEditing),
-                        SizedBox(height: 16),
-                        _buildLabeledTextField(
-                            'Tên người dùng', _userNameController, false), // Tên người dùng không thể chỉnh sửa
-                        SizedBox(height: 16),
-                        _buildPasswordTextField(
-                            'Mật khẩu', _passwordController, _isEditing), // Mật khẩu có thể chỉnh sửa khi _isEditing là true
-                        SizedBox(height: 16),
-                        _buildStatusTextField('Tình trạng tài khoản',
-                            _statusController, userInfo.IsActive),
-                        SizedBox(height: 16),
-                        _buildTimeEndTextField(
-                            'Thời hạn tài khoản', _timeEndController),
-                        SizedBox(height: 50),
-                        Center(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 60,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo,
-                              ),
-                              onPressed: () async {
-                                if (_isEditing) {
-                                  await _updateUserInfo(userId);
-                                }
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabeledTextField(
+                              'Họ và tên', _fullNameController, _isEditing),
+                          SizedBox(height: 16),
+                          _buildLabeledTextField('Số điện thoại',
+                              _phoneNumberController, _isEditing),
+                          SizedBox(height: 16),
+                          _buildLabeledTextField(
+                              'Tên người dùng', _userNameController, false), // Tên người dùng không thể chỉnh sửa
+                          SizedBox(height: 16),
+                          _buildStatusTextField('Tình trạng tài khoản',
+                              _statusController, userInfo.IsActive),
+                          SizedBox(height: 16),
+                          _buildTimeEndTextField(
+                              'Thời hạn tài khoản', _timeEndController),
+                          SizedBox(height: 16),
+                          _buildCountTextField('Số lượng tạo bộ đề kiểm tra',
+                              _testCountController),
+                          SizedBox(height: 16),
+                          _buildCountTextField('Số lượng tạo bộ đề luyện tập',
+                              _practiceCountController),
+                          SizedBox(height: 20),
+                          Center(
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.7,
+                              height: 60,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.indigo,
+                                ),
+                                onPressed: () async {
+                                  if (_isEditing) {
+                                    await _updateUserInfo(userId);
+                                  }
 
-                                bool hasValidationError =
-                                    _phoneNumberController.text !=
-                                        userInfo.PhoneNumber;
+                                  bool hasValidationError =
+                                      _phoneNumberController.text !=
+                                          userInfo.PhoneNumber;
 
-                                setState(() {
-                                  _isEditing =
-                                      hasValidationError || !_isEditing;
-                                });
-                              },
-                              child: Text(
-                                _isEditing ? 'Lưu' : 'Chỉnh sửa',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 20),
+                                  setState(() {
+                                    _isEditing =
+                                        hasValidationError || !_isEditing;
+                                  });
+                                },
+                                child: Text(
+                                  _isEditing ? 'Lưu' : 'Chỉnh sửa',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 20),
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                      ],
+                          )
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -269,28 +224,6 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         TextField(
           controller: controller,
           enabled: isEnabled,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordTextField(
-      String label, TextEditingController controller, bool isEnabled) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        TextField(
-          controller: controller,
-          enabled: isEnabled,
-          obscureText: true,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -342,5 +275,35 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
         ),
       ],
     );
+  }
+
+  Widget _buildCountTextField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        TextField(
+          controller: controller,
+          enabled: false,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _updateUserInfo(String userId) async {
+    final firestore = FirebaseFirestore.instance;
+
+    await firestore.collection('User_info').doc(userId).update({
+      'FullName': _fullNameController.text,
+      'PhoneNumber': _phoneNumberController.text,
+      'UserName': _userNameController.text,
+    });
   }
 }

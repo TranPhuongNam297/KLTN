@@ -13,7 +13,6 @@ import 'SharedPreferences/SharedPreferences.dart';
 import 'Model/chi_tiet_bo_de.dart';
 import 'TestRulesScreen.dart'; // Import the UserPreferences class
 
-
 class listTask extends StatefulWidget {
   @override
   _ListTaskState createState() => _ListTaskState();
@@ -21,7 +20,7 @@ class listTask extends StatefulWidget {
 
 class _ListTaskState extends State<listTask> {
   List<Map<String, dynamic>> boDeList = [];
-  bool _isLoading = false;
+  bool _isLoading = false; // Track loading state for popup
 
   @override
   void initState() {
@@ -38,11 +37,12 @@ class _ListTaskState extends State<listTask> {
       return;
     }
 
-    // Fetch only those Bo_de where Mode is true
+    // Fetch only those Bo_de where Tinh_trang is false and Mode is false
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('Bo_de')
         .where('Id_user_tao', isEqualTo: userId)
-        .where('Mode', isEqualTo: true) // Add this line to filter by Mode
+        .where('Tinh_trang', isEqualTo: false) // Filter by Tinh_trang
+        .where('Mode', isEqualTo: false) // Filter by Mode being false (for 'Kiểm tra')
         .get();
 
     setState(() {
@@ -268,15 +268,15 @@ class _ListTaskState extends State<listTask> {
     );
   }
 
-
   Future<void> _startTest(BuildContext context, String boDeId) async {
     setState(() {
-      _isLoading = true;
+      _isLoading = true; // Show loading popup
     });
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('boDeId', boDeId);
 
+    // Check if the Bo_de has been generated
     DocumentSnapshot boDeSnapshot =
     await FirebaseFirestore.instance.collection('Bo_de').doc(boDeId).get();
 
@@ -284,8 +284,9 @@ class _ListTaskState extends State<listTask> {
     bo_de.fromMap(boDeSnapshot.data() as Map<String, dynamic>, boDeId);
 
     if (boDe.Generate) {
+      // If already generated, just navigate to the test screen
       setState(() {
-        _isLoading = false;
+        _isLoading = false; // Hide loading popup
       });
       Navigator.push(
         context,
@@ -299,6 +300,7 @@ class _ListTaskState extends State<listTask> {
       return;
     }
 
+    // Fetch questions and other data here
     QuerySnapshot questionSnapshot =
     await FirebaseFirestore.instance.collection('list_question').get();
     QuerySnapshot trueFalseSnapshot =
@@ -320,7 +322,7 @@ class _ListTaskState extends State<listTask> {
 
     Random random = Random();
     List<Map<String, String>> selectedQuestions = [];
-    Set<String> usedIds = {}; // Set to keep track of used IDs
+    Set<String> usedIds = {};
 
     void addRandomQuestions<T>(List<T> questionList, int count) {
       questionList.shuffle(random);
@@ -343,7 +345,6 @@ class _ListTaskState extends State<listTask> {
           throw Exception('Unknown question type');
         }
 
-        // Only add question if its ID has not been used before
         if (!usedIds.contains(id)) {
           selectedQuestions.add({
             'id': id,
@@ -364,9 +365,9 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 20);
-      addRandomQuestions(trueFalseQuestions, 40);
-      addRandomQuestions(matchingQuestions, 40);
+      addRandomQuestions(questions, 5);
+      addRandomQuestions(trueFalseQuestions, 12);
+      addRandomQuestions(matchingQuestions, 12);
     }
 
     CollectionReference chiTietBoDeCollection =
@@ -375,22 +376,22 @@ class _ListTaskState extends State<listTask> {
     for (var question in selectedQuestions) {
       chi_tiet_bo_de chiTiet = chi_tiet_bo_de(
         Id: chiTietBoDeCollection.doc().id,
+        // Auto-generate ID
         Id_bo_de: boDeId,
         Id_cau_hoi: question['id']!,
         Type_cau_hoi: question['type']!,
         IsCorrect: 'sai',
       );
-
       await chiTietBoDeCollection.doc(chiTiet.Id).set(chiTiet.toMap());
     }
-
+    // Update the Bo_de to mark it as generated
     await FirebaseFirestore.instance
         .collection('Bo_de')
         .doc(boDeId)
         .update({'Generate': true});
 
     setState(() {
-      _isLoading = false;
+      _isLoading = false; // Hide loading popup
     });
 
     Navigator.push(
@@ -398,11 +399,12 @@ class _ListTaskState extends State<listTask> {
       MaterialPageRoute(
         builder: (context) => TestRulesScreen(
           boDeId: boDeId,
-          mode: boDe.Mode,
+          mode: boDe.Mode
         ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -424,7 +426,7 @@ class _ListTaskState extends State<listTask> {
                     return TaskItem(
                       title: 'Bộ đề ${index + 1}',
                       imageUrl: 'images/tetmass3.png',
-                      modeText: 'Chế độ: Kiểm tra', // Display Mode text
+                      modeText: 'Chế độ: Kiểm tra', // Set mode text to "Kiểm tra"
                       onTap: () {
                         String boDeId = boDeList[index]['Id'];
                         _startTest(context, boDeId);
@@ -435,7 +437,7 @@ class _ListTaskState extends State<listTask> {
               ),
             ],
           ),
-          if (_isLoading)
+          if (_isLoading) // Show loading popup
             Center(
               child: AlertDialog(
                 title: Text('Đang tải...'),
@@ -458,9 +460,9 @@ class _ListTaskState extends State<listTask> {
       ),
       floatingActionButton: ClipOval(
         child: Material(
-          color: Colors.indigo,
+          color: Colors.indigo, // Replace with your desired color
           child: InkWell(
-            splashColor: Colors.white,
+            splashColor: Colors.white, // Splash color when tapped
             child: SizedBox(
                 width: 56,
                 height: 56,
