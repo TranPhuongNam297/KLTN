@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String idBoDe = "";
@@ -11,6 +12,7 @@ class MultipleAnswerQuestion extends StatefulWidget {
   final Function(List<String>) onAnswersSelected;
   final List<String> selectedAnswers;
   final String mode;
+  final List<String> correctAnswers;
   final String idQuestion;
 
   MultipleAnswerQuestion({
@@ -19,6 +21,7 @@ class MultipleAnswerQuestion extends StatefulWidget {
     required this.onAnswersSelected,
     required this.selectedAnswers,
     required this.mode,
+    required this.correctAnswers,
     required this.idQuestion,
   });
 
@@ -90,9 +93,8 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
         SizedBox(height: 20),
         ...widget.answers.map((answer) {
           bool isSelected = widget.selectedAnswers.contains(answer);
-          bool isCorrect = widget.mode == 'xemdapan' && DapAnDaChon.contains(answer);
-          bool isUserSelected = widget.mode == 'xemdapan' && isSelected;
-          bool isIncorrect = widget.mode == 'xemdapan' && isSelected && !isCorrect;
+          bool isCorrect = widget.mode == 'xemdapan' && widget.correctAnswers.contains(answer);
+          bool isAnswerInDapAnDaChon = DapAnDaChon.contains(answer);
 
           return Column(
             children: [
@@ -113,17 +115,13 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                   height: 65,
                   decoration: BoxDecoration(
                     color: widget.mode == 'xemdapan'
-                        ? isUserSelected
-                        ? isCorrect
-                        ? Colors.green[100] // Màu nền cho đáp án đúng đã chọn
-                        : Colors.red[100] // Màu nền cho đáp án sai đã chọn
-                        : Colors.blueGrey[200] // Màu nền mặc định cho đáp án chưa chọn
+                        ? Colors.blueGrey[200] // Màu nền mặc định cho đáp án
                         : isSelected
                         ? Colors.blue[900] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
                         : Colors.blueGrey[200], // Màu nền mặc định cho đáp án chưa chọn
                     borderRadius: BorderRadius.zero,
                     border: Border.all(
-                      color: isUserSelected ? (isCorrect ? Colors.green[700]! : Colors.red[700]!) : Colors.transparent, // Khung viền màu xanh lá cây cho đáp án đúng và màu đỏ cho đáp án sai
+                      color: Colors.transparent, // Không sử dụng khung viền trong chế độ "xemdapan"
                       width: 2,
                     ),
                   ),
@@ -148,36 +146,42 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                       SizedBox(width: 8),
                       // Phần đáp án
                       Expanded(
-                        child: Text(
-                          answer,
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: isUserSelected ? Colors.black : Colors.black,
-                            fontWeight: isUserSelected ? FontWeight.bold : FontWeight.normal,
-                          ),
-                          textAlign: TextAlign.left,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                answer,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                            ),
+                            // Thêm dấu tích xanh nếu đáp án đúng
+                            if (widget.mode == 'xemdapan' && isCorrect)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Icon(
+                                  Icons.check, // Biểu tượng dấu tích
+                                  color: Colors.green[700], // Màu sắc của dấu tích
+                                  size: 24, // Kích thước của dấu tích
+                                ),
+                              ),
+                            // Thêm biểu tượng tay chỉ trái nếu đáp án nằm trong DapAnDaChon
+                            if (widget.mode == 'xemdapan' && isAnswerInDapAnDaChon)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: FaIcon(
+                                  FontAwesomeIcons.handPointLeft, // Biểu tượng tay chỉ vào trái
+                                  color: Colors.blue,
+                                  size: 24,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      // Biểu tượng (nếu có)
-                      if (widget.mode == 'xemdapan')
-                        if (isCorrect)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
-                            child: Icon(
-                              Icons.check,
-                              color: Colors.green[700], // Đổi màu sắc của dấu tích thành xanh lá cây
-                              size: 36, // Tăng kích thước của dấu tích
-                            ),
-                          ),
-                      if (isIncorrect)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16.0),
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.red[700], // Đổi màu sắc của dấu X thành đỏ
-                            size: 36, // Tăng kích thước của dấu X
-                          ),
-                        ),
                     ],
                   ),
                 ),
