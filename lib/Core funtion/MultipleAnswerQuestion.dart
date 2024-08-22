@@ -107,7 +107,7 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                   }
                   widget.onAnswersSelected(updatedSelections);
                 }
-                    : null, // Vô hiệu hóa trong chế độ "xemdapan"
+                    : null,
                 child: Container(
                   width: buttonWidth,
                   height: 65,
