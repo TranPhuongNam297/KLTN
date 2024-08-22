@@ -45,6 +45,12 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
     final subQuestions = widget.trueFalseQuestion['subQuestions1'];
     _selectedAnswers = List<bool?>.filled(subQuestions.length, null);
     _answerColors = List<Color>.filled(subQuestions.length, Colors.black);
+
+    if (widget.mode == 'xemdapan') {
+      for (int i = 0; i < subQuestions.length; i++) {
+        _selectedAnswers[i] = subQuestions[i]['correctAnswer'];
+      }
+    }
   }
 
   Future<void> _fetchAnswerColors() async {
@@ -56,7 +62,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       final questionId = subQuestions[i]['Id'];
 
       CollectionReference chiTietBoDeRef =
-          FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+      FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
       try {
         QuerySnapshot snapshot = await chiTietBoDeRef
@@ -67,12 +73,9 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
         if (snapshot.docs.isNotEmpty) {
           DocumentSnapshot document = snapshot.docs.first;
           String isCorrect = document['IsCorrect'];
-          bool userAnswer = isCorrect == 'dung';
 
           setState(() {
             _answerColors[i] = isCorrect == 'dung' ? Colors.green : Colors.red;
-            _selectedAnswers[i] =
-                userAnswer; // Cập nhật radio button theo đáp án người dùng
           });
         }
       } catch (error) {
@@ -91,7 +94,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
       return answer != null &&
           answer ==
               widget.trueFalseQuestion['subQuestions1'][answerIndex]
-                  ['correctAnswer'];
+              ['correctAnswer'];
     });
 
     widget.onAnswerSelected(allCorrect);
@@ -105,7 +108,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
         final questionId = subQuestions[index]['Id'];
 
         CollectionReference chiTietBoDeRef =
-            FirebaseFirestore.instance.collection('chi_tiet_bo_de');
+        FirebaseFirestore.instance.collection('chi_tiet_bo_de');
 
         try {
           QuerySnapshot snapshot = await chiTietBoDeRef
@@ -116,7 +119,7 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
             DocumentSnapshot document = snapshot.docs.first;
             await document.reference.update({
               'IsCorrect': _selectedAnswers[index] ==
-                      subQuestions[index]['correctAnswer']
+                  subQuestions[index]['correctAnswer']
                   ? 'dung'
                   : 'sai',
             });
@@ -172,64 +175,65 @@ class _TrueFalseQuestionState extends State<TrueFalseQuestion> {
                   ),
                 ],
               ),
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Expanded(
-                  child: Text(
-                    subQuestions[i]['question'],
-                    style: TextStyle(fontSize: 18, color: _answerColors[i]),
-                    softWrap: true,
-                    overflow: TextOverflow.visible,
-                    maxLines: null,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      subQuestions[i]['question'],
+                      style: TextStyle(fontSize: 18, color: _answerColors[i]),
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
+                      maxLines: null,
+                    ),
                   ),
-                ),
-                SizedBox(width: 10),
-                // Thêm khoảng cách giữa câu hỏi và các nút radio
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          height: 20, // Thu nhỏ kích thước nút radio
-                          width: 20,
-                          child: Radio<bool?>(
-                            value: true,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai'
-                                ? (value) {
-                                    _onRadioChanged(value, i);
-                                  }
-                                : null,
+                  SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: Radio<bool?>(
+                              value: true,
+                              groupValue: _selectedAnswers[i],
+                              onChanged: widget.mode == 'lambai'
+                                  ? (value) {
+                                _onRadioChanged(value, i);
+                              }
+                                  : null,
+                            ),
                           ),
-                        ),
-                        Text('Đúng'),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 35,
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          height: 20, // Thu nhỏ kích thước nút radio
-                          width: 20,
-                          child: Radio<bool?>(
-                            value: false,
-                            groupValue: _selectedAnswers[i],
-                            onChanged: widget.mode == 'lambai'
-                                ? (value) {
-                                    _onRadioChanged(value, i);
-                                  }
-                                : null,
+                          Text('Đúng'),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 35,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: Radio<bool?>(
+                              value: false,
+                              groupValue: _selectedAnswers[i],
+                              onChanged: widget.mode == 'lambai'
+                                  ? (value) {
+                                _onRadioChanged(value, i);
+                              }
+                                  : null,
+                            ),
                           ),
-                        ),
-                        Text('Sai'),
-                      ],
-                    ),
-                  ],
-                ),
-              ]),
+                          Text('Sai'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
         ],
       ),

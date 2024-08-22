@@ -315,9 +315,9 @@ class _ListPracState extends State<listPrac> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 20);
-      addRandomQuestions(trueFalseQuestions, 40);
-      addRandomQuestions(matchingQuestions, 40);
+      addRandomQuestions(questions, 3);
+      addRandomQuestions(trueFalseQuestions, 8);
+      addRandomQuestions(matchingQuestions, 8);
     }
 
     CollectionReference chiTietBoDeCollection =

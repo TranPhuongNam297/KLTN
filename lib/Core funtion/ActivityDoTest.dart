@@ -478,10 +478,9 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                           if (questionManager.currentQuestionType ==
                               'truefalse')
                             TrueFalseQuestion(
-                              trueFalseQuestion: questionManager
-                                  .questions[questionManager
-                                  .currentQuestionIndex],
+                              trueFalseQuestion: questionManager.questions[questionManager.currentQuestionIndex],
                               onAnswerSelected: _handleTrueFalseAnswer,
+                              //myBoolList:questionManager.currentTrueFalseAnswers ?? [],
                               mode: mode ?? 'lambai',
                             )
                           else

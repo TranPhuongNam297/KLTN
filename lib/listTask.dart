@@ -317,9 +317,9 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 20);
-      addRandomQuestions(trueFalseQuestions, 40);
-      addRandomQuestions(matchingQuestions, 40);
+      addRandomQuestions(questions, 5);
+      addRandomQuestions(trueFalseQuestions, 12);
+      addRandomQuestions(matchingQuestions, 12);
     }
 
     CollectionReference chiTietBoDeCollection =

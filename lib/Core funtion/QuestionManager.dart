@@ -220,15 +220,6 @@ class QuestionManager {
       return null;
     }
   }
-  List<String>? get currentAnswersSort{
-    if (questions[currentQuestionIndex]['type'] == 'sort'){
-      print(questions[currentQuestionIndex]['answers']);
-      return questions[currentQuestionIndex]['answers'] as List<String>;
-    }
-    else {
-      return null;
-    }
-  }
 
   dynamic get correctAnswer => questions[currentQuestionIndex]['correctAnswer'];
   String get currentQuestionId {
