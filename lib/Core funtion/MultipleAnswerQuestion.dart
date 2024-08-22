@@ -96,11 +96,15 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
           bool isAnswerInDapAnDaChon = DapAnDaChon.contains(answer);
 
           // Xác định màu nền của item
-          Color? containerColor = Colors.blueGrey[200]; // Màu nền mặc định
+          Color containerColor = Colors.blueGrey[200]!; // Màu nền mặc định
 
-          // Nếu cả hai biểu tượng xuất hiện, thay đổi màu nền thành xanh
-          if (widget.mode == 'xemdapan' && isCorrect && isAnswerInDapAnDaChon) {
-            containerColor = Colors.greenAccent[100];
+          // Nếu đang trong chế độ "lambai" và item được chọn, đổi màu nền thành lightBlue[800]
+          if (widget.mode == 'lambai' && isSelected) {
+            containerColor = Colors.lightBlue[800]!;
+          }
+          // Nếu đang trong chế độ "xemdapan" và cả hai biểu tượng xuất hiện, thay đổi màu nền thành xanh
+          else if (widget.mode == 'xemdapan' && isCorrect && isAnswerInDapAnDaChon) {
+            containerColor = Colors.greenAccent[100]!;
           }
 
           return Column(
