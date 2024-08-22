@@ -12,7 +12,6 @@ class TestRulesScreen extends StatefulWidget {
 
 class _TestRulesScreenState extends State<TestRulesScreen> {
   bool isLoading = false;
-
   void startTest() async {
     setState(() {
       isLoading = true;

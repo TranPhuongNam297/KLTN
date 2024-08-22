@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:khoa_luan_tot_nghiep/Model/list_sort.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Model/bo_de.dart';
@@ -256,11 +257,14 @@ class _ListPracState extends State<listPrac> {
     await FirebaseFirestore.instance.collection('list_truefalse').get();
     QuerySnapshot matchingSnapshot =
     await FirebaseFirestore.instance.collection('list_matching').get();
-
+    QuerySnapshot sortSnapshot =
+    await FirebaseFirestore.instance.collection('list_sort').get();
     List<list_question> questions = questionSnapshot.docs.map((doc) {
       return list_question.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
-
+    List<list_sort> sortQuestion = sortSnapshot.docs.map((doc) {
+      return list_sort.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    }).toList();
     List<list_truefalse> trueFalseQuestions = trueFalseSnapshot.docs.map((doc) {
       return list_truefalse.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
@@ -315,9 +319,10 @@ class _ListPracState extends State<listPrac> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 20);
-      addRandomQuestions(trueFalseQuestions, 40);
-      addRandomQuestions(matchingQuestions, 40);
+      addRandomQuestions(questions, 0);
+      addRandomQuestions(trueFalseQuestions, 0);
+      addRandomQuestions(matchingQuestions, 0);
+      addRandomQuestions(sortQuestion, 1);
     }
 
     CollectionReference chiTietBoDeCollection =

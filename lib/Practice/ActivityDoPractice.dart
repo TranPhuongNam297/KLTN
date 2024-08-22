@@ -32,6 +32,7 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
   @override
   void initState() {
     super.initState();
+    _loadIdBoDe();
     countdownTimer = CountdownTimer(
       remainingDuration: Duration(hours: 1),
     );
@@ -47,12 +48,12 @@ class _ActivityDoPracticeState extends State<ActivityDoPractice> {
         _checkMatchingQuestion();
       });
     });
-    _loadIdBoDe();
   }
 
   Future<void> _loadIdBoDe() async {
     final prefs = await SharedPreferences.getInstance();
     idBoDe = prefs.getString('boDeId')!;
+    print(idBoDe);
   }
 
   void _checkMatchingQuestion() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'TestRulesScreen.dart';
 
 class ActivityItemMain extends StatelessWidget {
@@ -7,11 +8,15 @@ class ActivityItemMain extends StatelessWidget {
   final bool mode; // Thêm trường mode để xác định chế độ của bộ đề
 
   ActivityItemMain({required this.title, required this.boDeId, required this.mode});
-
   @override
+  void SetStringShareRef() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('boDeId', boDeId);
+  }
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        SetStringShareRef();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => TestRulesScreen()),

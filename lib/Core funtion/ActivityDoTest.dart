@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:khoa_luan_tot_nghiep/CompletedTests.dart';
+import 'package:khoa_luan_tot_nghiep/Core%20funtion/SortQuestion.dart';
+import 'package:khoa_luan_tot_nghiep/Core%20funtion/SortQuestion2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'QuestionManager.dart';
 import '../CountdownTimer.dart';
@@ -64,6 +66,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       idBoDe = prefs.getString('boDeId')!;
       mode = prefs.getString('mode')!;
       print(mode);
+      print(idBoDe);
     });
   }
 
@@ -91,7 +94,11 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = isCorrect;
     });
   }
-
+  void _handleSortAnswer(List<String> selectedAnswers){
+    final correctAnswer = List<String>.from(questionManager.correctAnswer);
+    final currentIndex = questionManager.currentQuestionIndex;
+    bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
+  }
   void _handleTrueFalseAnswer(bool allCorrect) {
     final currentIndex = questionManager.currentQuestionIndex;
     bool wasCorrect = answeredCorrectly[currentIndex] ?? false;
@@ -133,7 +140,6 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
       questionResults[currentIndex] = isAllCorrect;
     });
   }
-
   void _handleMultipleAnswer(List<String> selectedAnswers) {
     final correctAnswers = List<String>.from(questionManager.correctAnswer);
     final currentIndex = questionManager.currentQuestionIndex;
@@ -359,146 +365,107 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      mainLayout(
-                          initialIndex: 2
-                      ),
+                  builder: (context) => mainLayout(initialIndex: 2),
                 ),
               );
             } else {
               showDialog(
                 context: context,
-                builder: (context) =>
-                    ConfirmDialog(
-                      onConfirmed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => mainLayout()),
-                        );
-                      },
-                    ),
+                builder: (context) => ConfirmDialog(
+                  onConfirmed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => mainLayout()),
+                    );
+                  },
+                ),
               );
             }
           },
         ),
       ),
-      body: Center(
-        child: FutureBuilder<void>(
-          future: _initialization,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              return Stack(
+      body: FutureBuilder<void>(
+        future: _initialization,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return SingleChildScrollView(
+              child: Column(
                 children: [
-                  Column(
-                    children: [
-                      if (mode != 'xemdapan')
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: AnimatedBuilder(
-                              animation: countdownTimer,
-                              builder: (context, child) {
-                                return Text(
-                                  countdownTimer.formattedTime,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                  if (mode != 'xemdapan')
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: AnimatedBuilder(
+                          animation: countdownTimer,
+                          builder: (context, child) {
+                            return Text(
+                              countdownTimer.formattedTime,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            );
+                          },
                         ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${questionManager.currentQuestionIndex +
-                                1}/${questionManager.questions.length}',
-                            style: TextStyle(fontSize: 24),
-                          ),
-                          StarButton(
-                            Currentindex: questionManager.currentQuestionIndex
-                                .toString(),
-                          ),
-                        ],
                       ),
-                      if (questionManager.currentQuestionType == 'matching')
-                        MatchingQuestion(
-                          matchingQuestion: questionManager
-                              .questions[questionManager.currentQuestionIndex],
-                          onAllCorrect: _handleMatchingAnswer,
-                          mode: mode ?? 'lambai',
-                        )
-                      else
-                        if (questionManager.currentQuestionType ==
-                            'multiple_choice')
-                          MultipleChoiceQuestion(
-                            questionText: questionManager.currentQuestion,
-                            answers: questionManager.currentAnswers!,
-                            onAnswerSelected: _handleAnswer,
-                            correctAnswer: questionManager.correctAnswer,
-                            selectedAnswer: mode == 'xemdapan' ? questionManager
-                                .correctAnswer : selectedAnswers[questionManager
-                                .currentQuestionIndex],
-                            mode: mode ?? 'lambai',
-                            idQuestion: questionManager.currentQuestionId,
-                          )
-                        else
-                          if (questionManager.currentQuestionType ==
-                              'truefalse')
-                            TrueFalseQuestion(
-                              trueFalseQuestion: questionManager
-                                  .questions[questionManager
-                                  .currentQuestionIndex],
-                              onAnswerSelected: _handleTrueFalseAnswer,
-                              mode: mode ?? 'lambai',
-                            )
-                          else
-                            if (questionManager.currentQuestionType ==
-                                'multiple_answer')
-                              MultipleAnswerQuestion(
-                                questionText: questionManager.currentQuestion,
-                                answers: questionManager.currentAnswers ?? [],
-                                onAnswersSelected: _handleMultipleAnswer,
-                                selectedAnswers: mode == 'xemdapan'
-                                    ? questionManager.correctAnswer ?? []
-                                    : selectedAnswers[questionManager
-                                    .currentQuestionIndex] ?? [],
-                                mode: mode ?? 'lambai',
-                                idQuestion: questionManager.currentQuestionId,
-                              )
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${questionManager.currentQuestionIndex + 1}/${questionManager.questions.length}',
+                        style: TextStyle(fontSize: 24),
+                      ),
+                      StarButton(
+                        Currentindex: questionManager.currentQuestionIndex.toString(),
+                      ),
                     ],
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          if (questionManager.currentQuestionIndex > 0)
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
-                                minimumSize: Size(75, 35),
-                              ),
-                              icon: Icon(Icons.arrow_back, color: Colors.white),
-                              label: Text(
-                                'Quay về',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              onPressed: _previousQuestion,
-                            ),
-                          Spacer(),
-                          ElevatedButton(
+                  SizedBox(height: 16),
+                  if (questionManager.currentQuestionType == 'matching')
+                    MatchingQuestion(
+                      matchingQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                      onAllCorrect: _handleMatchingAnswer,
+                      mode: mode ?? 'lambai',
+                    )
+                  else if (questionManager.currentQuestionType == 'multiple_choice')
+                      MultipleChoiceQuestion(
+                        questionText: questionManager.currentQuestion,
+                        answers: questionManager.currentAnswers!,
+                        onAnswerSelected: _handleAnswer,
+                        correctAnswer: questionManager.correctAnswer,
+                        selectedAnswer: mode == 'xemdapan' ? questionManager.correctAnswer : selectedAnswers[questionManager.currentQuestionIndex],
+                        mode: mode ?? 'lambai',
+                        idQuestion: questionManager.currentQuestionId,
+                      )
+                    else if (questionManager.currentQuestionType == 'truefalse')
+                        TrueFalseQuestion(
+                          trueFalseQuestion: questionManager.questions[questionManager.currentQuestionIndex],
+                          onAnswerSelected: _handleTrueFalseAnswer,
+                          mode: mode ?? 'lambai',
+                        )
+                      else if (questionManager.currentQuestionType == 'multiple_answer')
+                          MultipleAnswerQuestion(
+                            questionText: questionManager.currentQuestion,
+                            answers: questionManager.currentAnswers ?? [],
+                            onAnswersSelected: _handleMultipleAnswer,
+                            selectedAnswers: mode == 'xemdapan' ? questionManager.correctAnswer ?? [] : selectedAnswers[questionManager.currentQuestionIndex] ?? [],
+                            mode: mode ?? 'lambai',
+                            idQuestion: questionManager.currentQuestionId,
+                          ),
+                  SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (questionManager.currentQuestionIndex > 0)
+                          ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.indigo,
                               shape: RoundedRectangleBorder(
@@ -506,44 +473,56 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                               ),
                               minimumSize: Size(75, 35),
                             ),
-                            onPressed: () {
-                              if (questionManager.currentQuestionIndex <
-                                  questionManager.questions.length - 1) {
-                                _nextQuestion();
-                              } else {
-                                if (mode == 'xemdapan') {
-                                  _showEndViewDialog();
-                                } else {
-                                  _showSubmitDialog();
-                                }
-                              }
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Text(
-                                  (questionManager.currentQuestionIndex <
-                                      questionManager.questions.length - 1 ||
-                                      mode != 'xemdapan')
-                                      ? 'Tiếp tục'
-                                      : 'Nộp bài',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                SizedBox(width: 5),
-                                Icon(Icons.arrow_forward, color: Colors.white),
-                              ],
+                            icon: Icon(Icons.arrow_back, color: Colors.white),
+                            label: Text(
+                              'Quay về',
+                              style: TextStyle(color: Colors.white),
                             ),
+                            onPressed: _previousQuestion,
                           ),
-                        ],
-                      ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                            minimumSize: Size(75, 35),
+                          ),
+                          onPressed: () {
+                            if (questionManager.currentQuestionIndex < questionManager.questions.length - 1) {
+                              _nextQuestion();
+                            } else {
+                              if (mode == 'xemdapan') {
+                                _showEndViewDialog();
+                              } else {
+                                _showSubmitDialog();
+                              }
+                            }
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                (questionManager.currentQuestionIndex < questionManager.questions.length - 1 || mode != 'xemdapan')
+                                    ? 'Tiếp tục'
+                                    : 'Nộp bài',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              SizedBox(width: 5),
+                              Icon(Icons.arrow_forward, color: Colors.white),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              );
-            }
-          },
-        ),
+              ),
+            );
+          }
+        },
       ),
     );
   }
+
 }

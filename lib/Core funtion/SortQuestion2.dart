@@ -1,38 +1,23 @@
 import 'package:flutter/material.dart';
 
-class SortQuestion extends StatefulWidget {
-  final List<String> items;
-  final List<String> initialItems;
-  final String convertItem;
-  final String question;
-  final String Id;
-
-  SortQuestion({
-    required this.items,
-    required this.initialItems,
-    required this.convertItem,
-    required this.question,
-    required this.Id,
-  });
-
+class SortQuestion2 extends StatefulWidget {
   @override
   _SortQuestionState createState() => _SortQuestionState();
 }
 
-class _SortQuestionState extends State<SortQuestion> {
+class _SortQuestionState extends State<SortQuestion2> {
   late List<String> items;
   late List<String> sortedItems;
   late List<String> initialItems;
-  late String convertItem;
-  late String question;
+  final String convertItem = 'Item1 Item2 Item3 Item4'; // Example correct order
+  final String question = 'Sort the items in the correct order';
 
   @override
   void initState() {
     super.initState();
-    items = widget.items;
-    initialItems = widget.initialItems;
-    convertItem = widget.convertItem;
-    question = widget.question;
+    // Define hardcoded data
+    items = ['Item1', 'Item2', 'Item3', 'Item4'];
+    initialItems = List.from(items);
     sortedItems = [];
   }
 

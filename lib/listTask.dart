@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:khoa_luan_tot_nghiep/Model/list_sort.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Model/bo_de.dart';
@@ -259,11 +260,14 @@ class _ListTaskState extends State<listTask> {
     await FirebaseFirestore.instance.collection('list_truefalse').get();
     QuerySnapshot matchingSnapshot =
     await FirebaseFirestore.instance.collection('list_matching').get();
-
+    QuerySnapshot SortSnapshot =
+    await FirebaseFirestore.instance.collection('list_sort').get();
     List<list_question> questions = questionSnapshot.docs.map((doc) {
       return list_question.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
-
+    List<list_sort> sortQuestion = SortSnapshot.docs.map((doc) {
+      return list_sort.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    }).toList();
     List<list_truefalse> trueFalseQuestions = trueFalseSnapshot.docs.map((doc) {
       return list_truefalse.fromMap(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
@@ -293,7 +297,11 @@ class _ListTaskState extends State<listTask> {
         } else if (q is list_matching) {
           id = q.Id_Question;
           type = q.Type;
-        } else {
+        }else if (q is list_sort) {
+          id = q.Id;
+          type = q.Type;
+        }
+        else {
           throw Exception('Unknown question type');
         }
 
@@ -317,9 +325,10 @@ class _ListTaskState extends State<listTask> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 5);
-      addRandomQuestions(trueFalseQuestions, 12);
-      addRandomQuestions(matchingQuestions, 12);
+      addRandomQuestions(questions, 2);
+      addRandomQuestions(trueFalseQuestions, 0);
+      addRandomQuestions(matchingQuestions, 0);
+      addRandomQuestions(sortQuestion, 0);
     }
 
     CollectionReference chiTietBoDeCollection =
