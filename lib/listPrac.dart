@@ -190,14 +190,59 @@ class _ListPracState extends State<listPrac> {
     );
   }
 
-  void _showCreateNewBoDeDialog() {
+  void _showCreateNewBoDeDialog() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('idUser');
+
+    if (userId == null) {
+      print("User ID not found in SharedPreferences");
+      return;
+    }
+
+    // Start fetching user data and Key_Active in parallel
+    final userDocFuture = FirebaseFirestore.instance.collection('User_info').doc(userId).get();
+    final keyActiveFuture = FirebaseFirestore.instance
+        .collection('Key_Active')
+        .where('Id_User', isEqualTo: userId)
+        .get();
+
+    // Wait for both operations to complete and cast results to the correct types
+    final List<dynamic> results = await Future.wait([userDocFuture, keyActiveFuture]);
+
+    DocumentSnapshot userSnapshot = results[0] as DocumentSnapshot;
+    QuerySnapshot keyActiveSnapshot = results[1] as QuerySnapshot;
+
+    bool isActive = userSnapshot.get('isActive');
+    DocumentSnapshot keyActiveDoc = keyActiveSnapshot.docs.first;
+    int currentTestCount = keyActiveDoc.get('Practice');
+
+    // Fetch number of existing Bo_de created by the user
+    int existingBoDeCount = await FirebaseFirestore.instance
+        .collection('Bo_de')
+        .where('Id_user_tao', isEqualTo: userId)
+        .get()
+        .then((boDeSnapshot) => boDeSnapshot.docs.length);
+
+    // Determine the remaining number of Bo_de the user can create
+    int maxBoDeCount = isActive ? currentTestCount : 1;
+    int remainingBoDeCount = maxBoDeCount - existingBoDeCount;
+
+    // Show the dialog with remaining count
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Center(
           child: AlertDialog(
             title: Text('Xác nhận'),
-            content: Text('Bạn có muốn tạo bộ đề mới không?'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Bạn có muốn tạo bộ đề mới không?'),
+                SizedBox(height: 16),
+                Text('Số lần tạo đề còn lại: $remainingBoDeCount'),
+              ],
+            ),
             backgroundColor: Colors.white,
             elevation: 24.0,
             shape: RoundedRectangleBorder(

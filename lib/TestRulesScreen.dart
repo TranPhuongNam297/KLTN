@@ -91,16 +91,13 @@ class _TestRulesScreenState extends State<TestRulesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Thể lệ thi:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Image.asset(
+                  'images/thongbao.jpg', // Đường dẫn tới hình ảnh đầu tiên
+                  fit: BoxFit.cover,
                 ),
-                SizedBox(height: 10),
-                Text(
-                  '1. Mỗi bài thi gồm tối đa 40 câu hỏi.\n'
-                      '2. Bạn có 1 tiếng để hoàn thành bài thi.\n'
-                      '3. Bài thi sẽ tự động nộp khi hết giờ.',
-                  style: TextStyle(fontSize: 16),
+                Image.asset(
+                  'images/thele.png', // Đường dẫn tới hình ảnh thứ hai
+                  fit: BoxFit.cover,
                 ),
                 Spacer(),
                 Center(
