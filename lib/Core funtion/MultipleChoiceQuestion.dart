@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 String idBoDe = "";
 String DapAnDaChon = "";
@@ -42,6 +41,7 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
   void didUpdateWidget(covariant MultipleChoiceQuestion oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.idQuestion != oldWidget.idQuestion) {
+      // Nếu idQuestion thay đổi, gọi lại hàm để tải dữ liệu mới
       loadData();
     }
   }
@@ -113,6 +113,7 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
           bool isSelected = widget.selectedAnswer == answer && widget.mode == 'lambai';
           bool isCorrect = widget.mode == 'xemdapan' && answer == widget.correctAnswer;
           bool isUserSelected = widget.mode == 'xemdapan' && answer == DapAnDaChon;
+          bool isIncorrect = widget.mode == 'xemdapan' && widget.selectedAnswer == answer && answer != widget.correctAnswer;
 
           return Column(
             children: [
@@ -125,18 +126,18 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
                     color: widget.mode == 'xemdapan'
                         ? isUserSelected
                         ? isCorrect
-                        ? Colors.green[100]
-                        : Colors.blueGrey[200]
-                        : Colors.blueGrey[200]
+                        ? Colors.green[100] // Màu nền cho đáp án đúng đã chọn
+                        : Colors.red[100] // Màu nền cho đáp án sai đã chọn
+                        : Colors.blueGrey[200] // Màu nền mặc định cho đáp án chưa chọn
                         : isSelected
-                        ? Colors.blue[900]
-                        : Colors.blueGrey[200],
+                        ? Colors.blue[900] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
+                        : Colors.blueGrey[200], // Màu nền mặc định cho đáp án chưa chọn
                     borderRadius: BorderRadius.zero,
                     border: Border.all(
                       color: isUserSelected
                           ? isCorrect
-                          ? Colors.green[700]!
-                          : Colors.transparent
+                          ? Colors.green[700]! // Viền xanh lá cho đáp án đúng
+                          : Colors.red[700]! // Viền đỏ cho đáp án sai
                           : Colors.transparent,
                       width: 2,
                     ),
@@ -150,27 +151,27 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
                           style: TextStyle(
                             fontSize: 20,
                             color: Colors.black,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // Đậm chữ cho đáp án đã chọn
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      if (isUserSelected)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: FaIcon(
-                            FontAwesomeIcons.handPointLeft, // Icon bàn tay chỉ trái
-                            color: Colors.blue,
-                            size: 24,
-                          ),
-                        ),
                       if (isCorrect)
                         Padding(
                           padding: const EdgeInsets.only(right: 16.0),
                           child: Icon(
                             Icons.check,
-                            color: Colors.green[700],
-                            size: 32,
+                            color: Colors.green[700], // Đổi màu sắc của dấu tích thành xanh lá cây
+                            size: 32, // Tăng kích thước của dấu tích
+                          ),
+                        ),
+                      if (isUserSelected && isIncorrect)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.red[700], // Đổi màu sắc của dấu X thành đỏ
+                            size: 36, // Tăng kích thước của dấu X
                           ),
                         ),
                     ],
