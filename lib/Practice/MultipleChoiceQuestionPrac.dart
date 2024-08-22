@@ -108,7 +108,7 @@ class _MultipleChoiceQuestionPracState extends State<MultipleChoiceQuestionPrac>
                           ? (isUserAnswer
                           ? (isCorrect ? Colors.green[700] : Colors.red[700])
                           : Colors.blueGrey[200])
-                          : (isSelected ? Colors.blue[900] : Colors.blueGrey[200]),
+                          : (isSelected ? Colors.lightBlue[800] : Colors.blueGrey[200]),
                       borderRadius: BorderRadius.circular(0), // Không bo tròn
                     ),
                     alignment: Alignment.center,

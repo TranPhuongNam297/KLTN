@@ -119,7 +119,7 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                         : Colors.red[100] // Màu nền cho đáp án sai đã chọn
                         : Colors.blueGrey[200] // Màu nền mặc định cho đáp án chưa chọn
                         : isSelected
-                        ? Colors.blue[900] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
+                        ? Colors.lightBlue[800] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
                         : Colors.blueGrey[200], // Màu nền mặc định cho đáp án chưa chọn
                     borderRadius: BorderRadius.zero,
                     border: Border.all(
