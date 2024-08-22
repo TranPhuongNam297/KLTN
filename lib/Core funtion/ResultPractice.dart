@@ -61,11 +61,6 @@ class ResultPractice extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tên đề thi:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-            SizedBox(height: 16),
-            Text(
               'Thời gian hoàn thành:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
