@@ -129,7 +129,7 @@ class _MultipleChoiceQuestionState extends State<MultipleChoiceQuestion> {
                         : Colors.blueGrey[200]
                         : Colors.blueGrey[200]
                         : isSelected
-                        ? Colors.blue[900]
+                        ? Colors.lightBlue[800]
                         : Colors.blueGrey[200],
                     borderRadius: BorderRadius.zero,
                     border: Border.all(

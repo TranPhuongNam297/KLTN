@@ -117,7 +117,7 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                     color: widget.mode == 'xemdapan'
                         ? Colors.blueGrey[200] // Màu nền mặc định cho đáp án
                         : isSelected
-                        ? Colors.blue[900] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
+                        ? Colors.lightBlue[800] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
                         : Colors.blueGrey[200], // Màu nền mặc định cho đáp án chưa chọn
                     borderRadius: BorderRadius.zero,
                     border: Border.all(
