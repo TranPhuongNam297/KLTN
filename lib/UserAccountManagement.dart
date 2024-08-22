@@ -130,79 +130,74 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
                   } else if (keyActiveSnapshot.hasError) {
                     return Center(
                         child: Text('Đã xảy ra lỗi: ${keyActiveSnapshot.error}'));
-                  } else if (!keyActiveSnapshot.hasData ||
-                      keyActiveSnapshot.data == null) {
-                    return Center(child: Text('Không có dữ liệu time_end'));
-                  }
+                  } else {
+                    final keyActiveData = keyActiveSnapshot.data ?? {};
+                    _timeEndController.text = keyActiveData['Time_End']?.toString() ?? '0';
+                    _testCountController.text = keyActiveData['Test']?.toString() ?? '0';
+                    _practiceCountController.text = keyActiveData['Practice']?.toString() ?? '0';
 
-                  final keyActiveData = keyActiveSnapshot.data!;
-                  _timeEndController.text = keyActiveData['Time_End'] as String;
-                  _testCountController.text =
-                      keyActiveData['Test']?.toString() ?? '0';
-                  _practiceCountController.text =
-                      keyActiveData['Practice']?.toString() ?? '0';
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabeledTextField(
+                                'Họ và tên', _fullNameController, _isEditing),
+                            SizedBox(height: 16),
+                            _buildLabeledTextField('Số điện thoại',
+                                _phoneNumberController, _isEditing),
+                            SizedBox(height: 16),
+                            _buildLabeledTextField(
+                                'Tên người dùng', _userNameController, false), // Tên người dùng không thể chỉnh sửa
+                            SizedBox(height: 16),
+                            _buildStatusTextField('Tình trạng tài khoản',
+                                _statusController, userInfo.IsActive),
+                            SizedBox(height: 16),
+                            _buildTimeEndTextField(
+                                'Thời hạn tài khoản', _timeEndController),
+                            SizedBox(height: 16),
+                            _buildCountTextField('Số lượng tạo bộ đề kiểm tra',
+                                _testCountController),
+                            SizedBox(height: 16),
+                            _buildCountTextField('Số lượng tạo bộ đề luyện tập',
+                                _practiceCountController),
+                            SizedBox(height: 20),
+                            Center(
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                height: 60,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.indigo,
+                                  ),
+                                  onPressed: () async {
+                                    if (_isEditing) {
+                                      await _updateUserInfo(userId);
+                                    }
 
-                  return SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabeledTextField(
-                              'Họ và tên', _fullNameController, _isEditing),
-                          SizedBox(height: 16),
-                          _buildLabeledTextField('Số điện thoại',
-                              _phoneNumberController, _isEditing),
-                          SizedBox(height: 16),
-                          _buildLabeledTextField(
-                              'Tên người dùng', _userNameController, false), // Tên người dùng không thể chỉnh sửa
-                          SizedBox(height: 16),
-                          _buildStatusTextField('Tình trạng tài khoản',
-                              _statusController, userInfo.IsActive),
-                          SizedBox(height: 16),
-                          _buildTimeEndTextField(
-                              'Thời hạn tài khoản', _timeEndController),
-                          SizedBox(height: 16),
-                          _buildCountTextField('Số lượng tạo bộ đề kiểm tra',
-                              _testCountController),
-                          SizedBox(height: 16),
-                          _buildCountTextField('Số lượng tạo bộ đề luyện tập',
-                              _practiceCountController),
-                          SizedBox(height: 20),
-                          Center(
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.7,
-                              height: 60,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.indigo,
-                                ),
-                                onPressed: () async {
-                                  if (_isEditing) {
-                                    await _updateUserInfo(userId);
-                                  }
+                                    bool hasValidationError =
+                                        _phoneNumberController.text !=
+                                            userInfo.PhoneNumber;
 
-                                  bool hasValidationError =
-                                      _phoneNumberController.text !=
-                                          userInfo.PhoneNumber;
-
-                                  setState(() {
-                                    _isEditing =
-                                        hasValidationError || !_isEditing;
-                                  });
-                                },
-                                child: Text(
-                                  _isEditing ? 'Lưu' : 'Chỉnh sửa',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 20),
+                                    setState(() {
+                                      _isEditing =
+                                          hasValidationError || !_isEditing;
+                                    });
+                                  },
+                                  child: Text(
+                                    _isEditing ? 'Lưu' : 'Chỉnh sửa',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 20),
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                        ],
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 },
               );
             },
@@ -299,7 +294,6 @@ class _UserAccountManagementState extends State<UserAccountManagement> {
 
   Future<void> _updateUserInfo(String userId) async {
     final firestore = FirebaseFirestore.instance;
-
     await firestore.collection('User_info').doc(userId).update({
       'FullName': _fullNameController.text,
       'PhoneNumber': _phoneNumberController.text,

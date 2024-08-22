@@ -143,7 +143,7 @@ class _ListPracState extends State<listPrac> {
         return Center(
           child: AlertDialog(
             title: Text('Thông báo'),
-            content: Text('Bạn cần kích hoạt tài khoản để tạo thêm bộ đề.'),
+            content: Text('Bạn cần kích hoạt tài khoản để tạo bộ đề.'),
             backgroundColor: Colors.white,
             elevation: 24.0,
             shape: RoundedRectangleBorder(
