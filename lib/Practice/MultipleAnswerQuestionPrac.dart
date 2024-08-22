@@ -7,7 +7,7 @@ class MultipleAnswerQuestionPrac extends StatefulWidget {
   final List<String> selectedAnswers;
   final List<String> correctAnswers;
   final bool showResult;
-  final bool isChecked; // Thêm thuộc tính này
+  final bool isChecked;
 
   const MultipleAnswerQuestionPrac({
     required this.questionText,
@@ -16,7 +16,7 @@ class MultipleAnswerQuestionPrac extends StatefulWidget {
     required this.selectedAnswers,
     required this.correctAnswers,
     this.showResult = false,
-    required this.isChecked, // Thêm thuộc tính này
+    required this.isChecked,
   });
 
   @override
@@ -41,7 +41,7 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
       }
       return Colors.blueGrey[200]!;
     }
-    return selectedAnswers.contains(answer) ? Colors.blue[900]! : Colors.blueGrey[200]!;
+    return selectedAnswers.contains(answer) ? Colors.lightBlue[900]! : Colors.blueGrey[200]!;
   }
 
   @override
@@ -52,7 +52,7 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: 400,
+          width: buttonWidth,
           height: 250,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -92,11 +92,64 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
                     decoration: BoxDecoration(
                       color: _getButtonColor(answer),
                       borderRadius: BorderRadius.circular(0), // Không bo tròn
+                      border: Border.all(
+                        color: isSelected ? Colors.lightBlue[800]! : Colors.transparent,
+                        width: 2,
+                      ),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      answer,
-                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    child: Row(
+                      children: [
+                        // Ba dấu gạch ngang bên trái
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: Icon(
+                            Icons.menu,
+                            color: Colors.black,
+                            size: 36, // Kích thước của nút menu
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        VerticalDivider(
+                          width: 1,
+                          color: Colors.black,
+                          thickness: 1,
+                        ),
+                        SizedBox(width: 8),
+                        // Phần đáp án
+                        Expanded(
+                          child: Text(
+                            answer,
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.black,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                        ),
+                        // Biểu tượng (nếu có)
+                        if (widget.isChecked)
+                          if (widget.correctAnswers.contains(answer) && selectedAnswers.contains(answer))
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16.0),
+                              child: Icon(
+                                Icons.check,
+                                color: Colors.green[700], // Đổi màu sắc của dấu tích thành xanh lá cây
+                                size: 36, // Tăng kích thước của dấu tích
+                              ),
+                            ),
+                        if (widget.isChecked)
+                          if (!widget.correctAnswers.contains(answer) && selectedAnswers.contains(answer))
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16.0),
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.red[700], // Đổi màu sắc của dấu X thành đỏ
+                                size: 36, // Tăng kích thước của dấu X
+                              ),
+                            ),
+                      ],
                     ),
                   ),
                 ),

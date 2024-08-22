@@ -364,7 +364,7 @@ class _ListPracState extends State<listPrac> {
       addRandomQuestions(trueFalseQuestions, 4);
       addRandomQuestions(matchingQuestions, 4);
     } else if(isActive == true){
-      addRandomQuestions(questions, 10);
+      addRandomQuestions(questions, 20);
       addRandomQuestions(trueFalseQuestions, 40);
       addRandomQuestions(matchingQuestions, 40);
       addRandomQuestions(sortQuestion, 0);

@@ -491,6 +491,7 @@ class _ActivityDoTestState extends State<ActivityDoTest> {
                                 questionText: questionManager.currentQuestion,
                                 answers: questionManager.currentAnswers ?? [],
                                 onAnswersSelected: _handleMultipleAnswer,
+                                correctAnswers : questionManager.correctAnswer?? [],
                                 selectedAnswers: mode == 'xemdapan'
                                     ? questionManager.correctAnswer ?? []
                                     : selectedAnswers[questionManager
