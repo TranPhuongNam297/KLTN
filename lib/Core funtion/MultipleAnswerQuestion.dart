@@ -57,7 +57,6 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
       if (docSnapshot.docs.isNotEmpty) {
         var data = docSnapshot.docs.first.data();
         String answersString = data['IsCorrect'] as String;
-        // Tách chuỗi bằng dấu cộng và cập nhật biến toàn cục
         DapAnDaChon = answersString.split('+');
         setState(() {}); // Cập nhật giao diện
       }
@@ -66,7 +65,7 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
 
   @override
   Widget build(BuildContext context) {
-    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 90% màn hình
+    double buttonWidth = MediaQuery.of(context).size.width * 0.9;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -96,6 +95,14 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
           bool isCorrect = widget.mode == 'xemdapan' && widget.correctAnswers.contains(answer);
           bool isAnswerInDapAnDaChon = DapAnDaChon.contains(answer);
 
+          // Xác định màu nền của item
+          Color? containerColor = Colors.blueGrey[200]; // Màu nền mặc định
+
+          // Nếu cả hai biểu tượng xuất hiện, thay đổi màu nền thành xanh
+          if (widget.mode == 'xemdapan' && isCorrect && isAnswerInDapAnDaChon) {
+            containerColor = Colors.greenAccent[100];
+          }
+
           return Column(
             children: [
               InkWell(
@@ -114,21 +121,16 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                   width: buttonWidth,
                   height: 65,
                   decoration: BoxDecoration(
-                    color: widget.mode == 'xemdapan'
-                        ? Colors.blueGrey[200] // Màu nền mặc định cho đáp án
-                        : isSelected
-                        ? Colors.blue[900] // Màu nền cho đáp án đã chọn trong chế độ "lambai"
-                        : Colors.blueGrey[200], // Màu nền mặc định cho đáp án chưa chọn
+                    color: containerColor, // Áp dụng màu nền nếu cần
                     borderRadius: BorderRadius.zero,
                     border: Border.all(
-                      color: Colors.transparent, // Không sử dụng khung viền trong chế độ "xemdapan"
+                      color: Colors.black, // Sử dụng khung viền màu đen mặc định
                       width: 2,
                     ),
                   ),
                   alignment: Alignment.center,
                   child: Row(
                     children: [
-                      // Ba dấu gạch ngang bên trái
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
                         child: Icon(
@@ -144,7 +146,6 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                         thickness: 1,
                       ),
                       SizedBox(width: 8),
-                      // Phần đáp án
                       Expanded(
                         child: Row(
                           children: [
@@ -159,22 +160,20 @@ class _MultipleAnswerQuestionState extends State<MultipleAnswerQuestion> {
                                 textAlign: TextAlign.left,
                               ),
                             ),
-                            // Thêm dấu tích xanh nếu đáp án đúng
                             if (widget.mode == 'xemdapan' && isCorrect)
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: Icon(
                                   Icons.check, // Biểu tượng dấu tích
                                   color: Colors.green[700], // Màu sắc của dấu tích
-                                  size: 24, // Kích thước của dấu tích
+                                  size: 30, // Kích thước của dấu tích
                                 ),
                               ),
-                            // Thêm biểu tượng tay chỉ trái nếu đáp án nằm trong DapAnDaChon
                             if (widget.mode == 'xemdapan' && isAnswerInDapAnDaChon)
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: FaIcon(
-                                  FontAwesomeIcons.handPointLeft, // Biểu tượng tay chỉ vào trái
+                                  FontAwesomeIcons.handPointLeft, // Biểu tượng tay chỉ trái
                                   color: Colors.blue,
                                   size: 24,
                                 ),
