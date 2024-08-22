@@ -7,7 +7,7 @@ class MultipleAnswerQuestionPrac extends StatefulWidget {
   final List<String> selectedAnswers;
   final List<String> correctAnswers;
   final bool showResult;
-  final bool isChecked;
+  final bool isChecked; // Thêm thuộc tính này
 
   const MultipleAnswerQuestionPrac({
     required this.questionText,
@@ -16,7 +16,7 @@ class MultipleAnswerQuestionPrac extends StatefulWidget {
     required this.selectedAnswers,
     required this.correctAnswers,
     this.showResult = false,
-    required this.isChecked,
+    required this.isChecked, // Thêm thuộc tính này
   });
 
   @override
@@ -46,7 +46,7 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
 
   @override
   Widget build(BuildContext context) {
-    double buttonWidth = MediaQuery.of(context).size.width * 0.9;
+    double buttonWidth = MediaQuery.of(context).size.width * 0.9; // Chiều rộng bằng 90% màn hình
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -56,7 +56,7 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
           height: 250,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(0),
+            borderRadius: BorderRadius.circular(0), // Không bo tròn
             border: Border.all(color: Colors.black),
           ),
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -91,22 +91,12 @@ class _MultipleAnswerQuestionPracState extends State<MultipleAnswerQuestionPrac>
                     height: 65,
                     decoration: BoxDecoration(
                       color: _getButtonColor(answer),
-                      borderRadius: BorderRadius.circular(0),
+                      borderRadius: BorderRadius.circular(0), // Không bo tròn
                     ),
                     alignment: Alignment.center,
-                    child: Row(
-                      children: [
-                        SizedBox(width: 10),
-                        Icon(Icons.drag_handle), // Icon ba gạch
-                        VerticalDivider(color: Colors.black, thickness: 2), // Đường thẳng ngăn cách
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            answer,
-                            style: TextStyle(fontSize: 20, color: Colors.black),
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      answer,
+                      style: TextStyle(fontSize: 20, color: Colors.black),
                     ),
                   ),
                 ),
